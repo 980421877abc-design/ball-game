@@ -807,8 +807,57 @@ function playHitSound(type) {
       gainDash.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       oscDash.connect(gainDash); gainDash.connect(ctx.destination);
       oscDash.start(now); oscDash.stop(now + 0.3);
+    } else if (type === 'samurai_parry') {
+      // 招架音效：金屬格擋聲
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1400, now);
+      osc.frequency.exponentialRampToValueAtTime(600, now + 0.12);
+      gain.gain.setValueAtTime(0.8, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now); osc.stop(now + 0.18);
+      const oscRing2 = ctx.createOscillator();
+      const gainRing2 = ctx.createGain();
+      oscRing2.type = 'sine';
+      oscRing2.frequency.setValueAtTime(2400, now + 0.03);
+      oscRing2.frequency.linearRampToValueAtTime(1800, now + 0.3);
+      gainRing2.gain.setValueAtTime(0.4, now + 0.03);
+      gainRing2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      oscRing2.connect(gainRing2); gainRing2.connect(ctx.destination);
+      oscRing2.start(now + 0.03); oscRing2.stop(now + 0.35);
+    } else if (type === 'samurai_iaido') {
+      // 居合音效：高速斬擊破空
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(2200, now);
+      osc.frequency.exponentialRampToValueAtTime(120, now + 0.1);
+      gain.gain.setValueAtTime(0.9, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.start(now); osc.stop(now + 0.12);
+      const bufSize2 = Math.floor(ctx.sampleRate * 0.1);
+      const nBuf2 = ctx.createBuffer(1, bufSize2, ctx.sampleRate);
+      const nData2 = nBuf2.getChannelData(0);
+      for (let i = 0; i < bufSize2; i++) nData2[i] = (Math.random()*2-1);
+      const nSrc2 = ctx.createBufferSource(); nSrc2.buffer = nBuf2;
+      const nFilt2 = ctx.createBiquadFilter(); nFilt2.type = 'highpass'; nFilt2.frequency.value = 5000;
+      const nGain2 = ctx.createGain();
+      nGain2.gain.setValueAtTime(0.6, now);
+      nGain2.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      nSrc2.connect(nFilt2); nFilt2.connect(nGain2); nGain2.connect(ctx.destination);
+      nSrc2.start(now); nSrc2.stop(now + 0.1);
+    } else if (type === 'samurai_shimetsu') {
+      // 識滅斬：四連鳴音
+      for (let si = 0; si < 4; si++) {
+        const oscS = ctx.createOscillator();
+        const gainS = ctx.createGain();
+        oscS.type = 'sawtooth';
+        oscS.frequency.setValueAtTime(1800 - si * 200, now + si * 0.06);
+        oscS.frequency.exponentialRampToValueAtTime(100, now + si * 0.06 + 0.12);
+        gainS.gain.setValueAtTime(0.7, now + si * 0.06);
+        gainS.gain.exponentialRampToValueAtTime(0.001, now + si * 0.06 + 0.15);
+        oscS.connect(dist); gainS.connect(ctx.destination);
+        oscS.start(now + si * 0.06); oscS.stop(now + si * 0.06 + 0.15);
+      }
+      osc.start(now); osc.stop(now + 0.01); // dummy to avoid error
     } else {
-      osc.frequency.exponentialRampToValueAtTime(55, now + 0.22);
       gain.gain.setValueAtTime(0.45, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
       const osc2 = ctx.createOscillator();
@@ -882,6 +931,12 @@ const CHARACTERS = [
   desc: '沉默的槍手。沒人知道他的名字，每次撞牆裝彈，累積足夠子彈後停下來向敵人快速連射。定時投擲閃光彈，造成範圍傷害並暫時封鎖對手攻擊。',
   stats: ['裝彈上限 6', '子彈傷害 45', '閃光彈 8s', '閃光彈傷害 80'],
   color: '#b8860b', glowColor: 'rgba(184,134,11,0.6)', type: 'gunner'
+  },
+  {
+  id: 'samurai', emoji: '⚔️', weapon: '⚔️', name: '末代武士',
+  desc: '最後的武士道傳人。定時進入「招架」狀態，可將飛來的投射物反彈。招架中碰到敵人球，立即反應以居合穿透斬擊。',
+  stats: ['招架 1s/2s', '反彈傷害×1.2', '居合穿透 100', '識滅斬 140×4'],
+  color: '#d4af37', glowColor: 'rgba(212,175,55,0.6)', type: 'samurai'
   }
 ];
 
@@ -1161,6 +1216,19 @@ const GUNNER_FLASH_RADIUS      = 110;   // 閃光彈爆炸半徑（px）
 const GUNNER_FLASH_STUN_DUR    = 2.5;   // 閃光彈封鎖攻擊持續時間（秒）
 const GUNNER_FLASH_SPEED       = 400;   // 閃光彈飛行速度（px/s）
 
+// 末代武士常數
+const SAMURAI_PARRY_INTERVAL   = 2.0;  // 招架冷卻（秒）
+const SAMURAI_PARRY_DURATION   = 1.0;   // 招架持續時間（秒）
+const SAMURAI_PARRY_REFLECT_MUL = 1.2;  // 反彈傷害倍率
+const SAMURAI_PARRY_BUMP_DMG   = 100;   // 招架中碰到敵人球的傷害
+const SAMURAI_PARRY_DMG_REDUCE = 0.3;   // 招架期間受傷倍率
+const SAMURAI_IAIDO_DAMAGE     = 100;   // 居合傷害
+const SAMURAI_IAIDO_SPEED      = 900;   // 居合衝刺速度
+const SAMURAI_IAIDO_DURATION   = 0.28;  // 居合衝刺持續時間（秒）
+const SAMURAI_SHIMETSU_DAMAGE  = 140;   // 識滅斬每道傷害
+const SAMURAI_SHIMETSU_COUNT   = 4;     // 識滅斬道數
+const SAMURAI_IAIDO_MAX        = 4;     // 累積幾次居合觸發識滅斬
+
 
 
 //現代最強
@@ -1216,8 +1284,8 @@ function startGame() {
   document.getElementById('select-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
 
-  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040' };
+  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a' };
 
   const ch1base  = CHARACTERS.find(c => c.id === p1Choice);
   const ch2base  = CHARACTERS.find(c => c.id === p2Choice);
@@ -1302,7 +1370,20 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       gunnerAmmoFired: ch.type === 'gunner' ? 0 : null,       // 本輪已射出幾發
       gunnerFlashTimer: ch.type === 'gunner' ? GUNNER_FLASH_INTERVAL : null, // 閃光彈冷卻
       // 被閃光彈命中的狀態（任何角色）
-      gunnerStunTimer: 0
+      gunnerStunTimer: 0,
+      // 末代武士專屬狀態
+      samuraiParryTimer: ch.type === 'samurai' ? SAMURAI_PARRY_INTERVAL : null,  // 招架冷卻
+      samuraiParrying: ch.type === 'samurai' ? false : null,                      // 是否招架中
+      samuraiParryElapsed: ch.type === 'samurai' ? 0 : null,                     // 招架已持續
+      samuraiParryHit: ch.type === 'samurai' ? false : null,                     // 招架期間有效（反彈或碰撞）
+      samuraiIaidoCount: ch.type === 'samurai' ? 0 : null,                       // 累積居合次數
+      samuraiIaidoing: ch.type === 'samurai' ? false : null,                     // 是否居合衝刺中
+      samuraiIaidoTimer: ch.type === 'samurai' ? 0 : null,                       // 居合衝刺計時
+      samuraiIaidoAngle: ch.type === 'samurai' ? 0 : null,                       // 居合方向
+      samuraiShimetsuing: ch.type === 'samurai' ? false : null,                  // 識滅斬是否在進行
+      samuraiShimetsuSlashes: ch.type === 'samurai' ? [] : null,                 // 識滅斬斬擊列表
+      samuraiNextIsShimetsu: ch.type === 'samurai' ? false : null,               // 下次招架改為識滅斬
+      // 被招架反彈不記 owner（靠投射物 owner 判斷）
     };
   }
 
@@ -1311,7 +1392,8 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       makeBall(sx, sy, Math.cos(a1)*BASE_SPEED, Math.sin(a1)*BASE_SPEED, ch1, 1),
       makeBall(ex, ey, Math.cos(a2)*BASE_SPEED, Math.sin(a2)*BASE_SPEED, ch2, 2)
     ],
-    projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, elapsed: 0
+    projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, elapsed: 0,
+    samuraiParticles: []
   };
 
   updateHUD();
@@ -1327,6 +1409,11 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
 }
 
 function randBetween(min, max) { return min + Math.random() * (max - min); }
+function dealDamage(target, dmg) {
+  const mul = (target.char && target.char.type === 'samurai' && target.samuraiParrying)
+    ? SAMURAI_PARRY_DMG_REDUCE : 1;
+  target.hp = Math.max(0, target.hp - dmg * mul);
+}
 
 function tick(now) {
   const dt = Math.min((now - lastTime) / 1000, 0.05);
@@ -1499,7 +1586,7 @@ function update(dt) {
         // 執行本次咬擊
         const enemy = state.balls.find(x => x.player !== b.player);
         if (enemy) {
-          enemy.hp = Math.max(0, enemy.hp - VAMPIRE_BITE_DAMAGE);
+          dealDamage(enemy, VAMPIRE_BITE_DAMAGE);
           b.hp = Math.min(MAX_HP, b.hp + VAMPIRE_BITE_HEAL);
           // 傷害特效
           state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 30, alpha: 1.0, color: '#ff0055', t: 0.3 });
@@ -1548,7 +1635,7 @@ function update(dt) {
     // 詛咒 dot 傷害（捌）
     if (b.curseDotTimer > 0) {
       b.curseDotTimer -= dt;
-      b.hp = Math.max(0, b.hp - b.curseDotDmg * dt);
+      dealDamage(b, b.curseDotDmg * dt);
       if (b.curseDotTimer <= 0) { b.curseDotTimer = 0; b.curseDotDmg = 0; }
       // 紅色詛咒粒子
       if (Math.random() < 0.3) state.hitFlashes.push({ x: b.x+randBetween(-15,15), y: b.y+randBetween(-15,15), r: 8, alpha: 0.7, color: '#c0392b', t: 0.4 });
@@ -1565,7 +1652,14 @@ function update(dt) {
       const intentionalStop = (b.char.type === 'gunner' && b.gunnerFiring) ||
                               (b.char.type === 'opm' && b.opmPunched) ||
                               (b.char.type === 'cursed' && b.curseDomainActive) ||
-                              (b.char.type === 'vampire' && b.vampireBiting);
+                              (b.char.type === 'vampire' && b.vampireBiting) ||
+                              (b.char.type === 'samurai' && (b.samuraiParrying || b.samuraiShimetsuing)) ||
+                              (b.char.type === 'samurai' && b.samuraiIaidoing);
+      // 居合衝刺：在移動前直接設速度，確保方向正確
+      if (b.char.type === 'samurai' && b.samuraiIaidoing) {
+        b.vx = Math.cos(b.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+        b.vy = Math.sin(b.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+      }
       if (!intentionalStop) {
         const spd = Math.hypot(b.vx, b.vy);
         if (spd < MIN_SPEED && spd > 0) {
@@ -1637,7 +1731,9 @@ function update(dt) {
     // 物理碰撞分離（若都沒被凍結）
     const shouldPhysics = !b0.frozenByVampire && !b1.frozenByVampire &&
       !(b0.char.type==='vampire' && b0.vampireBiting) &&
-      !(b1.char.type==='vampire' && b1.vampireBiting);
+      !(b1.char.type==='vampire' && b1.vampireBiting) &&
+      !(b0.char.type==='samurai' && b0.samuraiIaidoing) &&
+      !(b1.char.type==='samurai' && b1.samuraiIaidoing);
 
     const nx = dx/dist, ny = dy/dist;
     const overlap = RADIUS*2 - dist;
@@ -1685,9 +1781,13 @@ function update(dt) {
         }
       }
     } else {
-      // 強制分開避免穿模
-      b0.x -= nx*overlap/2; b0.y -= ny*overlap/2;
-      b1.x += nx*overlap/2; b1.y += ny*overlap/2;
+      // 強制分開避免穿模（居合衝刺中跳過）
+      const eitherIaido = (b0.char.type==='samurai' && b0.samuraiIaidoing) ||
+                          (b1.char.type==='samurai' && b1.samuraiIaidoing);
+      if (!eitherIaido) {
+        b0.x -= nx*overlap/2; b0.y -= ny*overlap/2;
+        b1.x += nx*overlap/2; b1.y += ny*overlap/2;
+      }
     }
   } else {
     // 球未接觸，無額外處理
@@ -1730,6 +1830,18 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (b.char.type === 'gojo')   { b.gojoTimer = 0; }
       if (b.char.type === 'cursed') { if (b.curseSlashTimer != null) b.curseSlashTimer = Math.min(b.curseSlashTimer + dt, CURSE_SLASH_INTERVAL); }
       if (b.char.type === 'yi')     { if (b.yiBlackTimer    != null) b.yiBlackTimer    = Math.min(b.yiBlackTimer    + dt, YI_BLACK_INTERVAL); }
+      // 武士：中斷招架、取消居合
+      if (b.char.type === 'samurai') {
+        if (b.samuraiParrying) {
+          b.samuraiParrying = false;
+          b.samuraiParryTimer = SAMURAI_PARRY_INTERVAL;
+        }
+        if (b.samuraiIaidoing) {
+          b.samuraiIaidoing = false;
+          b.samuraiIaidoHit = false;
+          b.vx = 0; b.vy = 0;
+        }
+      }
     }
     if (b.char.type === 'chef') {
         if (!b.knifeRecalling && b.knives > 0 && b.attackTimer >= b.attackInterval) {
@@ -1802,7 +1914,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           owner: b.player
         });
         // 立即傷害
-        enemy.hp = Math.max(0, enemy.hp - CURSE_SLASH_DAMAGE);
+        dealDamage(enemy, CURSE_SLASH_DAMAGE);
         enemy.curseSlowTimer = CURSE_SLASH_SLOW_DUR;
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 35, alpha: 1.0, color: '#c0392b', t: 0.4 });
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 20, alpha: 0.8, color: '#ffffff', t: 0.25 });
@@ -1847,7 +1959,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           const ddx = enemy.x - b.x, ddy = enemy.y - b.y;
           const dd = Math.sqrt(ddx*ddx + ddy*ddy);
           if (dd <= CURSE_DOMAIN_RADIUS) {
-            enemy.hp = Math.max(0, enemy.hp - CURSE_DOMAIN_FRAMEDMG);
+            dealDamage(enemy, CURSE_DOMAIN_FRAMEDMG);
             // 伏魔持續斬擊特效
             if (Math.random() < 0.12) {
               const sAngle = Math.random() * Math.PI * 2;
@@ -1944,11 +2056,10 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (ed < ball.r+RADIUS) {
         if (ball.type==='purple') {
           // 穿透飛行，經過時每幀扣血
-          enemy.hp = Math.max(0, enemy.hp - ball.frameDmg);
+          dealDamage(enemy, ball.frameDmg);
           state.hitFlashes.push({ x:enemy.x, y:enemy.y, r:22, alpha:0.9, color:'#bf00ff', t:0.12 });
         } else {
-          enemy.hp = Math.max(0, enemy.hp-ball.damage);
-          state.hitFlashes.push({ x:ball.x, y:ball.y, r:25, alpha:1,
+          dealDamage(enemy, ball.damage);       state.hitFlashes.push({ x:ball.x, y:ball.y, r:25, alpha:1,
             color: ball.type==='blue'?'#00cfff':'#ff4444', t:0.3 });
           playHitSound('knife');
           ball.active=false;
@@ -1979,7 +2090,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           spawnFlash: 0.4
         });
         b.yiBlackCount++;
-        enemy.hp = Math.max(0, enemy.hp - YI_BLACK_DAMAGE);
+        dealDamage(enemy, YI_BLACK_DAMAGE);
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 22, alpha: 0.9, color: '#888888', t: 0.35 });
         playHitSound('trap_place');
 
@@ -2059,7 +2170,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           if (ball.player === s.owner) continue;
           const ed = Math.sqrt((ball.x - s.x) ** 2 + (ball.y - s.y) ** 2);
           if (ed < YI_WHITE_EXPLODE_RAD + RADIUS) {
-            ball.hp = Math.max(0, ball.hp - YI_WHITE_DAMAGE / 4); // 4顆各算1/4，合計200
+            dealDamage(ball, YI_WHITE_DAMAGE / 4); // 4顆各算1/4，合計200
             state.hitFlashes.push({ x: s.x, y: s.y, r: 35, alpha: 1.0, color: '#ffeeaa', t: 0.5 });
           }
         }
@@ -2182,7 +2293,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           b.trapChainTargetTrap = null;
           // 到達尖刺立即觸發傷害
           if (pd < RADIUS + 16 && !trap.hitCooldown) {
-            enemy.hp = Math.max(0, enemy.hp - TRAP_DAMAGE);
+            dealDamage(enemy, TRAP_DAMAGE);
             enemy.trapDotTimer = TRAP_DOT_DURATION;
             enemy.trapDotDps = TRAP_DOT_DPS;
             trap.hitCooldown = TRAP_HIT_COOLDOWN;
@@ -2204,7 +2315,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (ball.player === trap.owner) continue;
       const dd = Math.hypot(ball.x - trap.x, ball.y - trap.y);
       if (dd < RADIUS + 10 && (!trap.hitCooldown || trap.hitCooldown <= 0)) {
-        ball.hp = Math.max(0, ball.hp - TRAP_DAMAGE);
+        dealDamage(ball, TRAP_DAMAGE);
         ball.trapDotTimer = TRAP_DOT_DURATION;
         ball.trapDotDps = TRAP_DOT_DPS;
         trap.hitCooldown = TRAP_HIT_COOLDOWN;
@@ -2218,7 +2329,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
   for (const b of state.balls) {
     if (b.trapDotTimer > 0) {
       b.trapDotTimer -= dt;
-      b.hp = Math.max(0, b.hp - b.trapDotDps * dt);
+      dealDamage(b, b.trapDotDps * dt);
       if (b.trapDotTimer <= 0) { b.trapDotTimer = 0; b.trapDotDps = 0; }
       if (Math.random() < 0.25) {
         state.hitFlashes.push({ x: b.x + randBetween(-12,12), y: b.y + randBetween(-12,12), r: 7, alpha: 0.7, color: '#2ecc71', t: 0.35 });
@@ -2247,6 +2358,196 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     }
   }
 
+  // ── 末代武士邏輯 ──
+  for (let bi = 0; bi < state.balls.length; bi++) {
+    const b = state.balls[bi];
+    const enemy = state.balls[1 - bi];
+    if (b.char.type !== 'samurai') continue;
+
+    // 居合衝刺中（穿透）
+    if (b.samuraiIaidoing) {
+      b.samuraiIaidoTimer -= dt;
+      b.vx = Math.cos(b.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+      b.vy = Math.sin(b.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+      // 穿透：只傷害一次，但球繼續衝刺不停
+      const id = Math.hypot(b.x - enemy.x, b.y - enemy.y);
+      if (id < RADIUS * 2 + 5 && !b.samuraiIaidoHit) {
+        b.samuraiIaidoHit = true;
+        enemy.hp = Math.max(0, enemy.hp - SAMURAI_IAIDO_DAMAGE);
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 40, alpha: 1.2, color: '#d4af37', t: 0.4 });
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 22, alpha: 0.9, color: '#ffffff', t: 0.25 });
+        playHitSound('samurai_iaido');
+        for (let si = 0; si < 2; si++) {
+          state.slashMarks.push({
+            x: enemy.x + (si === 0 ? -8 : 8), y: enemy.y,
+            angle: b.samuraiIaidoAngle + (si === 0 ? -0.15 : 0.15),
+            life: 0.5, maxLife: 0.5,
+            hit: false, owner: b.player, style: 'iaido'
+          });
+        }
+      }
+      if (b.samuraiIaidoTimer <= 0) {
+        b.samuraiIaidoing = false;
+        b.samuraiIaidoHit = false;
+        const ang = Math.random() * Math.PI * 2;
+        b.vx = Math.cos(ang) * BASE_SPEED;
+        b.vy = Math.sin(ang) * BASE_SPEED;
+      }
+      continue;
+    }
+
+    // 識滅斬進行中：逐刀射出
+    if (b.samuraiShimetsuing) {
+      // 由 samuraiShimetsuSlashes 陣列驅動，每個項目有 delay
+      let allDone = true;
+      for (const slash of b.samuraiShimetsuSlashes) {
+        if (!slash.fired) {
+          slash.delay -= dt;
+          if (slash.delay <= 0) {
+            slash.fired = true;
+            // 射出識滅斬斬波（作為特殊投射物）
+            state.projectiles.push({
+              x: b.x, y: b.y,
+              vx: Math.cos(slash.angle) * 620,
+              vy: Math.sin(slash.angle) * 620,
+              type: 'shimetsu', owner: b.player, color: b.char.color,
+              damage: SAMURAI_SHIMETSU_DAMAGE, r: 12, active: true,
+              angle: slash.angle, hitTargets: new Set()
+            });
+            state.slashMarks.push({
+              x: b.x, y: b.y,
+              angle: slash.angle,
+              life: 0.45, maxLife: 0.45,
+              hit: false, owner: b.player, style: 'shimetsu'
+            });
+            playHitSound('samurai_iaido');
+          } else {
+            allDone = false;
+          }
+        }
+      }
+      // 全部發出後解除識滅斬
+      const anyUnfired = b.samuraiShimetsuSlashes.some(s => !s.fired);
+      if (!anyUnfired) {
+        b.samuraiShimetsuing = false;
+        b.samuraiShimetsuSlashes = [];
+        playHitSound('samurai_shimetsu');
+        const ang = Math.random() * Math.PI * 2;
+        b.vx = Math.cos(ang) * BASE_SPEED;
+        b.vy = Math.sin(ang) * BASE_SPEED;
+      }
+    }
+
+    // 招架冷卻計時
+    if (!b.samuraiParrying) {
+      b.samuraiParryTimer -= dt;
+      if (b.samuraiParryTimer <= 0) {
+        // 進入招架
+        b.samuraiParrying = true;
+        b.samuraiParryElapsed = 0;
+        b.samuraiParryHit = false;
+        b.vx = 0; b.vy = 0;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: RADIUS + 18, alpha: 1.0, color: '#d4af37', t: 0.5 });
+        playHitSound('samurai_parry');
+      }
+    } else {
+      // 招架狀態中
+      b.samuraiParryElapsed += dt;
+      b.vx = 0; b.vy = 0; // 招架中無法移動
+
+      // 招架時間到
+      if (b.samuraiParryElapsed >= SAMURAI_PARRY_DURATION) {
+        b.samuraiParrying = false;
+        b.samuraiParryTimer = SAMURAI_PARRY_INTERVAL;
+        if (!b.samuraiParryHit) {
+          // 時間到且沒碰球 → 發動居合或識滅斬
+          if (b.samuraiNextIsShimetsu) {
+            b.samuraiNextIsShimetsu = false;
+            b.samuraiIaidoCount = 0;
+            b.samuraiShimetsuing = true;
+            b.samuraiShimetsuSlashes = [];
+            const baseAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+            const spread = Math.PI / 5; // ±36° 扇形
+            for (let si = 0; si < SAMURAI_SHIMETSU_COUNT; si++) {
+              const a = baseAngle + (si - (SAMURAI_SHIMETSU_COUNT-1)/2) * (spread / (SAMURAI_SHIMETSU_COUNT-1));
+              b.samuraiShimetsuSlashes.push({ angle: a, delay: si * 0.06, fired: false });
+            }
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 55, alpha: 1.2, color: '#ffd700', t: 0.6 });
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1.0, color: '#ffffff', t: 0.35 });
+          } else {
+            b.samuraiIaidoCount++;
+            if (b.samuraiIaidoCount >= SAMURAI_IAIDO_MAX) {
+              b.samuraiNextIsShimetsu = true;
+              b.samuraiIaidoCount = 0;
+            }
+            b.samuraiIaidoing = true;
+            b.samuraiIaidoTimer = SAMURAI_IAIDO_DURATION;
+            b.samuraiIaidoHit = false;
+            b.samuraiIaidoAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+            b.vx = Math.cos(b.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+            b.vy = Math.sin(b.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+            b.x += b.vx * dt;
+            b.y += b.vy * dt;
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 35, alpha: 1.0, color: '#d4af37', t: 0.35 });
+          }
+        } else {
+          // 有效招架（碰球或反彈）→ 恢復正常移動
+          const ang = Math.random() * Math.PI * 2;
+          b.vx = Math.cos(ang) * BASE_SPEED;
+          b.vy = Math.sin(ang) * BASE_SPEED;
+        }
+      }
+    }
+  }
+
+  // ── 末代武士：招架中碰球 → 觸發居合 ──
+  {
+    const samurai = state.balls.find(b => b.char.type === 'samurai' && b.samuraiParrying);
+    if (samurai) {
+      const enemy = state.balls.find(b => b !== samurai);
+      if (enemy) {
+        const sd = Math.hypot(enemy.x - samurai.x, enemy.y - samurai.y);
+        if (sd < RADIUS * 2 + 2) {
+          // 碰到敵人 → 立刻結束招架，觸發居合
+          samurai.samuraiParrying = false;
+          samurai.samuraiParryHit = true;
+          samurai.samuraiParryTimer = SAMURAI_PARRY_INTERVAL;
+          // 觸發居合或識滅斬
+          if (samurai.samuraiNextIsShimetsu) {
+            samurai.samuraiNextIsShimetsu = false;
+            samurai.samuraiIaidoCount = 0;
+            samurai.samuraiShimetsuing = true;
+            samurai.samuraiShimetsuSlashes = [];
+            const baseAngle = Math.atan2(enemy.y - samurai.y, enemy.x - samurai.x);
+            const spread = Math.PI / 5; // ±36° 扇形
+            for (let si = 0; si < SAMURAI_SHIMETSU_COUNT; si++) {
+              const a = baseAngle + (si - (SAMURAI_SHIMETSU_COUNT-1)/2) * (spread / (SAMURAI_SHIMETSU_COUNT-1));
+              samurai.samuraiShimetsuSlashes.push({ angle: a, delay: si * 0.06, fired: false });
+            }
+            state.hitFlashes.push({ x: samurai.x, y: samurai.y, r: 55, alpha: 1.2, color: '#ffd700', t: 0.6 });
+            state.hitFlashes.push({ x: samurai.x, y: samurai.y, r: 30, alpha: 1.0, color: '#ffffff', t: 0.35 });
+          } else {
+            samurai.samuraiIaidoCount++;
+            if (samurai.samuraiIaidoCount >= SAMURAI_IAIDO_MAX) {
+              samurai.samuraiNextIsShimetsu = true;
+              samurai.samuraiIaidoCount = 0;
+            }
+            samurai.samuraiIaidoing = true;
+            samurai.samuraiIaidoTimer = SAMURAI_IAIDO_DURATION;
+            samurai.samuraiIaidoHit = false;
+            samurai.samuraiIaidoAngle = Math.atan2(enemy.y - samurai.y, enemy.x - samurai.x);
+            // 立刻設速度並移動，不等下一幀
+            samurai.vx = Math.cos(samurai.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+            samurai.vy = Math.sin(samurai.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
+            samurai.x += samurai.vx * dt;
+            samurai.y += samurai.vy * dt;
+            state.hitFlashes.push({ x: samurai.x, y: samurai.y, r: 35, alpha: 1.0, color: '#d4af37', t: 0.35 });
+          }
+        }
+      }
+    }
+  }
+
   // 投射物更新
   for (let i = state.projectiles.length-1; i >= 0; i--) {
     const p = state.projectiles[i];
@@ -2254,20 +2555,38 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     p.angle = Math.atan2(p.vy, p.vx);
     let removed = false;
     for (let bi = 0; bi < state.balls.length; bi++) {
-      if (state.balls[bi].player === p.owner) continue;
+      // 未反彈：跳過己方；已反彈：跳過反彈者（武士），打原始 owner
+      const skipPlayer = p.reflected ? p.reflectedBy : p.owner;
+      if (state.balls[bi].player === skipPlayer) continue;
       const b = state.balls[bi];
       const pd = Math.sqrt((p.x-b.x)**2 + (p.y-b.y)**2);
       if (pd < RADIUS+10) {
+        // 末代武士招架反彈
+        if (b.char.type === 'samurai' && b.samuraiParrying &&
+            (p.type === 'knife' || p.type === 'bottle' || p.type === 'bullet')) {
+          // 反彈：方向反轉，用 reflected flag 標記；保留 owner 讓廚師仍可回收
+          const reflectDmg = (p.damage || 80) * SAMURAI_PARRY_REFLECT_MUL;
+          p.reflected = true;          // 標記為已反彈（傷害判斷改用此 flag）
+          p.reflectedBy = b.player;    // 反彈者（武士）的 player
+          p.vx = -p.vx; p.vy = -p.vy;
+          p.damage = reflectDmg;
+          if (p.hitTargets) p.hitTargets.clear(); // 讓反彈刀能再度命中原廚師
+          b.samuraiParryHit = true;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1.2, color: '#d4af37', t: 0.35 });
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 18, alpha: 0.9, color: '#ffffff', t: 0.2 });
+          playHitSound('samurai_parry');
+          continue; // 繼續飛
+        }
         if (p.type === 'knife') {
           if (!p.hitTargets) p.hitTargets = new Set();
           if (!p.hitTargets.has(b.player)) {
             p.hitTargets.add(b.player);
-            b.hp = Math.max(0, b.hp - p.damage);
+            dealDamage(b, p.damage);
             state.hitFlashes.push({ x:b.x, y:b.y, r:35, alpha:1, color:'#ffcc00', t:0.35 });
             playHitSound('knife');
           }
         } else if (p.type === 'bullet') {
-          b.hp = Math.max(0, b.hp - p.damage);
+          dealDamage(b, p.damage);
           const blen = Math.hypot(p.vx, p.vy) || 1;
           b.vx += (p.vx / blen) * GUNNER_BULLET_KNOCKBACK;
           b.vy += (p.vy / blen) * GUNNER_BULLET_KNOCKBACK;
@@ -2280,7 +2599,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
             if (target.player === p.owner) continue;
             const fd = Math.hypot(p.x - target.x, p.y - target.y);
             if (fd < GUNNER_FLASH_RADIUS) {
-              target.hp = Math.max(0, target.hp - p.damage);
+              dealDamage(target, p.damage);
               target.gunnerStunTimer = GUNNER_FLASH_STUN_DUR;
             }
           }
@@ -2289,8 +2608,17 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           playHitSound('opm');
           state.projectiles.splice(i, 1);
           removed = true; break;
+        } else if (p.type === 'shimetsu') {
+          // 識滅斬：穿透
+          if (!p.hitTargets) p.hitTargets = new Set();
+          if (!p.hitTargets.has(b.player)) {
+            p.hitTargets.add(b.player);
+            dealDamage(b, p.damage);
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 32, alpha: 1.1, color: '#ffd700', t: 0.35 });
+            playHitSound('knife');
+          }
         } else {
-          b.hp = Math.max(0, b.hp - p.damage);
+          dealDamage(b, p.damage);
           state.hitFlashes.push({ x:b.x, y:b.y, r:35, alpha:1, color:'#ffcc00', t:0.35 });
           playHitSound('bottle');
           state.projectiles.splice(i, 1);
@@ -2308,6 +2636,9 @@ for (let bi = 0; bi < state.balls.length; bi++) {
         p.x = Math.max(WALL, Math.min(W-WALL, p.x));
         p.y = Math.max(WALL, Math.min(H-WALL, p.y));
         state.wallKnives.push({ x:p.x, y:p.y, angle:p.angle, owner:p.owner, color:p.color });
+        state.projectiles.splice(i, 1);
+      } else if (p.type === 'shimetsu') {
+        // 識滅斬穿牆消失
         state.projectiles.splice(i, 1);
       } else { state.projectiles.splice(i, 1); }
     }
@@ -2417,6 +2748,27 @@ function render() {
       ctx.lineWidth = 1;
       ctx.shadowBlur = 0;
       ctx.beginPath(); ctx.moveTo(-len*0.1, 0); ctx.lineTo(len*0.85, 0); ctx.stroke();
+    } else if (s.style === 'iaido') {
+      // 居合：細長金色雙斬線
+      const len = 70;
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 2.5 - prog * 1.5;
+      ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 14 * prog;
+      ctx.beginPath(); ctx.moveTo(-len*0.15, -3); ctx.lineTo(len, -3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-len*0.1, 3); ctx.lineTo(len*0.9, 3); ctx.stroke();
+      ctx.globalAlpha = prog * 0.5;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 0.8; ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.moveTo(0, -2); ctx.lineTo(len * 0.85, -2); ctx.stroke();
+    } else if (s.style === 'shimetsu') {
+      // 識滅斬：長且炙熱的金橙色斬波
+      const len = 200;
+      ctx.strokeStyle = '#ff8800';
+      ctx.lineWidth = 3.5 - prog * 2;
+      ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 22 * prog;
+      ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(len, 0); ctx.stroke();
+      ctx.globalAlpha = prog * 0.65;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(len * 0.9, 0); ctx.stroke();
     } else {
       // 解：原始斜斬痕
       const len = 55;
@@ -2638,6 +2990,14 @@ function render() {
     } else if (p.type === 'flashbang') {
       ctx.font = '16px serif';
       ctx.fillText('💣', 0, 0);
+    } else if (p.type === 'shimetsu') {
+      // 識滅斬斬波：金橙發光條
+      ctx.filter = 'none';
+      ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 16;
+      ctx.fillStyle = '#ff8800';
+      ctx.fillRect(-14, -3, 28, 6);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-10, -1, 20, 2);
     } else {
       ctx.font = `${p.type==='knife'?24:16}px serif`;
       ctx.fillText(p.type==='knife'?'🔪':'🍾', 0, 0);
@@ -2795,6 +3155,47 @@ function render() {
       ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
     }
 
+    // 末代武士：招架光盾
+    if (b.char.type === 'samurai' && b.samuraiParrying) {
+      const parryProg = b.samuraiParryElapsed / SAMURAI_PARRY_DURATION;
+      const pulse = 0.6 + 0.4 * Math.sin(elapsed * 18);
+      const isShimetsuNext = b.samuraiNextIsShimetsu;
+      const shieldColor = isShimetsuNext ? '#ff4400' : '#d4af37';
+      // 外光暈
+      const shieldGrad = ctx.createRadialGradient(b.x, b.y, RADIUS, b.x, b.y, RADIUS + 22);
+      shieldGrad.addColorStop(0, `${shieldColor}88`);
+      shieldGrad.addColorStop(1, `${shieldColor}00`);
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 22, 0, Math.PI * 2);
+      ctx.fillStyle = shieldGrad; ctx.fill();
+      // 招架環（消耗進度）
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, RADIUS + 10, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - parryProg));
+      ctx.strokeStyle = `rgba(${isShimetsuNext?'255,68,0':'212,175,55'},${pulse})`;
+      ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke();
+      // 招架文字
+      ctx.save(); ctx.translate(b.x, b.y - RADIUS - 16);
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = `rgba(${isShimetsuNext?'255,100,50':'255,220,80'},${0.8 + 0.2 * Math.sin(elapsed * 20)})`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(isShimetsuNext ? '🔥 識滅斬！' : '🛡️ 招架中', 0, 0);
+      ctx.restore();
+    }
+
+    // 末代武士：居合衝刺殘影
+    if (b.char.type === 'samurai' && b.samuraiIaidoing) {
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.shadowColor = '#d4af37'; ctx.shadowBlur = 20;
+      ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 3;
+      const iLen = 50;
+      const iAng = b.samuraiIaidoAngle + Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x + Math.cos(iAng) * iLen, b.y + Math.sin(iAng) * iLen);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     // 一般光暈
     const glow = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,RADIUS*2.5);
     glow.addColorStop(0, b.char.color+'40'); glow.addColorStop(1,'transparent');
@@ -2853,6 +3254,17 @@ function render() {
     } else if (b.char.type === 'gunner') {
       atFrac = b.gunnerFiring ? (b.gunnerAmmoFired / GUNNER_MAG_SIZE) : (b.gunnerAmmo / GUNNER_MAG_SIZE);
       barColor = b.gunnerFiring ? '#ff6600' : b.char.color;
+    } else if (b.char.type === 'samurai') {
+      if (b.samuraiParrying) {
+        atFrac = Math.min(b.samuraiParryElapsed / SAMURAI_PARRY_DURATION, 1);
+        barColor = b.samuraiNextIsShimetsu ? '#ff4400' : '#d4af37';
+      } else if (b.samuraiIaidoing) {
+        atFrac = 1 - (b.samuraiIaidoTimer / SAMURAI_IAIDO_DURATION);
+        barColor = '#ffd700';
+      } else {
+        atFrac = 1 - Math.min(b.samuraiParryTimer / SAMURAI_PARRY_INTERVAL, 1);
+        barColor = b.samuraiNextIsShimetsu ? '#ff6600' : b.char.color;
+      }
     } else {
       atFrac = Math.min(1, b.attackTimer/b.attackInterval);
       barColor = (b.char.type!=='chef'||b.knives>0) ? b.char.color : '#555';
@@ -2897,6 +3309,20 @@ function render() {
     ctx.save(); ctx.translate(b.x,b.y-RADIUS-12);
     ctx.font = '10px sans-serif'; ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.textAlign='center';
     ctx.fillText(Math.sin(elapsed*3)>0?'↻':'↺',0,0); ctx.restore();
+  }
+
+  // 末代武士：識滅斬計數顯示
+  for (const b of state.balls) {
+    if (b.char.type !== 'samurai') continue;
+    if (b.samuraiParrying || b.samuraiIaidoing || b.samuraiShimetsuing) continue;
+    const count = b.samuraiIaidoCount || 0;
+    if (count > 0 || b.samuraiNextIsShimetsu) {
+      ctx.save(); ctx.translate(b.x, b.y - RADIUS - 14);
+      ctx.font = '10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = b.samuraiNextIsShimetsu ? 'rgba(255,100,50,0.9)' : 'rgba(212,175,55,0.7)';
+      ctx.fillText(b.samuraiNextIsShimetsu ? '🔥 識滅斬蓄勢' : `⚔️${count}/${SAMURAI_IAIDO_MAX}`, 0, 0);
+      ctx.restore();
+    }
   }
 
   // 一拳超人倒數環
@@ -3062,6 +3488,16 @@ function updateHUD() {
       if (b.gunnerStunTimer > 0) return `💫 暈眩 ${b.gunnerStunTimer.toFixed(1)}s`;
       const flashLeft = Math.max(0, b.gunnerFlashTimer).toFixed(1);
       return `🔫 ${b.gunnerAmmo}/${GUNNER_MAG_SIZE}彈 💣${flashLeft}s`;
+    } else if (b.char.type === 'samurai') {
+      if (b.samuraiIaidoing) return `⚡ 居合！`;
+      if (b.samuraiShimetsuing) return `💥 識滅斬！！`;
+      if (b.samuraiParrying) {
+        const left = Math.max(0, SAMURAI_PARRY_DURATION - b.samuraiParryElapsed).toFixed(1);
+        return `🛡️ 招架 ${left}s ${b.samuraiNextIsShimetsu?'🔥':''}`;
+      }
+      const cdLeft = Math.max(0, b.samuraiParryTimer).toFixed(1);
+      const iCount = b.samuraiIaidoCount || 0;
+      return `⚔️ 招架:${cdLeft}s 居合${iCount}/${SAMURAI_IAIDO_MAX}${b.samuraiNextIsShimetsu?'🔥':''}`;
     } else {
       return `🍺 轉向: ${b.drunkTimer ? b.drunkTimer.toFixed(1) : '-'}s`;
     }
