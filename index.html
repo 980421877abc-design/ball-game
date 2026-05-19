@@ -868,7 +868,7 @@ const CHARACTERS = [
   {
   id: 'trapper', emoji: '🪤', weapon: '⛓️', name: '陷阱大師',
   desc: '詭計多端的戰術家，碰到邊界時放置尖刺陷阱。敵人觸碰尖刺時將會中毒及受傷。能使一個尖刺射出鎖鏈，強制將敵人拉向它！',
-  stats: ['尖刺 55+毒45/s', '鎖鏈 3s', '刺上限6'],
+  stats: ['尖刺 50+毒45/s', '鎖鏈 3s', '刺上限6'],
   color: '#27ae60', glowColor: 'rgba(39,174,96,0.6)', type: 'trapper'
   },
   {
@@ -880,7 +880,7 @@ const CHARACTERS = [
   {
   id: 'gunner', emoji: '🔫', weapon: '💥', name: '無名槍手',
   desc: '沉默的槍手。沒人知道他的名字，每次撞牆裝彈，累積足夠子彈後停下來向敵人快速連射。定時投擲閃光彈，造成範圍傷害並暫時封鎖對手攻擊。',
-  stats: ['裝彈上限 6', '子彈傷害 40', '閃光彈 8s', '閃光彈傷害 80'],
+  stats: ['裝彈上限 6', '子彈傷害 45', '閃光彈 8s', '閃光彈傷害 80'],
   color: '#b8860b', glowColor: 'rgba(184,134,11,0.6)', type: 'gunner'
   }
 ];
@@ -1124,7 +1124,7 @@ const CURSE_DOMAIN_FRAMEDMG   = 5;     // 伏魔御廚子：每幀傷害
 const CURSE_DOMAIN_FREEZE_DUR = 2.0;   // 伏魔御廚子：原地持續時間（秒）
 
 // 陷阱大師常數
-const TRAP_DAMAGE          = 55;     // 尖刺碰撞傷害
+const TRAP_DAMAGE          = 50;     // 尖刺碰撞傷害
 const TRAP_DOT_DPS         = 40;     // 尖刺 dot 每秒傷害
 const TRAP_DOT_DURATION    = 1.0;    // 尖刺 dot 持續時間（秒）
 const TRAP_MAX_COUNT       = 6;      // 最多同時存在幾個尖刺
@@ -1150,10 +1150,10 @@ const YI_ARENA_DURATION     = 10.0;   // 小競技場持續時間（秒）
 const GUNNER_MAG_SIZE          = 6;     // 彈夾上限（撞牆幾次後開始連射）
 const GUNNER_MAG_count          = 2;    //撞牆裝彈數
 
-const GUNNER_BULLET_DAMAGE     = 40;    // 每顆子彈傷害
-const GUNNER_BULLET_SPEED      = 600;   // 子彈飛行速度（px/s）
+const GUNNER_BULLET_DAMAGE     = 45;    // 每顆子彈傷害
+const GUNNER_BULLET_SPEED      = 700;   // 子彈飛行速度（px/s）
 const GUNNER_BULLET_INTERVAL   = 0.09;   // 連射間隔（秒）
-const GUNNER_BULLET_KNOCKBACK  = 200;   // 子彈擊退力道（px/s）
+const GUNNER_BULLET_KNOCKBACK  = 100;   // 子彈擊退力道（px/s）
 const GUNNER_STOP_DUR          = 0.08;  // 每發子彈射出前短暫停頓（秒，視覺用）
 const GUNNER_FLASH_INTERVAL    = 8.0;   // 閃光彈冷卻（秒）
 const GUNNER_FLASH_DAMAGE      = 80;   // 閃光彈傷害
@@ -1311,7 +1311,7 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       makeBall(sx, sy, Math.cos(a1)*BASE_SPEED, Math.sin(a1)*BASE_SPEED, ch1, 1),
       makeBall(ex, ey, Math.cos(a2)*BASE_SPEED, Math.sin(a2)*BASE_SPEED, ch2, 2)
     ],
-    projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], elapsed: 0
+    projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, elapsed: 0
   };
 
   updateHUD();
@@ -1334,12 +1334,52 @@ function tick(now) {
   elapsed += dt;
   state.elapsed = elapsed;
   update(dt);
+
+  // 無量空處特效更新（在 update 之外，避免被 early return 跳過）
+  if (state.gojoKillFX) {
+    const fx = state.gojoKillFX;
+    fx.life -= dt;
+    for (const l of fx.lines) l.dist += l.speed * dt;
+    if (fx.life <= 0) {
+      state.gojoKillFX = null;
+      cancelAnimationFrame(gameLoop);
+      gameLoop = null;
+      const dead = state.balls.filter(b => b.hp <= 0);
+      setTimeout(() => showResult(dead), 100);
+      return;
+    }
+  }
+
   render();
   updateHUD();
   const dead = state.balls.filter(b => b.hp <= 0);
   if (dead.length > 0) {
-    // 若有 opmFX 特效還在播，延後結束讓特效跑完
-    if (state.opmFX.length > 0) {
+    // Gojo 擊殺：觸發無量空處
+    if (!state.gojoKillFX) {
+      const killer = state.balls.find(b => b.hp > 0 && b.char.type === 'gojo');
+      if (killer) {
+        const lines = [];
+        for (let i = 0; i < 80; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          lines.push({
+            angle, dist: 20 + Math.random() * 60,
+            speed: 180 + Math.random() * 400,
+            len: 30 + Math.random() * 120,
+            alpha: 0.4 + Math.random() * 0.6,
+            width: 0.5 + Math.random() * 1.5
+          });
+        }
+        state.gojoKillFX = { life: 3.2, maxLife: 3.2, lines };
+        // 凍結所有球：停止移動、無敵、停止攻擊
+        for (const b of state.balls) {
+          b.vx = 0; b.vy = 0;
+          b.invincible = true;
+          b.attackTimer = 0;
+        }
+      }
+    }
+    // 若有特效還在播就繼續跑
+    if (state.opmFX.length > 0 || state.gojoKillFX) {
       gameLoop = requestAnimationFrame(tick);
       return;
     }
@@ -1353,6 +1393,9 @@ function tick(now) {
 
 function update(dt) {
   const [b0, b1] = state.balls;
+
+  // 無量空處播放中：只更新特效，跳過所有遊戲邏輯
+  if (state.gojoKillFX) return;
 
   // ── 蝙蝠粒子更新 ──
   for (let i = state.batParticles.length - 1; i >= 0; i--) {
@@ -1680,8 +1723,14 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi], enemy = state.balls[1-bi];
     b.attackTimer += dt;
     if (b.char.type === 'opm' && b.opmCollisionCooldown > 0) b.opmCollisionCooldown -= dt;
-    // 閃光暈眩計時（所有角色）
-    if (b.gunnerStunTimer > 0) { b.gunnerStunTimer -= dt; b.attackTimer = 0; }
+    // 閃光暈眩：凍結攻擊計時 + 各角色術式計時器
+    if (b.gunnerStunTimer > 0) {
+      b.gunnerStunTimer -= dt;
+      b.attackTimer = 0;
+      if (b.char.type === 'gojo')   { b.gojoTimer = 0; }
+      if (b.char.type === 'cursed') { if (b.curseSlashTimer != null) b.curseSlashTimer = Math.min(b.curseSlashTimer + dt, CURSE_SLASH_INTERVAL); }
+      if (b.char.type === 'yi')     { if (b.yiBlackTimer    != null) b.yiBlackTimer    = Math.min(b.yiBlackTimer    + dt, YI_BLACK_INTERVAL); }
+    }
     if (b.char.type === 'chef') {
         if (!b.knifeRecalling && b.knives > 0 && b.attackTimer >= b.attackInterval) {
             b.attackTimer = 0;
@@ -2923,6 +2972,50 @@ function render() {
       ctx.fillText(`👊${timeLeft}s`, 0, 0);
       ctx.restore();
     }
+  }
+
+  // ── 無量空處領域展開 ──
+  if (state.gojoKillFX) {
+    const fx = state.gojoKillFX;
+    const prog = 1 - fx.life / fx.maxLife; // 0→1
+    const cx = W / 2, cy = H / 2;
+
+    // 1. 虛無底色（藍黑漸層，逐漸覆蓋畫面）
+    const bgAlpha = Math.min(prog * 3, 0.92);
+    const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H));
+    bgGrad.addColorStop(0,   `rgba(0,40,80,${bgAlpha})`);
+    bgGrad.addColorStop(0.5, `rgba(0,10,40,${bgAlpha * 0.95})`);
+    bgGrad.addColorStop(1,   `rgba(0,0,10,${bgAlpha})`);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 2. 速度線（從中心向外爆射）
+    ctx.save();
+    ctx.translate(cx, cy);
+    for (const l of fx.lines) {
+      const fadeIn  = Math.min(prog * 5, 1);
+      const fadeOut = fx.life < 0.6 ? fx.life / 0.6 : 1;
+      const a = l.alpha * fadeIn * fadeOut;
+      ctx.save();
+      ctx.rotate(l.angle);
+      ctx.beginPath();
+      ctx.moveTo(l.dist, 0);
+      ctx.lineTo(l.dist + l.len, 0);
+      ctx.strokeStyle = `rgba(100,200,255,${a})`;
+      ctx.lineWidth = l.width;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // 3. 藍色光暈圓圈（中心擴散）
+    const ringR = 40 + prog * 220;
+    const ringA = Math.max(0, 0.6 - prog * 0.5);
+    const rg = ctx.createRadialGradient(cx, cy, ringR * 0.5, cx, cy, ringR);
+    rg.addColorStop(0, `rgba(100,210,255,${ringA})`);
+    rg.addColorStop(1, `rgba(0,80,160,0)`);
+    ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+    ctx.fillStyle = rg; ctx.fill();
   }
 }
 
