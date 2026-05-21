@@ -1456,7 +1456,7 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       makeBall(sx, sy, Math.cos(a1)*BASE_SPEED, Math.sin(a1)*BASE_SPEED, ch1, 1),
       makeBall(ex, ey, Math.cos(a2)*BASE_SPEED, Math.sin(a2)*BASE_SPEED, ch2, 2)
     ],
-    projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, elapsed: 0,
+    projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, curseSliceKillFX: null, elapsed: 0,
     arena: selectedArena,
     stats: {
       1: { totalDmg: 0, maxHit: 0, skillUses: 0 },
@@ -1480,6 +1480,8 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
 
 function randBetween(min, max) { return min + Math.random() * (max - min); }
 function dealDamage(target, dmg, options = {}) {
+  // 無敵狀態（擊殺動畫播放中）不受傷
+  if (target.invincible) return;
   // 一拳超人必殺拳穿透招架減傷（bypassParry flag）
   const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
   const mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
@@ -1501,6 +1503,41 @@ function tick(now) {
   if (state.stats) state.stats.duration = elapsed;
   update(dt);
 
+  // 詛咒橫切特效更新
+  if (state.curseSliceKillFX) {
+    const fx = state.curseSliceKillFX;
+    const dt2 = Math.min((now - lastTime) / 1000, 0.05); // dt already computed above
+    fx.life -= dt;
+    const prog = 1 - fx.life / fx.maxLife;
+    // 上半段
+    fx.topOffY += fx.topVY * dt;
+    fx.topOffX += fx.topVX * dt;
+    fx.topRot  += fx.topRotV * dt;
+    // 上半段加速往下掉（重力）
+    fx.topVY   += 120 * dt;
+    // 下半段
+    fx.botOffY += fx.botVY * dt;
+    fx.botOffX += fx.botVX * dt;
+    fx.botRot  += fx.botRotV * dt;
+    fx.botVY   += 100 * dt;
+    // 粒子
+    for (const p of fx.particles) {
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.vy += 60 * dt;
+      p.life -= dt;
+    }
+    fx.slashAlpha = Math.max(0, 1 - prog * 2.5);
+    fx.flashAlpha = Math.max(0, 1 - prog * 6);
+    if (fx.life <= 0) {
+      state.curseSliceKillFX = null;
+      cancelAnimationFrame(gameLoop);
+      gameLoop = null;
+      const dead2 = state.balls.filter(b => b.hp <= 0);
+      setTimeout(() => showResult(dead2), 100);
+      return;
+    }
+  }
+
   // 無量空處特效更新（在 update 之外，避免被 early return 跳過）
   if (state.gojoKillFX) {
     const fx = state.gojoKillFX;
@@ -1520,6 +1557,49 @@ function tick(now) {
   updateHUD();
   const dead = state.balls.filter(b => b.hp <= 0);
   if (dead.length > 0) {
+    // 詛咒之王擊殺任意對手：觸發橫切動畫
+    if (!state.curseSliceKillFX && !state.gojoKillFX) {
+      const cursedKiller = state.balls.find(b => b.hp > 0 && b.char.type === 'cursed');
+      const anyDead = dead.find(b => b.char.type !== 'cursed');
+      if (cursedKiller && anyDead) {
+        state.curseSliceKillFX = {
+          life: 2.2, maxLife: 2.2,
+          targetX: anyDead.x, targetY: anyDead.y,
+          targetPlayer: anyDead.player,
+          // 上半部往左上飄
+          topOffY: 0, topVY: -80,
+          topOffX: 0, topVX: -30,
+          topRot: 0, topRotV: -1.8,
+          // 下半部往右下掉
+          botOffY: 0, botVY: 90,
+          botOffX: 0, botVX: 20,
+          botRot: 0, botRotV: 1.2,
+          // 斬線特效
+          slashAlpha: 1.0,
+          flashAlpha: 1.0,
+          color: anyDead.char.color,
+          // 血腥粒子
+          particles: Array.from({length: 22}, () => {
+            const ang = Math.random() * Math.PI * 2;
+            const spd = 60 + Math.random() * 180;
+            return { x: anyDead.x, y: anyDead.y,
+              vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd,
+              life: 0.4 + Math.random()*0.6, maxLife: 0.6+Math.random()*0.5,
+              r: 2 + Math.random()*3 };
+          })
+        };
+        for (const b of state.balls) { b.vx = 0; b.vy = 0; b.invincible = true; b.attackTimer = 0; }
+        anyDead.vx = 0; anyDead.vy = 0;
+        gameLoop = requestAnimationFrame(tick);
+        return;
+      }
+    }
+    // 詛咒橫切動畫播放中
+    if (state.curseSliceKillFX) {
+      gameLoop = requestAnimationFrame(tick);
+      return;
+    }
+
     // Gojo 擊殺：觸發無量空處
     if (!state.gojoKillFX) {
       const killer = state.balls.find(b => b.hp > 0 && b.char.type === 'gojo');
@@ -1562,6 +1642,9 @@ function update(dt) {
 
   // 無量空處播放中：只更新特效，跳過所有遊戲邏輯
   if (state.gojoKillFX) return;
+
+  // 詛咒橫切動畫播放中：跳過所有遊戲邏輯
+  if (state.curseSliceKillFX) return;
 
   // ── 場地效果 ──
   if (state.arena === 'lava') {
@@ -3410,6 +3493,8 @@ function render() {
 
   // 繪製球
   for (const b of state.balls) {
+    // 詛咒橫切動畫中：隱藏被擊殺角色本體（由特效自己畫兩半）
+    if (state.curseSliceKillFX && b.player === state.curseSliceKillFX.targetPlayer) continue;
     // 軌跡
     for (let i = 0; i < b.trail.length; i++) {
       const t = b.trail[i], prog = i/b.trail.length;
@@ -3715,6 +3800,146 @@ function render() {
       ctx.fillStyle = `rgba(${ringR2},${ringG2},${ringB2},${0.6 + rage * 0.4})`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(`👊${timeLeft}s`, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // ── 詛咒之王擊殺通用橫切動畫 ──
+  if (state.curseSliceKillFX) {
+    const fx = state.curseSliceKillFX;
+    const prog = 1 - fx.life / fx.maxLife;
+    const cx = fx.targetX, cy = fx.targetY;
+
+    // 1. 全畫面閃白
+    if (fx.flashAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = fx.flashAlpha * 0.65;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
+
+    // 2. 血粒子
+    for (const p of fx.particles) {
+      if (p.life <= 0) continue;
+      const pa = p.life / p.maxLife;
+      ctx.save();
+      ctx.globalAlpha = pa * 0.85;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#c0392b';
+      ctx.shadowColor = '#e74c3c';
+      ctx.shadowBlur = 6;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 3. 橫向斬線（長白線）
+    if (fx.slashAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = fx.slashAlpha;
+      // 外層粗線
+      ctx.beginPath();
+      ctx.moveTo(cx - W * 0.55, cy);
+      ctx.lineTo(cx + W * 0.55, cy);
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 5;
+      ctx.shadowColor = '#e74c3c';
+      ctx.shadowBlur = 22;
+      ctx.stroke();
+      // 白色芯線
+      ctx.globalAlpha = fx.slashAlpha * 0.85;
+      ctx.beginPath();
+      ctx.moveTo(cx - W * 0.5, cy);
+      ctx.lineTo(cx + W * 0.5, cy);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.restore();
+
+      // 斬線起始閃光
+      ctx.save();
+      ctx.globalAlpha = fx.slashAlpha * 0.7;
+      const slashGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 55);
+      slashGrad.addColorStop(0,   'rgba(255,255,255,0.9)');
+      slashGrad.addColorStop(0.3, 'rgba(192,57,43,0.6)');
+      slashGrad.addColorStop(1,   'rgba(192,57,43,0)');
+      ctx.beginPath();
+      ctx.arc(cx, cy, 55, 0, Math.PI * 2);
+      ctx.fillStyle = slashGrad;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 4. 畫上半圓（往左上飄）
+    {
+      const ox = fx.topOffX, oy = fx.topOffY, rot = fx.topRot;
+      const fade = Math.max(0, fx.life / fx.maxLife);
+      ctx.save();
+      ctx.globalAlpha = fade;
+      ctx.translate(cx + ox, cy + oy);
+      ctx.rotate(rot);
+      // 上半球
+      ctx.beginPath();
+      ctx.arc(0, 0, RADIUS, Math.PI, 0);   // 上半弧
+      ctx.closePath();
+      ctx.fillStyle = fx.color;
+      ctx.shadowColor = fx.color;
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      // 切面（紅色）
+      ctx.beginPath();
+      ctx.moveTo(-RADIUS, 0);
+      ctx.lineTo(RADIUS, 0);
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#e74c3c';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 5. 畫下半圓（往右下掉）
+    {
+      const ox = fx.botOffX, oy = fx.botOffY, rot = fx.botRot;
+      const fade = Math.max(0, fx.life / fx.maxLife);
+      ctx.save();
+      ctx.globalAlpha = fade;
+      ctx.translate(cx + ox, cy + oy);
+      ctx.rotate(rot);
+      // 下半球
+      ctx.beginPath();
+      ctx.arc(0, 0, RADIUS, 0, Math.PI);   // 下半弧
+      ctx.closePath();
+      ctx.fillStyle = fx.color;
+      ctx.shadowColor = fx.color;
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      // 切面（紅色）
+      ctx.beginPath();
+      ctx.moveTo(-RADIUS, 0);
+      ctx.lineTo(RADIUS, 0);
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#e74c3c';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 6. ☠️ 文字
+    if (prog > 0.15) {
+      const textAlpha = Math.min((prog - 0.15) * 3, 1) * Math.max(0, fx.life / fx.maxLife);
+      ctx.save();
+      ctx.globalAlpha = textAlpha;
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ff4444';
+      ctx.shadowColor = '#c0392b';
+      ctx.shadowBlur = 12;
+      ctx.fillText('☠️ 斬殺！', cx, cy - RADIUS - 30);
       ctx.restore();
     }
   }
