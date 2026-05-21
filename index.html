@@ -279,6 +279,19 @@
   .start-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(240,200,74,0.5); }
   .start-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+  .arena-select {
+    display: flex; gap: 12px; justify-content: center; margin: 16px 0 8px;
+    flex-wrap: wrap;
+  }
+  .arena-btn {
+    padding: 8px 20px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05); color: #ccc; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.2s; letter-spacing: .05em;
+  }
+  .arena-btn:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+  .arena-btn.active { border-color: #f0c84a; color: #f0c84a; background: rgba(240,200,74,0.12); }
+  .arena-btn.lava.active { border-color: #ff4500; color: #ff6a00; background: rgba(255,69,0,0.15); }
+
   #game-screen {
     display: none;
     flex-direction: column;
@@ -598,6 +611,12 @@
     </div>
   </div>
 
+  <div class="arena-select">
+    <div style="width:100%;text-align:center;font-size:0.75rem;color:#888;letter-spacing:.1em;margin-bottom:4px">⚔️ 選擇場地</div>
+    <button class="arena-btn active" data-arena="normal">🏟️ 標準場地</button>
+    <button class="arena-btn lava" data-arena="lava">🌋 熔岩場地<span style="font-size:0.7rem;opacity:0.7;display:block">每秒灼燒 20 血</span></button>
+  </div>
+
   <button class="start-btn" id="start-btn" disabled>開始對決</button>
 </div>
 
@@ -637,6 +656,10 @@
 <div id="overlay">
   <div class="result-title" id="result-title">─</div>
   <div class="result-sub" id="result-sub">─</div>
+  <div id="result-stats" style="
+    display:flex; gap:16px; justify-content:center; flex-wrap:wrap;
+    margin: 12px 0 18px; width:100%;
+  "></div>
   <button class="replay-btn" id="replay-btn">再戰一局</button>
   <button class="replay-btn" id="back-btn" style="opacity:0.6">角色選擇</button>
 </div>
@@ -935,8 +958,14 @@ const CHARACTERS = [
   {
   id: 'samurai', emoji: '⚔️', weapon: '⚔️', name: '末代武士',
   desc: '最後的武士道傳人。定時進入「招架」狀態，可將飛來的投射物反彈。招架中碰到敵人球，立即反應以居合穿透斬擊。',
-  stats: ['招架 1s/2s', '反彈傷害×1.2', '居合穿透 100', '識滅斬 140×4'],
+  stats: ['招架 1s/2s', '反彈傷害×1.2', '居合穿透 120', '識滅斬 140×4'],
   color: '#d4af37', glowColor: 'rgba(212,175,55,0.6)', type: 'samurai'
+  },
+  {
+  id: 'mage', emoji: '🎩', weapon: '🕊️', name: '魔術師',
+  desc: '神出鬼沒的舞台魔術師。定時丟出鴿子造成傷害，丟出後瞬間消失在場地另一處。每命中3次，下一顆鴿子附帶隨機「魔術技巧」：回血、穿透彈、追蹤或定身！',
+  stats: ['鴿子80傷', '丟出後瞬移', '3命中→魔術技巧', '技巧：回血/穿透/追蹤/定身'],
+  color: '#9b59b6', glowColor: 'rgba(155,89,182,0.6)', type: 'mage'
   }
 ];
 
@@ -1128,6 +1157,11 @@ const W      = canvas.width;
 const H      = canvas.height;
 
 const RADIUS             = 25;
+
+// 場地常數
+const ARENA_LAVA_DMG_PER_SEC = 20;  // 熔岩場每秒傷害
+
+let selectedArena = 'normal'; // 'normal' | 'lava'
 const WALL               = 1;
 const MAX_HP             = 1200;
 const BASE_SPEED         = 180;
@@ -1216,15 +1250,28 @@ const GUNNER_FLASH_RADIUS      = 110;   // 閃光彈爆炸半徑（px）
 const GUNNER_FLASH_STUN_DUR    = 2.5;   // 閃光彈封鎖攻擊持續時間（秒）
 const GUNNER_FLASH_SPEED       = 400;   // 閃光彈飛行速度（px/s）
 
-// 末代武士常數
+// 魔術師常數
+const MAGE_DOVE_INTERVAL       = 1.25;   // 丟鴿子冷卻（秒）
+const MAGE_DOVE_DAMAGE         = 80;    // 鴿子傷害
+const MAGE_DOVE_SPEED          = 350;   // 鴿子飛行速度（px/s）
+const MAGE_TELEPORT_DELAY      = 0.15;  // 丟鴿子後瞬移延遲（秒）
+const MAGE_TRICK_HIT_COUNT     = 3;     // 命中幾次後觸發魔術技巧
+const MAGE_TRICK_HEAL          = 120;   // 技巧1：回血量
+const MAGE_TRICK_BOUNCE_DAMAGE = 75;    // 技巧2：穿透反彈鴿子傷害（反彈後同傷害）
+const MAGE_TRICK_HOMING_TURN   = 300;   // 技巧3：追蹤轉向強度（px/s²，越大轉越快）
+const MAGE_TRICK_FREEZE_DUR    = 1.5;   // 技巧4：定身持續秒數
+
+
+//武士常數
+
 const SAMURAI_PARRY_INTERVAL   = 2.0;  // 招架冷卻（秒）
 const SAMURAI_PARRY_DURATION   = 1.0;   // 招架持續時間（秒）
 const SAMURAI_PARRY_REFLECT_MUL = 1.2;  // 反彈傷害倍率
 const SAMURAI_PARRY_BUMP_DMG   = 100;   // 招架中碰到敵人球的傷害
-const SAMURAI_PARRY_DMG_REDUCE = 0.3;   // 招架期間受傷倍率
-const SAMURAI_IAIDO_DAMAGE     = 100;   // 居合傷害
+const SAMURAI_PARRY_DMG_REDUCE = 0.3;   // 招架期間受傷倍率（30%）
+const SAMURAI_IAIDO_DAMAGE     = 120;   // 居合傷害
 const SAMURAI_IAIDO_SPEED      = 900;   // 居合衝刺速度
-const SAMURAI_IAIDO_DURATION   = 0.28;  // 居合衝刺持續時間（秒）
+const SAMURAI_IAIDO_DURATION   = 0.18;  // 居合衝刺持續時間（秒）
 const SAMURAI_SHIMETSU_DAMAGE  = 140;   // 識滅斬每道傷害
 const SAMURAI_SHIMETSU_COUNT   = 4;     // 識滅斬道數
 const SAMURAI_IAIDO_MAX        = 4;     // 累積幾次居合觸發識滅斬
@@ -1256,6 +1303,15 @@ let state    = {};
 // ──────────────── BUTTONS ────────────────
 document.getElementById('start-btn').addEventListener('click', startGame);
 document.getElementById('replay-btn').addEventListener('click', startGame);
+
+// 場地選擇
+document.querySelectorAll('.arena-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.arena-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedArena = btn.dataset.arena;
+  });
+});
 document.getElementById('back-btn').addEventListener('click', () => {
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('game-screen').style.display = 'none';
@@ -1284,8 +1340,8 @@ function startGame() {
   document.getElementById('select-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
 
-  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a' };
+  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb' };
 
   const ch1base  = CHARACTERS.find(c => c.id === p1Choice);
   const ch2base  = CHARACTERS.find(c => c.id === p2Choice);
@@ -1371,6 +1427,14 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       gunnerFlashTimer: ch.type === 'gunner' ? GUNNER_FLASH_INTERVAL : null, // 閃光彈冷卻
       // 被閃光彈命中的狀態（任何角色）
       gunnerStunTimer: 0,
+      // 魔術師專屬狀態
+      mageDoveTimer:   ch.type === 'mage' ? MAGE_DOVE_INTERVAL : null,
+      mageTeleportTimer: ch.type === 'mage' ? -1 : null,  // >0 時倒數瞬移
+      mageHitCount:    ch.type === 'mage' ? 0 : null,     // 累積命中次數
+      mageTrickReady:  ch.type === 'mage' ? false : null, // 下一顆鴿子附帶技巧
+      mageTrickType:   ch.type === 'mage' ? null : null,  // 技巧類型 1-4
+      // 被魔術師技巧影響（任何角色）
+      mageFreezeTimer: 0,   // 定身剩餘時間
       // 末代武士專屬狀態
       samuraiParryTimer: ch.type === 'samurai' ? SAMURAI_PARRY_INTERVAL : null,  // 招架冷卻
       samuraiParrying: ch.type === 'samurai' ? false : null,                      // 是否招架中
@@ -1393,6 +1457,12 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       makeBall(ex, ey, Math.cos(a2)*BASE_SPEED, Math.sin(a2)*BASE_SPEED, ch2, 2)
     ],
     projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, elapsed: 0,
+    arena: selectedArena,
+    stats: {
+      1: { totalDmg: 0, maxHit: 0, skillUses: 0 },
+      2: { totalDmg: 0, maxHit: 0, skillUses: 0 },
+      duration: 0
+    },
     samuraiParticles: []
   };
 
@@ -1409,10 +1479,18 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
 }
 
 function randBetween(min, max) { return min + Math.random() * (max - min); }
-function dealDamage(target, dmg) {
-  const mul = (target.char && target.char.type === 'samurai' && target.samuraiParrying)
-    ? SAMURAI_PARRY_DMG_REDUCE : 1;
-  target.hp = Math.max(0, target.hp - dmg * mul);
+function dealDamage(target, dmg, options = {}) {
+  // 一拳超人必殺拳穿透招架減傷（bypassParry flag）
+  const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
+  const mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
+  const actual = Math.min(target.hp, dmg * mul);
+  target.hp = Math.max(0, target.hp - actual);
+  // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
+  if (state && state.stats && target.player) {
+    const attackerPlayer = target.player === 1 ? 2 : 1;
+    state.stats[attackerPlayer].totalDmg += actual;
+    if (actual > state.stats[attackerPlayer].maxHit) state.stats[attackerPlayer].maxHit = actual;
+  }
 }
 
 function tick(now) {
@@ -1420,6 +1498,7 @@ function tick(now) {
   lastTime = now;
   elapsed += dt;
   state.elapsed = elapsed;
+  if (state.stats) state.stats.duration = elapsed;
   update(dt);
 
   // 無量空處特效更新（在 update 之外，避免被 early return 跳過）
@@ -1479,10 +1558,17 @@ function tick(now) {
 }
 
 function update(dt) {
-  const [b0, b1] = state.balls;
+  const [b0, b1] = state.balls; // Note: used only for ball-ball collision of opposing first balls
 
   // 無量空處播放中：只更新特效，跳過所有遊戲邏輯
   if (state.gojoKillFX) return;
+
+  // ── 場地效果 ──
+  if (state.arena === 'lava') {
+    for (const b of state.balls) {
+      dealDamage(b, ARENA_LAVA_DMG_PER_SEC * dt);
+    }
+  }
 
   // ── 蝙蝠粒子更新 ──
   for (let i = state.batParticles.length - 1; i >= 0; i--) {
@@ -1645,7 +1731,7 @@ function update(dt) {
     if (b.curseSlowTimer > 0) b.curseSlowTimer -= dt;
 
     // 移動（凍結則不移動）
-    if (!b.frozenByVampire && !(b.char.type === 'vampire' && b.vampireBiting)) {
+    if (!b.frozenByVampire && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0)) {
       const speedMul = b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0;
 
       // 最低速度保證（排除技能主動停止的情況）
@@ -1653,6 +1739,8 @@ function update(dt) {
                               (b.char.type === 'opm' && b.opmPunched) ||
                               (b.char.type === 'cursed' && b.curseDomainActive) ||
                               (b.char.type === 'vampire' && b.vampireBiting) ||
+                              (b.char.type === 'mage' && b.mageTeleportTimer > 0) ||
+                              (b.mageFreezeTimer > 0) ||
                               (b.char.type === 'samurai' && (b.samuraiParrying || b.samuraiShimetsuing)) ||
                               (b.char.type === 'samurai' && b.samuraiIaidoing);
       // 居合衝刺：在移動前直接設速度，確保方向正確
@@ -1698,21 +1786,27 @@ function update(dt) {
     if (hitWall && b.char.type === 'gunner' && !b.gunnerFiring) {
       b.gunnerAmmo = Math.min(GUNNER_MAG_SIZE, b.gunnerAmmo + GUNNER_MAG_count);
       if (b.gunnerAmmo >= GUNNER_MAG_SIZE) {
-        b.gunnerFiring = true;
+        b.gunnerFiring = true; if(state&&state.stats) state.stats[b.player].skillUses++;
         b.gunnerAmmoFired = 0;
         b.gunnerFireTimer = 0;
       }
     }
   }
 
-  // 球碰球
+  // 球碰球（遍歷所有跨玩家配對）
+  for (let _ci = 0; _ci < state.balls.length; _ci++) {
+  for (let _cj = _ci+1; _cj < state.balls.length; _cj++) {
+  const b0 = state.balls[_ci], b1 = state.balls[_cj];
+  if (b0.player === b1.player) continue;
   const dx = b1.x - b0.x, dy = b1.y - b0.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   if (dist < RADIUS*2 && dist > 0) {
     // 暗夜領主：觸發咬擊
     for (let bi = 0; bi < state.balls.length; bi++) {
       const vamp = state.balls[bi];
-      const target = state.balls[1-bi];
+      const vamp_me = state.balls[bi];
+      const target = state.balls.find(x => x.player !== vamp_me.player);
+      if (!target) continue;
       if (vamp.char.type === 'vampire' && !vamp.vampireBiting && !target.frozenByVampire && vamp.vampireBiteCooldown <= 0) {
         // 停止衝刺並開始咬擊
         vamp.vampireDashing = false;
@@ -1733,7 +1827,9 @@ function update(dt) {
       !(b0.char.type==='vampire' && b0.vampireBiting) &&
       !(b1.char.type==='vampire' && b1.vampireBiting) &&
       !(b0.char.type==='samurai' && b0.samuraiIaidoing) &&
-      !(b1.char.type==='samurai' && b1.samuraiIaidoing);
+      !(b1.char.type==='samurai' && b1.samuraiIaidoing) &&
+      !(b0.char.type==='samurai' && b0.samuraiParrying) &&
+      !(b1.char.type==='samurai' && b1.samuraiParrying);
 
     const nx = dx/dist, ny = dy/dist;
     const overlap = RADIUS*2 - dist;
@@ -1760,7 +1856,9 @@ function update(dt) {
       // 詛咒之王：碰觸施加捌（dot）
       for (let bi = 0; bi < state.balls.length; bi++) {
         const curser = state.balls[bi];
-        const target = state.balls[1-bi];
+        const vamp_me = state.balls[bi];
+      const target = state.balls.find(x => x.player !== vamp_me.player);
+      if (!target) continue;
         if (curser.char.type === 'cursed') {
           target.curseDotTimer = CURSE_DOT_DURATION;
           target.curseDotDmg   = CURSE_DOT_DAMAGE;
@@ -1789,9 +1887,9 @@ function update(dt) {
         b1.x += nx*overlap/2; b1.y += ny*overlap/2;
       }
     }
-  } else {
-    // 球未接觸，無額外處理
-  }
+  } // dist < RADIUS*2
+  } // _cj
+  } // _ci
 // 廚師：回收插牆的刀（只要 knifeRecalling 就持續吸）
   for (const b of state.balls) {
     if (b.char.type !== 'chef') continue;
@@ -1820,7 +1918,7 @@ function update(dt) {
   }
   // 攻擊計時
 for (let bi = 0; bi < state.balls.length; bi++) {
-    const b = state.balls[bi], enemy = state.balls[1-bi];
+    const b = state.balls[bi], enemy = state.balls.find(x => x.player !== b.player);
     b.attackTimer += dt;
     if (b.char.type === 'opm' && b.opmCollisionCooldown > 0) b.opmCollisionCooldown -= dt;
     // 閃光暈眩：凍結攻擊計時 + 各角色術式計時器
@@ -1830,6 +1928,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (b.char.type === 'gojo')   { b.gojoTimer = 0; }
       if (b.char.type === 'cursed') { if (b.curseSlashTimer != null) b.curseSlashTimer = Math.min(b.curseSlashTimer + dt, CURSE_SLASH_INTERVAL); }
       if (b.char.type === 'yi')     { if (b.yiBlackTimer    != null) b.yiBlackTimer    = Math.min(b.yiBlackTimer    + dt, YI_BLACK_INTERVAL); }
+      if (b.char.type === 'mage')   { if (b.mageDoveTimer   != null) b.mageDoveTimer   = Math.min(b.mageDoveTimer   + dt, MAGE_DOVE_INTERVAL); }
       // 武士：中斷招架、取消居合
       if (b.char.type === 'samurai') {
         if (b.samuraiParrying) {
@@ -1863,7 +1962,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       b.opmCountdown -= dt;
       if (b.opmCountdown <= 0) {
       b.opmPunched = true;
-      enemy.hp = Math.max(0, enemy.hp - MAX_HP);
+      dealDamage(enemy, MAX_HP, { bypassParry: true });
 
       // ── 出拳特效 ──
       const ex = enemy.x, ey = enemy.y;
@@ -1923,7 +2022,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
 
       // 伏魔御廚子：血量到達門檻後啟動
       if (!b.curseDomainActive && !b.curseDomainUsed && b.hp <= CURSE_DOMAIN_HP) {
-        b.curseDomainActive = true;
+        b.curseDomainActive = true; if(state&&state.stats) state.stats[b.player].skillUses++;
         b.curseDomainFreezeTimer = CURSE_DOMAIN_FREEZE_DUR;
         // 御廚子啟動：大型斬擊爆發
         for (let si = 0; si < 8; si++) {
@@ -1980,8 +2079,9 @@ for (let bi = 0; bi < state.balls.length; bi++) {
 // ── GOJO 術式更新 ──
   for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi];
-    const enemy = state.balls[1-bi];
+    const enemy = state.balls.find(x => x.player !== b.player);
     if (b.char.type !== 'gojo') continue;
+    if (!enemy) continue;
 
     // 血量觸發紫
     if (!b.gojoHasTriggered && b.hp <= GOJO_HP_THRESHOLD)
@@ -2059,7 +2159,8 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           dealDamage(enemy, ball.frameDmg);
           state.hitFlashes.push({ x:enemy.x, y:enemy.y, r:22, alpha:0.9, color:'#bf00ff', t:0.12 });
         } else {
-          dealDamage(enemy, ball.damage);       state.hitFlashes.push({ x:ball.x, y:ball.y, r:25, alpha:1,
+          dealDamage(enemy, ball.damage);
+          state.hitFlashes.push({ x:ball.x, y:ball.y, r:25, alpha:1,
             color: ball.type==='blue'?'#00cfff':'#ff4444', t:0.3 });
           playHitSound('knife');
           ball.active=false;
@@ -2071,7 +2172,8 @@ for (let bi = 0; bi < state.balls.length; bi++) {
   // ── 奕邏輯 ──
   for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi];
-    const enemy = state.balls[1 - bi];
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
     if (b.char.type !== 'yi') continue;
 
     // 落黑棋計時
@@ -2191,7 +2293,8 @@ for (let bi = 0; bi < state.balls.length; bi++) {
   // ── 無名槍手邏輯 ──
   for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi];
-    const enemy = state.balls[1 - bi];
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
     if (b.char.type !== 'gunner') continue;
 
     // 連射邏輯
@@ -2247,7 +2350,8 @@ for (let bi = 0; bi < state.balls.length; bi++) {
   // ── 陷阱大師邏輯 ──
   for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi];
-    const enemy = state.balls[1 - bi];
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
     if (b.char.type !== 'trapper') continue;
 
     // 鎖鏈冷卻計時
@@ -2358,10 +2462,78 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     }
   }
 
+  // ── 魔術師邏輯 ──
+  for (let bi = 0; bi < state.balls.length; bi++) {
+    const b = state.balls[bi];
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if (b.char.type !== 'mage') continue;
+
+    // 鴿子冷卻
+    if (b.mageDoveTimer > 0) b.mageDoveTimer -= dt;
+
+    // 瞬移倒數
+    if (b.mageTeleportTimer > 0) {
+      b.mageTeleportTimer -= dt;
+      if (b.mageTeleportTimer <= 0) {
+        b.mageTeleportTimer = -1;
+        let bx, by, tries = 0;
+        do {
+          bx = RADIUS*2 + Math.random() * (W - RADIUS*4);
+          by = RADIUS*2 + Math.random() * (H - RADIUS*4);
+          tries++;
+        } while (Math.hypot(bx - enemy.x, by - enemy.y) < 120 && tries < 20);
+        b.x = bx; b.y = by;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 0.9, color: b.char.color, t: 0.4 });
+        for (let i = 0; i < 8; i++) {
+          const a = (Math.PI * 2 / 8) * i;
+          state.hitFlashes.push({ x: b.x + Math.cos(a)*30, y: b.y + Math.sin(a)*30, r: 8, alpha: 0.7, color: '#ffffff', t: 0.3 });
+        }
+        playHitSound('knife');
+      }
+    }
+
+    // 丟鴿子
+    if (b.mageDoveTimer <= 0 && b.mageTeleportTimer < 0) {
+      b.mageDoveTimer = MAGE_DOVE_INTERVAL;
+      const angle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+      const proj = {
+        x: b.x, y: b.y,
+        vx: Math.cos(angle) * MAGE_DOVE_SPEED,
+        vy: Math.sin(angle) * MAGE_DOVE_SPEED,
+        type: 'dove', owner: b.player, color: b.char.color,
+        damage: MAGE_DOVE_DAMAGE, r: 10, active: true,
+        angle,
+        mageTrick: null
+      };
+      // 若已蓄好魔術技巧，附加到這顆鴿子上
+      if (b.mageTrickReady) {
+        proj.mageTrick = b.mageTrickType;
+        b.mageTrickReady = false;
+        b.mageTrickType = null;
+        // 技巧鴿子視覺：發光顏色
+        proj.trickGlow = true;
+      }
+      state.projectiles.push(proj);
+      if (state.stats) state.stats[b.player].skillUses++;
+      b.mageTeleportTimer = MAGE_TELEPORT_DELAY;
+      b.vx = 0; b.vy = 0;
+    }
+  }
+
+  // 魔術師定身計時器更新
+  for (const b of state.balls) {
+    if (b.mageFreezeTimer > 0) {
+      b.mageFreezeTimer -= dt;
+      if (b.mageFreezeTimer <= 0) b.mageFreezeTimer = 0;
+    }
+  }
+
   // ── 末代武士邏輯 ──
   for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi];
-    const enemy = state.balls[1 - bi];
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
     if (b.char.type !== 'samurai') continue;
 
     // 居合衝刺中（穿透）
@@ -2373,7 +2545,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       const id = Math.hypot(b.x - enemy.x, b.y - enemy.y);
       if (id < RADIUS * 2 + 5 && !b.samuraiIaidoHit) {
         b.samuraiIaidoHit = true;
-        enemy.hp = Math.max(0, enemy.hp - SAMURAI_IAIDO_DAMAGE);
+        dealDamage(enemy, SAMURAI_IAIDO_DAMAGE);
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 40, alpha: 1.2, color: '#d4af37', t: 0.4 });
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 22, alpha: 0.9, color: '#ffffff', t: 0.25 });
         playHitSound('samurai_iaido');
@@ -2464,7 +2636,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           if (b.samuraiNextIsShimetsu) {
             b.samuraiNextIsShimetsu = false;
             b.samuraiIaidoCount = 0;
-            b.samuraiShimetsuing = true;
+            b.samuraiShimetsuing = true; if(state&&state.stats) state.stats[b.player].skillUses++;
             b.samuraiShimetsuSlashes = [];
             const baseAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
             const spread = Math.PI / 5; // ±36° 扇形
@@ -2480,7 +2652,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
               b.samuraiNextIsShimetsu = true;
               b.samuraiIaidoCount = 0;
             }
-            b.samuraiIaidoing = true;
+            b.samuraiIaidoing = true; if(state&&state.stats) state.stats[b.player].skillUses++;
             b.samuraiIaidoTimer = SAMURAI_IAIDO_DURATION;
             b.samuraiIaidoHit = false;
             b.samuraiIaidoAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
@@ -2508,7 +2680,9 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (enemy) {
         const sd = Math.hypot(enemy.x - samurai.x, enemy.y - samurai.y);
         if (sd < RADIUS * 2 + 2) {
-          // 碰到敵人 → 立刻結束招架，觸發居合
+          // 碰到敵人 → 造成反彈傷害後立刻結束招架，觸發居合
+          dealDamage(enemy, SAMURAI_PARRY_BUMP_DMG);
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 28, alpha: 1.0, color: '#d4af37', t: 0.3 });
           samurai.samuraiParrying = false;
           samurai.samuraiParryHit = true;
           samurai.samuraiParryTimer = SAMURAI_PARRY_INTERVAL;
@@ -2516,7 +2690,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           if (samurai.samuraiNextIsShimetsu) {
             samurai.samuraiNextIsShimetsu = false;
             samurai.samuraiIaidoCount = 0;
-            samurai.samuraiShimetsuing = true;
+            samurai.samuraiShimetsuing = true; if(state&&state.stats) state.stats[samurai.player].skillUses++;
             samurai.samuraiShimetsuSlashes = [];
             const baseAngle = Math.atan2(enemy.y - samurai.y, enemy.x - samurai.x);
             const spread = Math.PI / 5; // ±36° 扇形
@@ -2532,7 +2706,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
               samurai.samuraiNextIsShimetsu = true;
               samurai.samuraiIaidoCount = 0;
             }
-            samurai.samuraiIaidoing = true;
+            samurai.samuraiIaidoing = true; if(state&&state.stats) state.stats[samurai.player].skillUses++;
             samurai.samuraiIaidoTimer = SAMURAI_IAIDO_DURATION;
             samurai.samuraiIaidoHit = false;
             samurai.samuraiIaidoAngle = Math.atan2(enemy.y - samurai.y, enemy.x - samurai.x);
@@ -2551,6 +2725,21 @@ for (let bi = 0; bi < state.balls.length; bi++) {
   // 投射物更新
   for (let i = state.projectiles.length-1; i >= 0; i--) {
     const p = state.projectiles[i];
+    // 技巧3：追蹤鴿子 — 稍微轉向敵方球
+    if (p.type === 'dove' && Number(p.mageTrick) === 3) {
+      const target = state.balls.find(b => b.player !== p.owner);
+      if (target) {
+        const tdx = target.x - p.x, tdy = target.y - p.y;
+        const td = Math.sqrt(tdx*tdx + tdy*tdy) || 1;
+        const turnStrength = MAGE_TRICK_HOMING_TURN;
+        p.vx += (tdx/td) * turnStrength * dt;
+        p.vy += (tdy/td) * turnStrength * dt;
+        // 保持速度不變
+        const spd = Math.sqrt(p.vx*p.vx + p.vy*p.vy) || 1;
+        p.vx = (p.vx/spd) * MAGE_DOVE_SPEED;
+        p.vy = (p.vy/spd) * MAGE_DOVE_SPEED;
+      }
+    }
     p.x += p.vx*dt; p.y += p.vy*dt;
     p.angle = Math.atan2(p.vy, p.vx);
     let removed = false;
@@ -2563,7 +2752,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (pd < RADIUS+10) {
         // 末代武士招架反彈
         if (b.char.type === 'samurai' && b.samuraiParrying &&
-            (p.type === 'knife' || p.type === 'bottle' || p.type === 'bullet')) {
+            (p.type === 'knife' || p.type === 'bottle' || p.type === 'bullet' || p.type === 'dove')) {
           // 反彈：方向反轉，用 reflected flag 標記；保留 owner 讓廚師仍可回收
           const reflectDmg = (p.damage || 80) * SAMURAI_PARRY_REFLECT_MUL;
           p.reflected = true;          // 標記為已反彈（傷害判斷改用此 flag）
@@ -2608,6 +2797,64 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           playHitSound('opm');
           state.projectiles.splice(i, 1);
           removed = true; break;
+        } else if (p.type === 'dove') {
+          dealDamage(b, p.damage);
+          state.hitFlashes.push({ x:b.x, y:b.y, r:35, alpha:1.0, color:'#9b59b6', t:0.35 });
+          state.hitFlashes.push({ x:b.x, y:b.y, r:18, alpha:0.8, color:'#ffffff', t:0.2 });
+          playHitSound('knife');
+
+          // ── 魔術技巧命中效果 ──
+          const trickId = p.mageTrick ? Number(p.mageTrick) : 0;
+          if (trickId === 1) {
+            // 技巧1：魔術師回血
+            const mage = state.balls.find(m => m.player === p.owner && m.char.type === 'mage');
+            if (mage) {
+              mage.hp = Math.min(MAX_HP, mage.hp + MAGE_TRICK_HEAL);
+              state.hitFlashes.push({ x: mage.x, y: mage.y, r: 40, alpha: 1.2, color: '#2ecc71', t: 0.55 });
+              state.hitFlashes.push({ x: mage.x, y: mage.y, r: 18, alpha: 0.8, color: '#ffffff', t: 0.35 });
+            }
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.2, color: '#f0c84a', t: 0.4 });
+            state.projectiles.splice(i, 1);
+            removed = true; break;
+          } else if (trickId === 2) {
+            // 技巧2：穿透反彈，繼續飛
+            p.vx = -p.vx; p.vy = -p.vy;
+            p.angle = Math.atan2(p.vy, p.vx);
+            p.mageTrick = 0; // 消耗技巧
+            p.trickGlow = false;
+            p.doveWallBounce = true; // 碰牆繼續反彈
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.2, color: '#f0c84a', t: 0.4 });
+            break; // 跳出 bi 迴圈，不移除投射物
+          } else if (trickId === 3) {
+            // 技巧3：追蹤鴿子命中（普通傷害，加紅色特效）
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 1.2, color: '#e74c3c', t: 0.45 });
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.2, color: '#f0c84a', t: 0.4 });
+            state.projectiles.splice(i, 1);
+            removed = true; break;
+          } else if (trickId === 4) {
+            // 技巧4：定身
+            b.mageFreezeTimer = MAGE_TRICK_FREEZE_DUR;
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 1.0, color: '#00cfff', t: 0.5 });
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.2, color: '#f0c84a', t: 0.4 });
+            state.projectiles.splice(i, 1);
+            removed = true; break;
+          } else {
+            // 普通鴿子
+          }
+
+          // ── 命中計數（普通鴿子才計）→ 蓄積魔術技巧 ──
+          const mageShooter = state.balls.find(m => m.player === p.owner && m.char.type === 'mage');
+          if (mageShooter) {
+            mageShooter.mageHitCount = (mageShooter.mageHitCount || 0) + 1;
+            if (mageShooter.mageHitCount >= MAGE_TRICK_HIT_COUNT) {
+              mageShooter.mageHitCount = 0;
+              mageShooter.mageTrickReady = true;
+              mageShooter.mageTrickType = Math.floor(Math.random() * 4) + 1;
+              state.hitFlashes.push({ x: mageShooter.x, y: mageShooter.y, r: 40, alpha: 1.0, color: '#f0c84a', t: 0.6 });
+            }
+          }
+          state.projectiles.splice(i, 1);
+          removed = true; break;
         } else if (p.type === 'shimetsu') {
           // 識滅斬：穿透
           if (!p.hitTargets) p.hitTargets = new Set();
@@ -2637,8 +2884,11 @@ for (let bi = 0; bi < state.balls.length; bi++) {
         p.y = Math.max(WALL, Math.min(H-WALL, p.y));
         state.wallKnives.push({ x:p.x, y:p.y, angle:p.angle, owner:p.owner, color:p.color });
         state.projectiles.splice(i, 1);
+      } else if ((p.type === 'dove' && Number(p.mageTrick) === 2) || p.doveWallBounce) {
+        // 技巧2穿透反彈鴿子：碰牆反彈
+        if (p.x < WALL || p.x > W-WALL) { p.vx = -p.vx; p.x = Math.max(WALL, Math.min(W-WALL, p.x)); }
+        if (p.y < WALL || p.y > H-WALL) { p.vy = -p.vy; p.y = Math.max(WALL, Math.min(H-WALL, p.y)); }
       } else if (p.type === 'shimetsu') {
-        // 識滅斬穿牆消失
         state.projectiles.splice(i, 1);
       } else { state.projectiles.splice(i, 1); }
     }
@@ -2680,6 +2930,7 @@ function spawnBatParticles(x, y, color, count) {
 }
 
 function fireProjectile(ball, enemy, type) {
+  if (state && state.stats) state.stats[ball.player].skillUses++;
   const dx = enemy.x-ball.x, dy = enemy.y-ball.y;
   const d  = Math.sqrt(dx*dx + dy*dy);
   const nx = dx/d, ny = dy/d;
@@ -2697,6 +2948,33 @@ function fireProjectile(ball, enemy, type) {
 function render() {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+
+  // 熔岩場地背景
+  if (state.arena === 'lava') {
+    // 底色
+    ctx.fillStyle = '#1a0800'; ctx.fillRect(0, 0, W, H);
+    // 熔岩流動紋路
+    const t = elapsed * 0.8;
+    for (let i = 0; i < 6; i++) {
+      const x = (W * (i / 5)) + Math.sin(t + i * 1.3) * 30;
+      const grad = ctx.createLinearGradient(x, 0, x + 60, H);
+      grad.addColorStop(0,   'rgba(200,50,0,0)');
+      grad.addColorStop(0.3 + 0.2 * Math.sin(t + i), 'rgba(255,80,0,0.06)');
+      grad.addColorStop(1,   'rgba(200,50,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+    }
+    // 底部熔岩光
+    const lavaGlow = ctx.createLinearGradient(0, H * 0.75, 0, H);
+    lavaGlow.addColorStop(0, 'rgba(255,60,0,0)');
+    lavaGlow.addColorStop(1, `rgba(255,80,0,${0.12 + 0.05 * Math.sin(elapsed * 3)})`);
+    ctx.fillStyle = lavaGlow; ctx.fillRect(0, 0, W, H);
+    // 場地邊緣灼燒警示
+    const edgeGlow = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.3, W/2, H/2, Math.max(W,H)*0.75);
+    edgeGlow.addColorStop(0, 'rgba(255,40,0,0)');
+    edgeGlow.addColorStop(1, `rgba(255,40,0,${0.18 + 0.06 * Math.sin(elapsed * 2)})`);
+    ctx.fillStyle = edgeGlow; ctx.fillRect(0, 0, W, H);
+  }
 
   // 格線
   ctx.strokeStyle = 'rgba(200,168,75,0.04)'; ctx.lineWidth = 1;
@@ -2990,6 +3268,14 @@ function render() {
     } else if (p.type === 'flashbang') {
       ctx.font = '16px serif';
       ctx.fillText('💣', 0, 0);
+    } else if (p.type === 'dove') {
+      ctx.font = '18px serif';
+      if (p.trickGlow) {
+        const trickColors = { 1:'#2ecc71', 2:'#bf00ff', 3:'#e74c3c', 4:'#00cfff' };
+        const col = trickColors[p.mageTrick] || '#f0c84a';
+        ctx.filter = `drop-shadow(0 0 6px ${col}) drop-shadow(0 0 3px #ffffff)`;
+      }
+      ctx.fillText('🕊️', 0, 0);
     } else if (p.type === 'shimetsu') {
       // 識滅斬斬波：金橙發光條
       ctx.filter = 'none';
@@ -3037,6 +3323,26 @@ function render() {
       ctx.fillStyle = i < ammo ? b.char.color : 'rgba(255,255,255,0.2)';
       ctx.fill();
     }
+  }
+
+  // 魔術師：技巧蓄好時發光環
+  for (const b of state.balls) {
+    if (b.char.type !== 'mage' || !b.mageTrickReady) continue;
+    ctx.save();
+    const pulse = 0.5 + 0.4 * Math.abs(Math.sin(elapsed * 8));
+    const trickColors = { 1:'#2ecc71', 2:'#bf00ff', 3:'#e74c3c', 4:'#00cfff' };
+    const col = trickColors[b.mageTrickType] || '#f0c84a';
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, RADIUS + 7, 0, Math.PI * 2);
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = col;
+    ctx.globalAlpha = pulse;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 14;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
   }
 
   // 暗夜領主：咬擊連線視覺
@@ -3155,6 +3461,16 @@ function render() {
       ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
     }
 
+    // 被魔術師定身：水藍色固定光環
+    if (b.mageFreezeTimer > 0) {
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 9, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(0,207,255,${0.6 + 0.3 * Math.sin(elapsed * 14)})`;
+      ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 14, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(0,207,255,0.2)`;
+      ctx.lineWidth = 5; ctx.stroke();
+    }
+
     // 末代武士：招架光盾
     if (b.char.type === 'samurai' && b.samuraiParrying) {
       const parryProg = b.samuraiParryElapsed / SAMURAI_PARRY_DURATION;
@@ -3254,6 +3570,9 @@ function render() {
     } else if (b.char.type === 'gunner') {
       atFrac = b.gunnerFiring ? (b.gunnerAmmoFired / GUNNER_MAG_SIZE) : (b.gunnerAmmo / GUNNER_MAG_SIZE);
       barColor = b.gunnerFiring ? '#ff6600' : b.char.color;
+    } else if (b.char.type === 'mage') {
+      atFrac = 1 - Math.min(b.mageDoveTimer / MAGE_DOVE_INTERVAL, 1);
+      barColor = b.mageTeleportTimer > 0 ? '#ffffff' : b.char.color;
     } else if (b.char.type === 'samurai') {
       if (b.samuraiParrying) {
         atFrac = Math.min(b.samuraiParryElapsed / SAMURAI_PARRY_DURATION, 1);
@@ -3453,7 +3772,8 @@ function updateHUD() {
   document.getElementById('p2-bar').style.width = (hp1/MAX_HP*100)+'%';
   document.getElementById('p1-hp-num').textContent = `${Math.ceil(hp0)} / ${MAX_HP}`;
   document.getElementById('p2-hp-num').textContent = `${Math.ceil(hp1)} / ${MAX_HP}`;
-  document.getElementById('timer-display').textContent = Math.floor(elapsed)+'s';
+  document.getElementById('timer-display').textContent =
+    (state.arena === 'lava' ? '🌋 ' : '') + Math.floor(elapsed) + 's';
 
   function statusText(b) {
     if (b.char.type === 'chef') {
@@ -3498,6 +3818,12 @@ function updateHUD() {
       const cdLeft = Math.max(0, b.samuraiParryTimer).toFixed(1);
       const iCount = b.samuraiIaidoCount || 0;
       return `⚔️ 招架:${cdLeft}s 居合${iCount}/${SAMURAI_IAIDO_MAX}${b.samuraiNextIsShimetsu?'🔥':''}`;
+    } else if (b.char.type === 'mage') {
+      if (b.mageTeleportTimer > 0) return `✨ 瞬移中...`;
+      const doveLeft = Math.max(0, b.mageDoveTimer).toFixed(1);
+      const trickNames = { 1:'💚回血', 2:'🔮穿透彈', 3:'🎯追蹤', 4:'❄️定身' };
+      if (b.mageTrickReady) return `🎩 技巧蓄好！${trickNames[b.mageTrickType]} 🕊️${doveLeft}s`;
+      return `🕊️ ${doveLeft}s ✨命中${b.mageHitCount||0}/${MAGE_TRICK_HIT_COUNT}`;
     } else {
       return `🍺 轉向: ${b.drunkTimer ? b.drunkTimer.toFixed(1) : '-'}s`;
     }
@@ -3510,6 +3836,7 @@ function showResult(deadBalls) {
   const overlay = document.getElementById('overlay');
   const titleEl = document.getElementById('result-title');
   const subEl   = document.getElementById('result-sub');
+  const statsEl = document.getElementById('result-stats');
   if (deadBalls.length === 2) {
     titleEl.textContent = '平局！'; titleEl.style.color = '#c8a84b'; subEl.textContent = '兩位勇士同歸於盡';
   } else {
@@ -3518,6 +3845,28 @@ function showResult(deadBalls) {
     titleEl.style.color = winner.char.color;
     subEl.textContent = `${winner.char.displayName} 剩餘 ${Math.ceil(winner.hp)} 血`;
   }
+
+  // 戰鬥紀錄
+  if (statsEl && state.stats) {
+    const dur = state.stats.duration;
+    const mm = Math.floor(dur / 60).toString().padStart(2,'0');
+    const ss = Math.floor(dur % 60).toString().padStart(2,'0');
+    const cardStyle = `background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 16px;min-width:130px;text-align:center;font-size:0.82rem;color:#ccc;line-height:1.8`;
+    const rows = state.balls.map(b => {
+      const s = state.stats[b.player];
+      return `<div style="${cardStyle}">
+        <div style="font-size:1.1rem;margin-bottom:4px">${b.char.emoji} <span style="color:${b.char.color};font-weight:700">${b.char.displayName}</span></div>
+        <div>💥 總傷害　<b style="color:#fff">${Math.round(s.totalDmg)}</b></div>
+        <div>⚡ 最高單擊　<b style="color:#fff">${Math.round(s.maxHit)}</b></div>
+        <div>🎯 技能使用　<b style="color:#fff">${s.skillUses}</b></div>
+      </div>`;
+    });
+    statsEl.innerHTML = `
+      <div style="width:100%;text-align:center;font-size:0.75rem;color:#888;margin-bottom:6px;letter-spacing:.1em">⚔️ 戰鬥紀錄　${mm}:${ss}</div>
+      ${rows.join('')}
+    `;
+  }
+
   overlay.classList.add('show');
 }
 </script>
