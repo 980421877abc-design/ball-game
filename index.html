@@ -1485,13 +1485,14 @@ function dealDamage(target, dmg, options = {}) {
   // 一拳超人必殺拳穿透招架減傷（bypassParry flag）
   const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
   const mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
-  const actual = Math.min(target.hp, dmg * mul);
+  const rawDmg = dmg * mul;
+  const actual = Math.min(target.hp, rawDmg);
   target.hp = Math.max(0, target.hp - actual);
   // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
+  // 總傷害計算原始傷害值（含溢出超過對方剩餘血量的部分）
   if (state && state.stats && target.player) {
     const attackerPlayer = target.player === 1 ? 2 : 1;
-    state.stats[attackerPlayer].totalDmg += actual;
-    if (actual > state.stats[attackerPlayer].maxHit) state.stats[attackerPlayer].maxHit = actual;
+    state.stats[attackerPlayer].totalDmg += rawDmg;
   }
 }
 
@@ -1755,6 +1756,15 @@ function update(dt) {
         // 執行本次咬擊
         const enemy = state.balls.find(x => x.player !== b.player);
         if (enemy) {
+          // 若敵人已經死亡（hp<=0），立即終止咬擊序列，不再吸血回血
+          if (enemy.hp <= 0) {
+            b.vampireBiting = false;
+            b.vampireBiteStep = 0;
+            b.vampireBiteTimer = 0;
+            b.vampireBiteCooldown = 0;
+            enemy.frozenByVampire = false;
+            enemy.frozenTimer = 0;
+          } else {
           dealDamage(enemy, VAMPIRE_BITE_DAMAGE);
           b.hp = Math.min(MAX_HP, b.hp + VAMPIRE_BITE_HEAL);
           // 傷害特效
@@ -1763,6 +1773,7 @@ function update(dt) {
           state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#aa00ff', t: 0.25 });
           playHitSound('vampire_bite');
           spawnBatParticles(enemy.x, enemy.y, b.char.color, 3);
+          }
         }
         b.vampireBiteStep++;
         b.vampireBiteTimer = VAMPIRE_BITE_INTERVAL;
@@ -3939,7 +3950,7 @@ function render() {
       ctx.fillStyle = '#ff4444';
       ctx.shadowColor = '#c0392b';
       ctx.shadowBlur = 12;
-      ctx.fillText('☠️ 斬殺！', cx, cy - RADIUS - 30);
+      ctx.fillText('☠️ 世界斬！', cx, cy - RADIUS - 30);
       ctx.restore();
     }
   }
@@ -4082,7 +4093,6 @@ function showResult(deadBalls) {
       return `<div style="${cardStyle}">
         <div style="font-size:1.1rem;margin-bottom:4px">${b.char.emoji} <span style="color:${b.char.color};font-weight:700">${b.char.displayName}</span></div>
         <div>💥 總傷害　<b style="color:#fff">${Math.round(s.totalDmg)}</b></div>
-        <div>⚡ 最高單擊　<b style="color:#fff">${Math.round(s.maxHit)}</b></div>
         <div>🎯 技能使用　<b style="color:#fff">${s.skillUses}</b></div>
       </div>`;
     });
