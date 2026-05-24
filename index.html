@@ -903,7 +903,7 @@ document.addEventListener('touchstart', () => { if (audioCtx) audioCtx.resume();
 const CHARACTERS = [
   {
     id: 'chef', emoji: '👨‍🍳', weapon: '🔪', name: '地獄廚神',
-    desc: '雙刀廚師，精準投擲。手持兩把菜刀，可以投出一把菜刀。菜刀可穿透角色球並插在邊界，在手上沒刀時會將刀給回收。',
+    desc: '世界頂級大廚。手持兩把菜刀，可以投出菜刀。菜刀可穿透角色球並插在邊界，在手上沒刀時會將刀給回收。',
     stats: ['傷害 130', '冷卻2.0s', '刀數 2'],
     color: '#e84545', glowColor: 'rgba(232,69,69,0.6)', type: 'chef'
   },
@@ -915,57 +915,63 @@ const CHARACTERS = [
   },
   {
     id: 'opm', emoji: '👊', weapon: '💥', name: '一拳超人',
-    desc: '絕對力量的具現。平時無所事事隨意漫步，每秒累積怒氣值——但達到上限時，對敵人造成血量上限的傷害，不可閃避。碰撞可額外增長怒氣值。',
-    stats: ['傷害 ∞', '怒氣值上限40', '必中 ✓'],
+    desc: '絕對力量的具現。平時無所事事隨意漫步，每秒累積怒氣值——當達到上限時，對敵人造成血量上限的傷害，不可閃避。碰撞可額外增長怒氣值。',
+    stats: ['傷害 ∞', '怒氣值上限40', '碰撞增加怒氣1'],
     color: '#f5f5f5', glowColor: 'rgba(245,245,245,0.6)', type: 'opm'
   },
   {
     id: 'vampire', emoji: '🧛', weapon: '🦇', name: '暗夜領主',
-    desc: '隱藏於黑暗中的掠食者。碰到敵人時鎖定撕咬，每次造成傷害並吸血，敵人被咬住期間無法移動。發動蝙蝠狂襲，高速衝向敵人。',
+    desc: '隱藏於黑暗中的掠食者。碰到敵人時鎖定撕咬，每次造成傷害並吸血，敵人被咬住期間無法移動。偶爾發動蝙蝠狂襲，高速衝向敵人。',
     stats: ['咬擊 25×4', '吸血 21×4', '衝刺 9s'],
     color: '#8b1a8b', glowColor: 'rgba(139,26,139,0.6)', type: 'vampire'
   },
 {
   id: 'gojo', emoji: '😎', weapon: '🔵', name: '現代最強',
-  desc: '持有無下限術式，可以使用術式順轉蒼及術式反轉赫。血量降低到一定程度時解放六眼。',
-  stats: ['蒼 130傷', '赫 150傷', '紫 8楨傷', '冷卻 2.0秒'],
+  desc: '持有無下限術式，可以使用帶有引力的術式順轉「蒼」及帶有斥力術式反轉「赫」。血量降低到一定程度時解放六眼，釋放大招「虛式紫」。',
+  stats: ['蒼 130傷', '赫 150傷', '紫 8楨傷', '冷卻 2.0s'],
   color: '#00cfff', glowColor: 'rgba(0,207,255,0.6)', type: 'gojo'
   },
   {
   id: 'cursed', emoji: '💀', weapon: '⚔️', name: '詛咒之王',
-  desc: '平安時代最強的王，活躍於「咒術全盛時代」的人類術師，死後化為特級咒物（20根手指），持有解跟捌，以及領域展開「伏魔域廚子」。',
-  stats: ['解 140/4.5s', '捌 25×2s', '領域 5/楨'],
+  desc: '平安時代最強的王，活躍於「咒術全盛時代」的人類術師，一段時間使用「解」造成傷害並緩速，在碰觸敵方時使用「捌」，在血量到一定值時，施放領域展開「伏魔域廚子」。',
+  stats: ['解 140/4.5s', '捌 25×2s', '領域 5/楨','解冷卻4.25s'],
   color: '#c0392b', glowColor: 'rgba(192,57,43,0.6)', type: 'cursed'
   },
   {
   id: 'trapper', emoji: '🪤', weapon: '⛓️', name: '陷阱大師',
-  desc: '詭計多端的戰術家，碰到邊界時放置尖刺陷阱。敵人觸碰尖刺時將會中毒及受傷。能使一個尖刺射出鎖鏈，強制將敵人拉向它！',
-  stats: ['尖刺 50+毒45/s', '鎖鏈 3s', '刺上限6'],
+  desc: '詭計多端的戰術家，碰到邊界時放置尖刺陷阱。敵人觸碰尖刺時將會中毒以及受傷。每隔一段時間能使一個尖刺射出鎖鏈，強制將敵人拉向它！',
+  stats: ['尖刺 50+毒45/s', '鎖鏈冷卻 3s', '刺上限6'],
   color: '#27ae60', glowColor: 'rgba(39,174,96,0.6)', type: 'trapper'
   },
   {
   id: 'yi', emoji: '⚫', weapon: '⬜', name: '奕',
-  desc: '棋道高手，柯潔之下第一人，以黑棋圍困敵人。放滿四顆後，於四棋中心落白旗，黑棋被吸入爆炸！血量危急時，在敵方四周「運籌帷幄」，讓對手無路可逃。',
-  stats: ['黑棋 50', '白旗爆炸 200', '運籌帷幄 600HP觸發', '攻擊冷卻1.5'],
+  desc: '棋道高手，柯潔之下第一人，以黑棋圍困敵人。放滿四顆後，於四棋中心落白旗，黑棋被吸入爆炸！血量危急時，在敵方四周施放「運籌帷幄」，讓對手無路可逃。',
+  stats: ['黑棋 50', '白旗爆炸 200', '運籌帷幄 600HP觸發', '攻擊冷卻1.5s'],
   color: '#e8e8e8', glowColor: 'rgba(232,232,232,0.6)', type: 'yi'
   },
   {
   id: 'gunner', emoji: '🔫', weapon: '💥', name: '無名槍手',
-  desc: '沉默的槍手。沒人知道他的名字，每次撞牆裝彈，累積足夠子彈後停下來向敵人快速連射。定時投擲閃光彈，造成範圍傷害並暫時封鎖對手攻擊。',
+  desc: '沉默的槍手。沒人知道他的名字，每次撞牆裝彈，累積足夠子彈後停下來向敵人快速連射。定時投擲閃光彈，造成範圍傷害並暫時封鎖對手攻擊或技能。',
   stats: ['裝彈上限 6', '子彈傷害 45', '閃光彈 8s', '閃光彈傷害 80'],
   color: '#b8860b', glowColor: 'rgba(184,134,11,0.6)', type: 'gunner'
   },
   {
   id: 'samurai', emoji: '⚔️', weapon: '⚔️', name: '末代武士',
-  desc: '最後的武士道傳人。定時進入「招架」狀態，可將飛來的投射物反彈。招架中碰到敵人球，立即反應以居合穿透斬擊。',
-  stats: ['招架 1s/2s', '反彈傷害×1.2', '居合穿透 120', '識滅斬 140×4'],
+  desc: '最後的武士道傳人。定時進入「招架」狀態，可將飛來的投射物反彈。招架中碰到敵人球，立即反應以「居合」穿透斬擊，使用一定次數「居合」後，解鎖大招識滅斬。',
+  stats: ['招架 1s/2s', '反彈傷害×1.2', '居合穿透 120', '識滅斬 140×4','招架減傷70%'],
   color: '#d4af37', glowColor: 'rgba(212,175,55,0.6)', type: 'samurai'
   },
   {
   id: 'mage', emoji: '🎩', weapon: '🕊️', name: '魔術師',
-  desc: '神出鬼沒的舞台魔術師。定時丟出鴿子造成傷害，丟出後瞬間消失在場地另一處。每命中3次，下一顆鴿子附帶隨機「魔術技巧」：回血、穿透彈、追蹤或定身！',
-  stats: ['鴿子80傷', '丟出後瞬移', '3命中→魔術技巧', '技巧：回血/穿透/追蹤/定身'],
+  desc: '神出鬼沒的舞台魔術師。定時丟出鴿子造成傷害，丟出後瞬間消失在場地另一處。每命中一定次數，下一顆鴿子附帶隨機「魔術技巧」！',
+  stats: ['鴿子80傷', '丟出後瞬移','冷卻1.25s', '3命中→魔術技巧', '技巧：回血/反彈/追蹤/定身'],
   color: '#9b59b6', glowColor: 'rgba(155,89,182,0.6)', type: 'mage'
+  },
+  {
+  id: 'thunder', emoji: '⚡', weapon: '🌩️', name: '雷電法王',
+  desc: '掌控雷霆之力的法王。碰到牆壁時留下閃電柱，閃電柱定時在不同牆面之間產生閃電直線傷害。敵人被閃電擊中有機率麻痺，下一次攻擊或技能無法觸發（麻痺不能連續兩次）。',
+  stats: ['閃電傷害17', '麻痺機率10%', '閃電間隔2s', '上限7柱'],
+  color: '#f1c40f', glowColor: 'rgba(241,196,15,0.6)', type: 'thunder'
   }
 ];
 
@@ -1201,7 +1207,7 @@ const VAMPIRE_DASH_SPEED      = 750;  // 衝刺速度
 const VAMPIRE_DASH_DURATION   = 0.55; // 衝刺最長持續時間（秒）
 
 // 詛咒之王常數
-const CURSE_SLASH_INTERVAL    = 4.5;   // 解：斬痕發動間隔（秒）
+const CURSE_SLASH_INTERVAL    = 4.25;   // 解：斬痕發動間隔（秒）
 const CURSE_SLASH_DAMAGE      = 140;   // 解：斬痕傷害
 const CURSE_SLASH_SLOW_FACTOR = 0.6;   // 解：緩速倍率（剩幾成速度）
 const CURSE_SLASH_SLOW_DUR    = 2.0;   // 解：緩速持續時間（秒）
@@ -1260,6 +1266,23 @@ const MAGE_TRICK_HEAL          = 120;   // 技巧1：回血量
 const MAGE_TRICK_BOUNCE_DAMAGE = 75;    // 技巧2：穿透反彈鴿子傷害（反彈後同傷害）
 const MAGE_TRICK_HOMING_TURN   = 300;   // 技巧3：追蹤轉向強度（px/s²，越大轉越快）
 const MAGE_TRICK_FREEZE_DUR    = 1.5;   // 技巧4：定身持續秒數
+
+// 雷電法王常數
+const THUNDER_PILLAR_MAX          = 7;        // 最多同時存在幾個閃電柱
+const THUNDER_PILLAR_RADIUS       = 14;       // 閃電柱半圓半徑（顯示用）
+const THUNDER_STRIKE_INTERVAL     = 2.0;      // 閃電連線發射間隔（秒）
+const THUNDER_PILLAR_DAMAGE       = 60;       // 閃電柱本體傷害（碰到柱子時）
+const THUNDER_STRIKE_DAMAGE       = 17;       // 每條閃電連線傷害（每條獨立計算）
+const THUNDER_PARALYZE_CHANCE     = 0.10;     // 麻痺機率
+const THUNDER_PILLAR_LIFETIME     = 15; // 閃電柱存在時間（Infinity = 永久）
+const THUNDER_STRIKE_HIT_RADIUS   = 55;       // 閃電線命中判定額外半徑（px，需夠大才能跨牆命中）
+const THUNDER_STRIKE_FX_DURATION  = 0.35;     // 閃電特效持續時間（秒）
+const THUNDER_PILLAR_MIN_DIST     = 30;       // 同牆放置柱子的最小間距（px）
+const THUNDER_PILLAR_FADE_IN      = 1.5;      // 有限壽命時，最後幾秒開始淡出（秒）
+const THUNDER_HIT_FX_R1           = 35;       // 命中大閃光半徑
+const THUNDER_HIT_FX_R2           = 18;       // 命中小閃光半徑
+const THUNDER_PILLAR_HIT_FX_R     = 22;       // 柱子命中閃光半徑
+const THUNDER_SPAWN_FX_R          = 24;       // 放置柱子閃光半徑
 
 
 //武士常數
@@ -1339,9 +1362,10 @@ function startGame() {
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('select-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('result-stats').innerHTML = '';
 
-  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb' };
+  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066' };
 
   const ch1base  = CHARACTERS.find(c => c.id === p1Choice);
   const ch2base  = CHARACTERS.find(c => c.id === p2Choice);
@@ -1448,6 +1472,10 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       samuraiShimetsuSlashes: ch.type === 'samurai' ? [] : null,                 // 識滅斬斬擊列表
       samuraiNextIsShimetsu: ch.type === 'samurai' ? false : null,               // 下次招架改為識滅斬
       // 被招架反彈不記 owner（靠投射物 owner 判斷）
+      // 雷電法王專屬狀態
+      thunderStrikeTimer: ch.type === 'thunder' ? THUNDER_STRIKE_INTERVAL : null, // 閃電發射冷卻
+      thunderParalyzed: false,      // 是否被麻痺（任何角色）
+      thunderParalyzeWasHit: false, // 上次是否已被麻痺（防連續）
     };
   }
 
@@ -1458,6 +1486,8 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     ],
     projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, curseSliceKillFX: null, elapsed: 0,
     arena: selectedArena,
+    thunderPillars: [],
+    thunderStrikes: [],
     stats: {
       1: { totalDmg: 0, maxHit: 0, skillUses: 0 },
       2: { totalDmg: 0, maxHit: 0, skillUses: 0 },
@@ -1485,14 +1515,13 @@ function dealDamage(target, dmg, options = {}) {
   // 一拳超人必殺拳穿透招架減傷（bypassParry flag）
   const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
   const mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
-  const rawDmg = dmg * mul;
-  const actual = Math.min(target.hp, rawDmg);
+  const actual = Math.min(target.hp, dmg * mul);
   target.hp = Math.max(0, target.hp - actual);
   // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
-  // 總傷害計算原始傷害值（含溢出超過對方剩餘血量的部分）
   if (state && state.stats && target.player) {
     const attackerPlayer = target.player === 1 ? 2 : 1;
-    state.stats[attackerPlayer].totalDmg += rawDmg;
+    state.stats[attackerPlayer].totalDmg += actual;
+    if (actual > state.stats[attackerPlayer].maxHit) state.stats[attackerPlayer].maxHit = actual;
   }
 }
 
@@ -1756,15 +1785,6 @@ function update(dt) {
         // 執行本次咬擊
         const enemy = state.balls.find(x => x.player !== b.player);
         if (enemy) {
-          // 若敵人已經死亡（hp<=0），立即終止咬擊序列，不再吸血回血
-          if (enemy.hp <= 0) {
-            b.vampireBiting = false;
-            b.vampireBiteStep = 0;
-            b.vampireBiteTimer = 0;
-            b.vampireBiteCooldown = 0;
-            enemy.frozenByVampire = false;
-            enemy.frozenTimer = 0;
-          } else {
           dealDamage(enemy, VAMPIRE_BITE_DAMAGE);
           b.hp = Math.min(MAX_HP, b.hp + VAMPIRE_BITE_HEAL);
           // 傷害特效
@@ -1773,7 +1793,6 @@ function update(dt) {
           state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#aa00ff', t: 0.25 });
           playHitSound('vampire_bite');
           spawnBatParticles(enemy.x, enemy.y, b.char.color, 3);
-          }
         }
         b.vampireBiteStep++;
         b.vampireBiteTimer = VAMPIRE_BITE_INTERVAL;
@@ -1883,6 +1902,33 @@ function update(dt) {
         b.gunnerFiring = true; if(state&&state.stats) state.stats[b.player].skillUses++;
         b.gunnerAmmoFired = 0;
         b.gunnerFireTimer = 0;
+      }
+    }
+    // 雷電法王：碰牆放置閃電柱（貼牆）
+    if (hitWall && b.char.type === 'thunder') {
+      const myPillars = state.thunderPillars.filter(p => p.owner === b.player);
+      if (myPillars.length < THUNDER_PILLAR_MAX) {
+        // 判斷碰哪面牆，並將柱子座標貼到牆上
+        let wallSide = 'left';
+        let px = Math.round(b.x), py = Math.round(b.y);
+        if (b.x - RADIUS < WALL + 2)       { wallSide = 'left';   px = WALL; }
+        else if (b.x + RADIUS > W - WALL - 2) { wallSide = 'right';  px = W - WALL; }
+        else if (b.y - RADIUS < WALL + 2)   { wallSide = 'top';    py = WALL; }
+        else                                 { wallSide = 'bottom'; py = H - WALL; }
+        // 避免同位置重複
+        const tooClose = myPillars.some(p => Math.hypot(p.x - px, p.y - py) < THUNDER_PILLAR_MIN_DIST && p.wallSide === wallSide);
+        if (!tooClose) {
+          state.thunderPillars.push({
+            x: px, y: py,
+            wallSide,
+            owner: b.player,
+            color: b.char.color,
+            life: THUNDER_PILLAR_LIFETIME,
+            spawnFlash: 0.5
+          });
+          playHitSound('trap_place');
+          state.hitFlashes.push({ x: px, y: py, r: THUNDER_SPAWN_FX_R, alpha: 1.0, color: '#f1c40f', t: 0.4 });
+        }
       }
     }
   }
@@ -2019,10 +2065,13 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (b.gunnerStunTimer > 0) {
       b.gunnerStunTimer -= dt;
       b.attackTimer = 0;
-      if (b.char.type === 'gojo')   { b.gojoTimer = 0; }
-      if (b.char.type === 'cursed') { if (b.curseSlashTimer != null) b.curseSlashTimer = Math.min(b.curseSlashTimer + dt, CURSE_SLASH_INTERVAL); }
-      if (b.char.type === 'yi')     { if (b.yiBlackTimer    != null) b.yiBlackTimer    = Math.min(b.yiBlackTimer    + dt, YI_BLACK_INTERVAL); }
-      if (b.char.type === 'mage')   { if (b.mageDoveTimer   != null) b.mageDoveTimer   = Math.min(b.mageDoveTimer   + dt, MAGE_DOVE_INTERVAL); }
+      if (b.char.type === 'gojo')    { b.gojoTimer = 0; }
+      if (b.char.type === 'cursed')  { if (b.curseSlashTimer  != null) b.curseSlashTimer  = Math.min(b.curseSlashTimer  + dt, CURSE_SLASH_INTERVAL); }
+      if (b.char.type === 'yi')      { if (b.yiBlackTimer     != null) b.yiBlackTimer     = Math.min(b.yiBlackTimer     + dt, YI_BLACK_INTERVAL); }
+      if (b.char.type === 'mage')    { if (b.mageDoveTimer    != null) b.mageDoveTimer    = Math.min(b.mageDoveTimer    + dt, MAGE_DOVE_INTERVAL); }
+      if (b.char.type === 'trapper') { if (b.trapChainTimer   != null) b.trapChainTimer   = Math.min(b.trapChainTimer   + dt, TRAP_CHAIN_INTERVAL); }
+      if (b.char.type === 'gunner')  { if (b.gunnerFlashTimer != null) b.gunnerFlashTimer = Math.min(b.gunnerFlashTimer + dt, GUNNER_FLASH_INTERVAL); }
+      if (b.char.type === 'thunder') { if (b.thunderStrikeTimer != null) b.thunderStrikeTimer = Math.min(b.thunderStrikeTimer + dt, THUNDER_STRIKE_INTERVAL); }
       // 武士：中斷招架、取消居合
       if (b.char.type === 'samurai') {
         if (b.samuraiParrying) {
@@ -2038,14 +2087,27 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     }
     if (b.char.type === 'chef') {
         if (!b.knifeRecalling && b.knives > 0 && b.attackTimer >= b.attackInterval) {
-            b.attackTimer = 0;
-            b.knives--;
-            fireProjectile(b, enemy, 'knife');
-            if (b.knives === 0) b.knifeRecalling = true;
+            // 麻痺：消耗一次攻擊機會
+            if (b.thunderParalyzed) {
+              b.thunderParalyzed = false;
+              b.attackTimer = 0;
+              state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+            } else {
+              b.attackTimer = 0;
+              b.knives--;
+              fireProjectile(b, enemy, 'knife');
+              if (b.knives === 0) b.knifeRecalling = true;
+            }
         }
     } else if (b.char.type === 'drunk') {
         if (b.attackTimer >= b.attackInterval) {
-            b.attackTimer = 0; fireProjectile(b, enemy, 'bottle');
+            if (b.thunderParalyzed) {
+              b.thunderParalyzed = false;
+              b.attackTimer = 0;
+              state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+            } else {
+              b.attackTimer = 0; fireProjectile(b, enemy, 'bottle');
+            }
         }
     }
     // opm 邏輯繼續...
@@ -2055,6 +2117,12 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (b.char.type === 'opm' && !b.opmPunched) {
       b.opmCountdown -= dt;
       if (b.opmCountdown <= 0) {
+      // 麻痺：跳過本次必殺
+      if (b.thunderParalyzed) {
+        b.thunderParalyzed = false;
+        b.opmCountdown = OPM_COUNTDOWN_START * 0.5; // 延遲半個冷卻
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 22, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+      } else {
       b.opmPunched = true;
       dealDamage(enemy, MAX_HP, { bypassParry: true });
 
@@ -2088,6 +2156,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       state.opmFX.push({ type: 'shake', life: 0.35, maxLife: 0.35, intensity: 14 });
 
       playHitSound('opm');
+      } // else (not paralyzed)
       } // if opmCountdown <= 0
     } // if opm && !opmPunched
 
@@ -2096,7 +2165,11 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       b.curseSlashTimer -= dt;
       if (b.curseSlashTimer <= 0) {
         b.curseSlashTimer = CURSE_SLASH_INTERVAL;
-        // 在敵方當前位置留下斬痕
+        // 麻痺：跳過本次
+        if (b.thunderParalyzed) {
+          b.thunderParalyzed = false;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+        } else {
         const angle = (Math.random() - 0.5) * Math.PI * 0.6 + Math.PI / 4; // 斜向
         state.slashMarks.push({
           x: enemy.x, y: enemy.y,
@@ -2112,6 +2185,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 35, alpha: 1.0, color: '#c0392b', t: 0.4 });
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 20, alpha: 0.8, color: '#ffffff', t: 0.25 });
         playHitSound('knife');
+        } // end else (not paralyzed)
       }
 
       // 伏魔御廚子：血量到達門檻後啟動
@@ -2209,6 +2283,12 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       b.gojoTimer += dt;
       if (b.gojoTimer >= b.gojoCooldown) {
         b.gojoTimer = 0;
+        // 麻痺：跳過本次技能
+        if (b.thunderParalyzed) {
+          b.thunderParalyzed = false;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 22, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+          // skip attack
+        } else {
         const ddx = enemy.x - b.x, ddy = enemy.y - b.y;
         const dd = Math.sqrt(ddx*ddx+ddy*ddy)||1;
         const roll = Math.random();
@@ -2226,6 +2306,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           frameDmg:sk==='purple'?GOJO_PURPLE_FRAMEDMG:0,
           active:true, stickTimer:0 });
         playHitSound(sk==='red'?'knife':'vampire_bite');
+        } // end else (not paralyzed)
       }
     }
   // 術式球移動與碰撞
@@ -2275,7 +2356,11 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (b.yiBlackTimer <= 0) {
       b.yiBlackTimer = YI_BLACK_INTERVAL;
       if (b.yiBlackCount < YI_BLACK_MAX) {
-        // 落一顆黑棋在敵方當前位置
+        // 麻痺：跳過本次落棋
+        if (b.thunderParalyzed) {
+          b.thunderParalyzed = false;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+        } else {
         state.yiBlackStones.push({
           x: enemy.x, y: enemy.y,
           owner: b.player,
@@ -2294,6 +2379,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
         if (b.yiBlackCount >= YI_BLACK_MAX) {
           b.yiBlackTimer = YI_BLACK_INTERVAL; // 等一個間隔後發白旗
         }
+        } // end else (not paralyzed)
       } else {
         // 發射白旗：落在敵方角色球當前位置，黑棋吸往此點
         const myStones = state.yiBlackStones.filter(s => s.owner === b.player && s.phase === 'stone');
@@ -2429,6 +2515,11 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     b.gunnerFlashTimer -= dt;
     if (b.gunnerFlashTimer <= 0) {
       b.gunnerFlashTimer = GUNNER_FLASH_INTERVAL;
+      // 麻痺：跳過本次閃光彈
+      if (b.thunderParalyzed) {
+        b.thunderParalyzed = false;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+      } else {
       const angle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
       state.projectiles.push({
         x: b.x, y: b.y,
@@ -2438,6 +2529,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
         damage: GUNNER_FLASH_DAMAGE, r: 9, active: true,
         angle
       });
+      } // end else (not paralyzed)
     }
   }
 
@@ -2452,6 +2544,12 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (!b.trapChainActive) {
       b.trapChainTimer -= dt;
       if (b.trapChainTimer <= 0 && state.traps.filter(t => t.owner === b.player).length > 0) {
+        // 麻痺：跳過本次鎖鏈
+        if (b.thunderParalyzed) {
+          b.thunderParalyzed = false;
+          b.trapChainTimer = TRAP_CHAIN_INTERVAL;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+        } else {
         // 選一個己方尖刺，距敵人最近的
         const myTraps = state.traps.map((t, i) => ({ t, i })).filter(x => x.t.owner === b.player);
         if (myTraps.length > 0) {
@@ -2467,6 +2565,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           playHitSound('trap_chain');
         }
         b.trapChainTimer = TRAP_CHAIN_INTERVAL;
+        } // end else (not paralyzed)
       }
     }
 
@@ -2535,6 +2634,104 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     }
   }
 
+  // ── 雷電法王邏輯 ──
+  for (let bi = 0; bi < state.balls.length; bi++) {
+    const b = state.balls[bi];
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if (b.char.type !== 'thunder') continue;
+
+    // 麻痺計時器清除（麻痺只持續到下一次攻擊觸發，在閃電攻擊中消耗）
+    // 閃電柱計時（無限壽命不衰減）
+    for (let i = state.thunderPillars.length - 1; i >= 0; i--) {
+      const p = state.thunderPillars[i];
+      if (p.spawnFlash > 0) p.spawnFlash -= dt;
+      if (p.life !== Infinity) {
+        p.life -= dt;
+        if (p.life <= 0) state.thunderPillars.splice(i, 1);
+      }
+    }
+
+    // 閃電連線計時：每個柱子同時與所有其他柱子連線
+    b.thunderStrikeTimer -= dt;
+    if (b.thunderStrikeTimer <= 0) {
+      b.thunderStrikeTimer = THUNDER_STRIKE_INTERVAL;
+      // 麻痺：跳過本次閃電
+      if (b.thunderParalyzed) {
+        b.thunderParalyzed = false;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+      } else {
+      const myPillars = state.thunderPillars.filter(p => p.owner === b.player);
+      if (myPillars.length >= 2) {
+        state.thunderStrikes = state.thunderStrikes || [];
+        let totalHits = 0;
+
+        // 枚舉所有柱子配對，全部同時發閃電
+        for (let pi = 0; pi < myPillars.length; pi++) {
+          for (let pj = pi + 1; pj < myPillars.length; pj++) {
+            const pA = myPillars[pi], pB = myPillars[pj];
+            state.thunderStrikes.push({
+              x1: pA.x, y1: pA.y,
+              x2: pB.x, y2: pB.y,
+              life: THUNDER_STRIKE_FX_DURATION, maxLife: THUNDER_STRIKE_FX_DURATION,
+              color: b.char.color,
+              owner: b.player
+            });
+            // 判定敵人到線段的垂直距離（不延伸到線段外）
+            const lx = pB.x - pA.x, ly = pB.y - pA.y;
+            const len2 = lx*lx + ly*ly;
+            if (len2 > 0) {
+              const t = Math.max(0, Math.min(1, ((enemy.x - pA.x)*lx + (enemy.y - pA.y)*ly) / len2));
+              const cx2 = pA.x + t*lx, cy2 = pA.y + t*ly;
+              const dist = Math.hypot(enemy.x - cx2, enemy.y - cy2);
+              if (dist < RADIUS + THUNDER_STRIKE_HIT_RADIUS) {
+                totalHits++;
+              }
+            }
+          }
+        }
+
+        playHitSound('samurai_iaido');
+        // 每條命中的閃電線各自造成傷害
+        for (let h = 0; h < totalHits; h++) {
+          dealDamage(enemy, THUNDER_STRIKE_DAMAGE);
+        }
+        if (totalHits > 0) {
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: THUNDER_HIT_FX_R1, alpha: 1.0, color: '#f1c40f', t: 0.4 });
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: THUNDER_HIT_FX_R2, alpha: 0.9, color: '#ffffff', t: 0.25 });
+          const canParalyze = !enemy.thunderParalyzeWasHit && Math.random() < THUNDER_PARALYZE_CHANCE;
+          if (canParalyze) {
+            enemy.thunderParalyzed = true;
+            enemy.thunderParalyzeWasHit = true;
+          } else {
+            enemy.thunderParalyzeWasHit = false;
+          }
+        }
+
+        // 所有柱子本身不額外計算碰觸傷害（柱子貼牆，敵人不會靠近）
+      }
+      } // end else (not paralyzed)
+    }
+  }
+
+  // 雷電柱 lifetime 更新（非雷電法王角色的閃電柱時間也倒數，統一在上面處理了）
+
+  // 閃電連線特效更新
+  if (state.thunderStrikes) {
+    for (let i = state.thunderStrikes.length - 1; i >= 0; i--) {
+      state.thunderStrikes[i].life -= dt;
+      if (state.thunderStrikes[i].life <= 0) state.thunderStrikes.splice(i, 1);
+    }
+  }
+
+  // 麻痺消耗：在attackTimer到達間隔時若麻痺，重置計時器並取消麻痺
+  for (const b of state.balls) {
+    if (b.thunderParalyzed && b.attackTimer != null) {
+      // 麻痺：阻止下一次攻擊（重置計時器讓它再等一輪）
+      // 標記會在attackTimer到達時被消耗（在各角色攻擊邏輯前檢查）
+    }
+  }
+
   // 斬痕更新（解）
   for (let i = state.slashMarks.length-1; i >= 0; i--) {
     state.slashMarks[i].life -= dt;
@@ -2590,6 +2787,11 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     // 丟鴿子
     if (b.mageDoveTimer <= 0 && b.mageTeleportTimer < 0) {
       b.mageDoveTimer = MAGE_DOVE_INTERVAL;
+      // 麻痺：跳過本次
+      if (b.thunderParalyzed) {
+        b.thunderParalyzed = false;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+      } else {
       const angle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
       const proj = {
         x: b.x, y: b.y,
@@ -2612,6 +2814,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (state.stats) state.stats[b.player].skillUses++;
       b.mageTeleportTimer = MAGE_TELEPORT_DELAY;
       b.vx = 0; b.vy = 0;
+      } // end else (not paralyzed)
     }
   }
 
@@ -2708,6 +2911,12 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (!b.samuraiParrying) {
       b.samuraiParryTimer -= dt;
       if (b.samuraiParryTimer <= 0) {
+        // 麻痺：跳過招架
+        if (b.thunderParalyzed) {
+          b.thunderParalyzed = false;
+          b.samuraiParryTimer = SAMURAI_PARRY_INTERVAL * 0.5;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+        } else {
         // 進入招架
         b.samuraiParrying = true;
         b.samuraiParryElapsed = 0;
@@ -2715,6 +2924,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
         b.vx = 0; b.vy = 0;
         state.hitFlashes.push({ x: b.x, y: b.y, r: RADIUS + 18, alpha: 1.0, color: '#d4af37', t: 0.5 });
         playHitSound('samurai_parry');
+        } // end else (not paralyzed)
       }
     } else {
       // 招架狀態中
@@ -3311,6 +3521,80 @@ function render() {
     ctx.restore();
   }
 
+  // 雷電法王：閃電連線特效
+  if (state.thunderStrikes) {
+    for (const ts of state.thunderStrikes) {
+      const prog = ts.life / ts.maxLife;
+      ctx.save();
+      ctx.globalAlpha = prog;
+      // 主閃電線（鋸齒感用多段折線模擬）
+      const segCount = 8;
+      const pts = [];
+      for (let si = 0; si <= segCount; si++) {
+        const t2 = si / segCount;
+        const bx2 = ts.x1 + (ts.x2 - ts.x1) * t2;
+        const by2 = ts.y1 + (ts.y2 - ts.y1) * t2;
+        const jitter = (si === 0 || si === segCount) ? 0 : (Math.random() - 0.5) * 22 * prog;
+        const nx = -(ts.y2 - ts.y1), ny = (ts.x2 - ts.x1);
+        const nlen = Math.hypot(nx, ny) || 1;
+        pts.push({ x: bx2 + (nx/nlen)*jitter, y: by2 + (ny/nlen)*jitter });
+      }
+      // 外發光
+      ctx.strokeStyle = ts.color + 'bb';
+      ctx.lineWidth = 6 * prog;
+      ctx.shadowColor = ts.color;
+      ctx.shadowBlur = 22;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let si = 1; si < pts.length; si++) ctx.lineTo(pts[si].x, pts[si].y);
+      ctx.stroke();
+      // 白色芯線
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2 * prog;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let si = 1; si < pts.length; si++) ctx.lineTo(pts[si].x, pts[si].y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // 雷電法王：閃電柱（半圓形貼牆）
+  for (const pil of (state.thunderPillars || [])) {
+    ctx.save();
+    const pulse = 0.75 + 0.2 * Math.sin(elapsed * 6 + pil.x * 0.1);
+    // 無限壽命時全亮，有限壽命才逐漸消退
+    const lifeAlpha = (pil.life === Infinity) ? 1 : Math.min(1, pil.life / THUNDER_PILLAR_FADE_IN);
+    ctx.globalAlpha = pulse * lifeAlpha;
+    ctx.shadowColor = pil.color;
+    ctx.shadowBlur = 14;
+    // 根據牆面畫半圓（半圓開口朝場地內，中心點貼牆）
+    ctx.fillStyle = pil.color;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    let startAngle, endAngle;
+    if (pil.wallSide === 'left')   { startAngle = -Math.PI/2; endAngle = Math.PI/2; }
+    else if (pil.wallSide === 'right')  { startAngle = Math.PI/2; endAngle = Math.PI*1.5; }
+    else if (pil.wallSide === 'top')    { startAngle = 0; endAngle = Math.PI; }
+    else                                { startAngle = Math.PI; endAngle = Math.PI*2; }
+    ctx.arc(pil.x, pil.y, THUNDER_PILLAR_RADIUS, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = pulse * 0.7 * lifeAlpha;
+    ctx.stroke();
+    // 小閃電符號
+    ctx.globalAlpha = lifeAlpha * 0.9;
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowBlur = 6;
+    ctx.fillText('⚡', pil.x, pil.y);
+    ctx.restore();
+  }
+
   // 插牆菜刀
   for (const k of state.wallKnives) {
     ctx.save(); ctx.translate(k.x,k.y); ctx.rotate(k.angle);
@@ -3454,6 +3738,21 @@ function render() {
     ctx.lineTo(enemy.x, enemy.y);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  // 麻痺：黃色電擊光環
+  for (const b of state.balls) {
+    if (!b.thunderParalyzed) continue;
+    const pa = 0.4 + 0.4 * Math.abs(Math.sin(elapsed * 18));
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, RADIUS + 9, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(241,196,15,${pa})`;
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#f1c40f';
+    ctx.shadowBlur = 18;
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -3680,6 +3979,9 @@ function render() {
         atFrac = 1 - Math.min(b.samuraiParryTimer / SAMURAI_PARRY_INTERVAL, 1);
         barColor = b.samuraiNextIsShimetsu ? '#ff6600' : b.char.color;
       }
+    } else if (b.char.type === 'thunder') {
+      atFrac = b.thunderStrikeTimer != null ? 1 - (b.thunderStrikeTimer / THUNDER_STRIKE_INTERVAL) : 0;
+      barColor = b.thunderParalyzed ? '#f1c40f' : b.char.color;
     } else {
       atFrac = Math.min(1, b.attackTimer/b.attackInterval);
       barColor = (b.char.type!=='chef'||b.knives>0) ? b.char.color : '#555';
@@ -4060,6 +4362,11 @@ function updateHUD() {
       const trickNames = { 1:'💚回血', 2:'🔮穿透彈', 3:'🎯追蹤', 4:'❄️定身' };
       if (b.mageTrickReady) return `🎩 技巧蓄好！${trickNames[b.mageTrickType]} 🕊️${doveLeft}s`;
       return `🕊️ ${doveLeft}s ✨命中${b.mageHitCount||0}/${MAGE_TRICK_HIT_COUNT}`;
+    } else if (b.char.type === 'thunder') {
+      const pillarCount = state.thunderPillars.filter(p => p.owner === b.player).length;
+      const strikeLeft = Math.max(0, b.thunderStrikeTimer).toFixed(1);
+      const paraStatus = b.thunderParalyzed ? ' ⚡麻痺！' : '';
+      return `⚡ ${pillarCount}/${THUNDER_PILLAR_MAX}柱 🌩️${strikeLeft}s${paraStatus}`;
     } else {
       return `🍺 轉向: ${b.drunkTimer ? b.drunkTimer.toFixed(1) : '-'}s`;
     }
