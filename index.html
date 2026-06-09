@@ -876,7 +876,29 @@ function playHitSound(type) {
         oscS.start(now + si * 0.06); oscS.stop(now + si * 0.06 + 0.15);
       }
       osc.start(now); osc.stop(now + 0.01); // dummy to avoid error
-    } else if (type === 'smith_forge') {
+    } else if (type === 'naobito_shadow') {
+      // 殘影命中：輕柔氣流
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(200, now + 0.12);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      osc.start(now); osc.stop(now + 0.14);
+    } else if (type === 'naobito_kyousei') {
+      // 凶星軌跡：爆發衝擊聲
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(2000, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.25);
+      gain.gain.setValueAtTime(0.85, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
+      // 衝擊低音
+      const oscB = ctx.createOscillator(); const gainB = ctx.createGain();
+      oscB.type = 'sine'; oscB.frequency.setValueAtTime(80, now);
+      oscB.frequency.exponentialRampToValueAtTime(30, now + 0.35);
+      gainB.gain.setValueAtTime(0.7, now); gainB.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      oscB.connect(gainB); gainB.connect(ctx.destination);
+      oscB.start(now); oscB.stop(now + 0.4);
       // 鍛造音效：短促金屬敲擊聲
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(1100, now);
@@ -984,14 +1006,20 @@ const CHARACTERS = [
   {
   id: 'thunder', emoji: '⚡', weapon: '🌩️', name: '雷電法王',
   desc: '掌控雷霆之力的法王。碰到牆壁時留下閃電柱，閃電柱定時在不同牆面之間產生閃電直線傷害。敵人被閃電擊中有機率麻痺，下一次攻擊或技能無法觸發（麻痺不能連續兩次）。',
-  stats: ['閃電傷害18', '麻痺機率12%', '閃電間隔2s', '上限7柱'],
+  stats: ['閃電傷害18', '麻痺機率10%', '閃電間隔2s', '上限7柱'],
   color: '#f1c40f', glowColor: 'rgba(241,196,15,0.6)', type: 'thunder'
   },
   {
   id: 'blacksmith', emoji: '🔨', weapon: '⚔️', name: '鍛造師',
   desc: '鍛冶技藝精湛的戰士。平時不斷鍛造武器，每次鍛造累積基礎傷害並加快下一次鍛造速度。靠近敵人時拔出劍砍向對手。每次劍擊後重置鍛造速度。',
-  stats: ['鍛造加傷 8×累積', '劍擊 100+鍛造加傷', ],
+  stats: ['鍛造加傷 12×累積', '鍛造加速倍率×1.15', '劍擊 80+鍛造加傷', '攻擊距離120px'],
   color: '#cd7f32', glowColor: 'rgba(205,127,50,0.6)', type: 'blacksmith'
+  },
+  {
+  id: 'naobito', emoji: '👤', weapon: '👊', name: '禪院直哉',
+  desc: '禪院家天才，沿途留下殘影分身。殘影碰到敵人造成傷害，累積3個殘影時自動觸發「凶星軌跡」——所有殘影與本體同時衝向敵人。',
+  stats: ['殘影接觸傷害 10', '殘影上限 6個','凶星軌跡穿刺 60+殘影20×N'],
+  color: '#e8e8f0', glowColor: 'rgba(220,220,255,0.6)', type: 'naobito'
   }
 ];
 
@@ -1287,15 +1315,31 @@ const MAGE_TRICK_HOMING_TURN   = 300;   // 技巧3：追蹤轉向強度（px/s²
 const MAGE_TRICK_FREEZE_DUR    = 1.5;   // 技巧4：定身持續秒數
 
 // 鍛造師常數
-const SMITH_FORGE_INTERVAL_BASE   = 1.0;   // 初始鍛造間隔（秒）
-const SMITH_FORGE_INTERVAL_MIN    = 0.1;   // 最快鍛造間隔（秒）
+const SMITH_FORGE_INTERVAL_BASE   = 2.0;   // 初始鍛造間隔（秒）
+const SMITH_FORGE_INTERVAL_MIN    = 0.3;   // 最快鍛造間隔（秒）
 const SMITH_FORGE_ACCEL           = 0.15;  // 每次鍛造後間隔縮短比率（越鍛越快）
-const SMITH_FORGE_DMG_PER_STACK   = 8;    // 每層鍛造加傷
+const SMITH_FORGE_DMG_PER_STACK   = 12;    // 每層鍛造加傷
 const SMITH_FORGE_MAX_STACKS      = 20;    // 最大鍛造層數上限
-const SMITH_SWORD_BASE_DAMAGE     = 100;    // 劍擊基礎傷害
-const SMITH_SWORD_RANGE           = 100;   // 劍擊判定距離（px）
+const SMITH_SWORD_BASE_DAMAGE     = 80;    // 劍擊基礎傷害
+const SMITH_SWORD_RANGE           = 120;   // 劍擊判定距離（px）
 const SMITH_SWORD_COOLDOWN        = 1.2;   // 劍擊冷卻（秒）
 const SMITH_SWORD_KNOCKBACK       = 250;   // 劍擊擊退力道（px/s）
+
+// 禪院直哉常數
+const NAOBITO_PATH_INTERVAL       = 3.0;   // 重新規劃路徑間隔（秒）
+const NAOBITO_DASH_SPEED          = 560;   // 衝刺速度（px/s）
+const NAOBITO_WAYPOINT_COUNT      = 6;     // 每次路徑中繼點數量
+const NAOBITO_SHADOW_LIFETIME     = 2.5;   // 殘影存活時間（秒）
+const NAOBITO_SHADOW_MAX          = 6;     // 最多同時存在殘影數
+const NAOBITO_SHADOW_DAMAGE       = 10;    // 殘影接觸傷害
+const NAOBITO_SHADOW_HIT_RADIUS   = 20;    // 殘影命中判定半徑（px）
+const NAOBITO_SHADOW_HIT_COOLDOWN = 0.6;   // 同一殘影再次傷害冷卻（秒）
+const NAOBITO_KYOUSEI_THRESHOLD   = 6;     // 凶星軌跡觸發所需殘影數
+const NAOBITO_KYOUSEI_PIERCE_DMG  = 60;    // 凶星軌跡本體穿刺傷害
+const NAOBITO_KYOUSEI_SHADOW_DMG  = 20;    // 凶星軌跡每殘影傷害
+const NAOBITO_KYOUSEI_SPEED       = 500;   // 凶星軌跡衝刺速度（px/s）
+const NAOBITO_KYOUSEI_COOLDOWN    = 5.0;   // 凶星軌跡觸發後冷卻（秒）
+const NAOBITO_PATH_DEVIATION      = 120;   // 路徑中繼點偏移量（px）
 
 // 雷電法王常數
 const THUNDER_PILLAR_MAX          = 7;        // 最多同時存在幾個閃電柱
@@ -1394,8 +1438,8 @@ function startGame() {
   document.getElementById('game-screen').style.display = 'flex';
   document.getElementById('result-stats').innerHTML = '';
 
-  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840' };
+  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc' };
 
   const ch1base  = CHARACTERS.find(c => c.id === p1Choice);
   const ch2base  = CHARACTERS.find(c => c.id === p2Choice);
@@ -1513,6 +1557,14 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       smithSwordTimer: ch.type === 'blacksmith' ? 0 : null,   // 劍擊冷卻倒數
       smithSwordSwinging: ch.type === 'blacksmith' ? false : null, // 是否正在揮劍
       smithSwordSwingTimer: ch.type === 'blacksmith' ? 0 : null,   // 揮劍動畫計時
+      // 禪院直哉專屬狀態
+      naoPathTimer: ch.type === 'naobito' ? 0 : null,          // 下次規劃路徑倒數（0=立即規劃）
+      naoWaypoints: ch.type === 'naobito' ? [] : null,         // 當前路徑中繼點列表
+      naoWaypointIdx: ch.type === 'naobito' ? 0 : null,        // 當前目標中繼點索引
+      naoDashing: ch.type === 'naobito' ? false : null,        // 是否正在衝刺路徑中
+      naoKyouseiTimer: ch.type === 'naobito' ? 0 : null,       // 凶星軌跡冷卻
+      naoKyouseiFiring: ch.type === 'naobito' ? false : null,  // 凶星軌跡發動中
+      naoKyouseiTimer2: ch.type === 'naobito' ? 0 : null,      // 凶星軌跡動畫計時
     };
   }
 
@@ -1526,6 +1578,8 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     thunderPillars: [],
     thunderStrikes: [],
     smithForgeParticles: [],
+    naoShadows: [],       // 禪院直哉殘影列表
+    naoPathLines: [],     // 路徑預覽線（短暫顯示）
     stats: {
       1: { totalDmg: 0, maxHit: 0, skillUses: 0 },
       2: { totalDmg: 0, maxHit: 0, skillUses: 0 },
@@ -1894,7 +1948,9 @@ function update(dt) {
                               (b.mageFreezeTimer > 0) ||
                               (b.char.type === 'samurai' && (b.samuraiParrying || b.samuraiShimetsuing)) ||
                               (b.char.type === 'samurai' && b.samuraiIaidoing) ||
-                              (b.char.type === 'blacksmith' && b.smithSwordSwinging);
+                              (b.char.type === 'blacksmith' && b.smithSwordSwinging) ||
+                              (b.char.type === 'naobito' && b.naoDashing) ||
+                              (b.char.type === 'naobito' && b.naoKyouseiFiring);
       // 居合衝刺：在移動前直接設速度，確保方向正確
       if (b.char.type === 'samurai' && b.samuraiIaidoing) {
         b.vx = Math.cos(b.samuraiIaidoAngle) * SAMURAI_IAIDO_SPEED;
@@ -2873,7 +2929,190 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     }
   }
 
-  // 閃電連線特效更新
+  // ── 禪院直哉邏輯 ──
+  // 殘影生命倒數＋接觸傷害
+  if (state.naoShadows) {
+    for (let i = state.naoShadows.length - 1; i >= 0; i--) {
+      const sh = state.naoShadows[i];
+      sh.life -= dt;
+      if (sh.hitCooldown > 0) sh.hitCooldown -= dt;
+      if (sh.life <= 0) { state.naoShadows.splice(i, 1); continue; }
+      // 接觸判定：碰到敵人
+      const enemy = state.balls.find(b => b.player !== sh.owner);
+      if (enemy && sh.hitCooldown <= 0) {
+        const dist = Math.hypot(enemy.x - sh.x, enemy.y - sh.y);
+        if (dist < NAOBITO_SHADOW_HIT_RADIUS + RADIUS) {
+          dealDamage(enemy, NAOBITO_SHADOW_DAMAGE);
+          sh.hitCooldown = NAOBITO_SHADOW_HIT_COOLDOWN;
+          state.hitFlashes.push({ x: sh.x, y: sh.y, r: 22, alpha: 0.7, color: '#c8c8ff', t: 0.2 });
+          playHitSound('naobito_shadow');
+        }
+      }
+    }
+    // 路徑預覽線倒數
+    for (let i = state.naoPathLines.length - 1; i >= 0; i--) {
+      state.naoPathLines[i].life -= dt;
+      if (state.naoPathLines[i].life <= 0) state.naoPathLines.splice(i, 1);
+    }
+  }
+
+  for (let bi = 0; bi < state.balls.length; bi++) {
+    const b = state.balls[bi];
+    if (b.char.type !== 'naobito') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+
+    // 凶星軌跡冷卻倒數
+    if (b.naoKyouseiTimer > 0) b.naoKyouseiTimer -= dt;
+
+    // 凶星軌跡動畫計時
+    if (b.naoKyouseiFiring) {
+      b.naoKyouseiTimer2 -= dt;
+      if (b.naoKyouseiTimer2 <= 0) b.naoKyouseiFiring = false;
+    }
+
+    // 凶星軌跡觸發判定
+    const myShadows = state.naoShadows ? state.naoShadows.filter(s => s.owner === b.player) : [];
+    if (myShadows.length >= NAOBITO_KYOUSEI_THRESHOLD && b.naoKyouseiTimer <= 0 && !b.naoKyouseiFiring) {
+      // 本體穿刺衝向敵人
+      const ex = enemy.x - b.x, ey = enemy.y - b.y;
+      const ed = Math.hypot(ex, ey) || 1;
+      b.vx = (ex / ed) * NAOBITO_KYOUSEI_SPEED;
+      b.vy = (ey / ed) * NAOBITO_KYOUSEI_SPEED;
+      b.naoDashing = true;
+
+      // 每個殘影也飛向敵人（作為投射物）
+      for (const sh of myShadows) {
+        const sx = enemy.x - sh.x, sy = enemy.y - sh.y;
+        const sd = Math.hypot(sx, sy) || 1;
+        state.projectiles.push({
+          x: sh.x, y: sh.y,
+          vx: (sx / sd) * NAOBITO_KYOUSEI_SPEED,
+          vy: (sy / sd) * NAOBITO_KYOUSEI_SPEED,
+          damage: NAOBITO_KYOUSEI_SHADOW_DMG,
+          owner: b.player,
+          type: 'naobito_kyousei',
+          life: 1.5,
+          r: RADIUS * 0.7,
+          hit: false
+        });
+      }
+      // 移除所有殘影
+      state.naoShadows = state.naoShadows.filter(s => s.owner !== b.player);
+      b.naoKyouseiTimer = NAOBITO_KYOUSEI_COOLDOWN;
+      b.naoKyouseiFiring = true;
+      b.naoKyouseiTimer2 = 0.35;
+      b.naoPathTimer = NAOBITO_PATH_INTERVAL; // 重新規劃路徑
+      if (state.stats) state.stats[b.player].skillUses++;
+      playHitSound('naobito_kyousei');
+      // 大光爆特效
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.0, color: '#ffffff', t: 0.4 });
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 0.8, color: '#aaaaff', t: 0.3 });
+      continue; // 凶星軌跡期間跳過普通路徑邏輯
+    }
+
+    // 凶星軌跡本體命中判定
+    if (b.naoKyouseiFiring) {
+      const distE = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+      if (distE < RADIUS * 2) {
+        dealDamage(enemy, NAOBITO_KYOUSEI_PIERCE_DMG);
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 40, alpha: 1.0, color: '#ffffff', t: 0.35 });
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 20, alpha: 0.9, color: '#8888ff', t: 0.25 });
+        b.naoKyouseiFiring = false;
+        b.naoDashing = false;
+      }
+      continue;
+    }
+
+    // ── 一般路徑規劃與衝刺 ──
+    b.naoPathTimer -= dt;
+
+    // 需要規劃新路徑
+    if (b.naoPathTimer <= 0 && (!b.naoWaypoints || b.naoWaypointIdx >= b.naoWaypoints.length)) {
+      // 生成折線路徑：多個偏移中繼點 → 最終目標為敵人
+      const waypoints = [];
+      for (let wi = 0; wi < NAOBITO_WAYPOINT_COUNT - 1; wi++) {
+        const t = (wi + 1) / NAOBITO_WAYPOINT_COUNT;
+        const mx = b.x + (enemy.x - b.x) * t;
+        const my = b.y + (enemy.y - b.y) * t;
+        const perp = Math.atan2(enemy.y - b.y, enemy.x - b.x) + Math.PI / 2;
+        const dev = (Math.random() - 0.5) * 2 * NAOBITO_PATH_DEVIATION;
+        waypoints.push({
+          x: Math.max(RADIUS + 5, Math.min(W - RADIUS - 5, mx + Math.cos(perp) * dev)),
+          y: Math.max(RADIUS + 5, Math.min(H - RADIUS - 5, my + Math.sin(perp) * dev))
+        });
+      }
+      waypoints.push({ x: enemy.x, y: enemy.y }); // 最終目標
+      b.naoWaypoints = waypoints;
+      b.naoWaypointIdx = 0;
+      b.naoDashing = true;
+      b.naoPathTimer = NAOBITO_PATH_INTERVAL;
+
+      // 路徑預覽線（短暫顯示）
+      const allPts = [{ x: b.x, y: b.y }, ...waypoints];
+      for (let wi = 0; wi < allPts.length - 1; wi++) {
+        state.naoPathLines.push({
+          x1: allPts[wi].x, y1: allPts[wi].y,
+          x2: allPts[wi + 1].x, y2: allPts[wi + 1].y,
+          life: 0.45, maxLife: 0.45, owner: b.player
+        });
+      }
+    }
+
+    // 沿路徑衝刺
+    if (b.naoDashing && b.naoWaypoints && b.naoWaypointIdx < b.naoWaypoints.length) {
+      const target = b.naoWaypoints[b.naoWaypointIdx];
+      const dx = target.x - b.x, dy = target.y - b.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 12) {
+        // 抵達中繼點：留下殘影
+        const myCount = state.naoShadows.filter(s => s.owner === b.player).length;
+        if (myCount < NAOBITO_SHADOW_MAX) {
+          state.naoShadows.push({
+            x: b.x, y: b.y,
+            owner: b.player,
+            life: NAOBITO_SHADOW_LIFETIME,
+            maxLife: NAOBITO_SHADOW_LIFETIME,
+            hitCooldown: 0
+          });
+          // 殘影出現特效
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 18, alpha: 0.5, color: '#c8c8ff', t: 0.25 });
+        }
+        b.naoWaypointIdx++;
+        if (b.naoWaypointIdx >= b.naoWaypoints.length) {
+          b.naoDashing = false;
+        }
+      } else {
+        // 朝中繼點衝刺
+        b.vx = (dx / dist) * NAOBITO_DASH_SPEED;
+        b.vy = (dy / dist) * NAOBITO_DASH_SPEED;
+      }
+    } else {
+      b.naoDashing = false;
+    }
+  }
+
+  // 凶星軌跡投射物更新
+  if (state.projectiles) {
+    for (let i = state.projectiles.length - 1; i >= 0; i--) {
+      const p = state.projectiles[i];
+      if (p.type !== 'naobito_kyousei') continue;
+      p.life -= dt;
+      if (p.life <= 0 || p.hit) { state.projectiles.splice(i, 1); continue; }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      const enemy = state.balls.find(b => b.player !== p.owner);
+      if (enemy) {
+        const dist = Math.hypot(enemy.x - p.x, enemy.y - p.y);
+        if (dist < RADIUS + p.r) {
+          dealDamage(enemy, p.damage);
+          p.hit = true;
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 22, alpha: 0.85, color: '#aaaaff', t: 0.25 });
+        }
+      }
+    }
+  }
   if (state.thunderStrikes) {
     for (let i = state.thunderStrikes.length - 1; i >= 0; i--) {
       state.thunderStrikes[i].life -= dt;
@@ -3990,6 +4229,86 @@ function render() {
     }
   }
 
+  // 禪院直哉：路徑預覽線
+  if (state.naoPathLines) {
+    for (const line of state.naoPathLines) {
+      const prog = line.life / line.maxLife;
+      ctx.save();
+      ctx.globalAlpha = prog * 0.55;
+      ctx.strokeStyle = '#c8c8ff';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 5]);
+      ctx.shadowColor = '#8888ff';
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(line.x1, line.y1);
+      ctx.lineTo(line.x2, line.y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+
+  // 禪院直哉：殘影分身
+  if (state.naoShadows) {
+    for (const sh of state.naoShadows) {
+      const prog = sh.life / sh.maxLife;
+      const ownerBall = state.balls.find(b => b.player === sh.owner);
+      const col = ownerBall ? ownerBall.char.color : '#c8c8ff';
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, prog * 0.65);
+      // 外光暈
+      const sg = ctx.createRadialGradient(sh.x, sh.y, 0, sh.x, sh.y, RADIUS * 1.8);
+      sg.addColorStop(0, col + '55');
+      sg.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(sh.x, sh.y, RADIUS * 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = sg; ctx.fill();
+      // 主體（半透明）
+      ctx.beginPath(); ctx.arc(sh.x, sh.y, RADIUS, 0, Math.PI * 2);
+      ctx.fillStyle = '#0d1117';
+      ctx.globalAlpha = Math.max(0, prog * 0.5);
+      ctx.fill();
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.8;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 12;
+      ctx.globalAlpha = Math.max(0, prog * 0.7);
+      ctx.stroke();
+      // 殘影 emoji
+      ctx.font = `${RADIUS * 1.1}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.globalAlpha = Math.max(0, prog * 0.55);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('👤', sh.x, sh.y);
+      ctx.restore();
+    }
+  }
+
+  // 凶星軌跡投射物（殘影飛撲）
+  if (state.projectiles) {
+    for (const p of state.projectiles) {
+      if (p.type !== 'naobito_kyousei') continue;
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#0d1117'; ctx.fill();
+      ctx.strokeStyle = '#c8c8ff';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#8888ff';
+      ctx.shadowBlur = 14;
+      ctx.stroke();
+      ctx.font = `${p.r * 1.2}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('👤', p.x, p.y);
+      ctx.restore();
+    }
+  }
+
   // 繪製球
   for (const b of state.balls) {
     // 詛咒橫切動畫中：隱藏被擊殺角色本體（由特效自己畫兩半）
@@ -4183,7 +4502,61 @@ function render() {
       }
     }
 
-    // 末代武士：居合衝刺殘影
+    // 禪院直哉：衝刺殘像＆凶星軌跡光暈
+    if (b.char.type === 'naobito') {
+      const shadows = state.naoShadows ? state.naoShadows.filter(s => s.owner === b.player).length : 0;
+      if (b.naoDashing || b.naoKyouseiFiring) {
+        // 衝刺方向殘像
+        const speed = Math.hypot(b.vx, b.vy);
+        if (speed > 100) {
+          const ang = Math.atan2(b.vy, b.vx) + Math.PI;
+          for (let ti = 1; ti <= 3; ti++) {
+            const ta = 0.25 + ti * 0.2;
+            ctx.save();
+            ctx.globalAlpha = ta * 0.35;
+            ctx.beginPath();
+            ctx.arc(b.x + Math.cos(ang) * ti * 14, b.y + Math.sin(ang) * ti * 14, RADIUS * (1 - ti * 0.15), 0, Math.PI * 2);
+            ctx.fillStyle = b.char.color + '33';
+            ctx.strokeStyle = b.char.color;
+            ctx.lineWidth = 1.2;
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+      }
+      // 凶星軌跡就緒：白色光暈脈動
+      if (shadows >= NAOBITO_KYOUSEI_THRESHOLD && !b.naoKyouseiFiring) {
+        const pulse = 0.5 + 0.5 * Math.abs(Math.sin(elapsed * 8));
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, RADIUS + 10, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = '#aaaaff';
+        ctx.shadowBlur = 20 * pulse;
+        ctx.globalAlpha = 0.7 * pulse;
+        ctx.stroke();
+        ctx.restore();
+      }
+      // 殘影數量小指示點
+      if (shadows > 0) {
+        for (let si = 0; si < shadows; si++) {
+          const ang2 = (si / NAOBITO_SHADOW_MAX) * Math.PI * 2 - Math.PI / 2;
+          const dotX = b.x + Math.cos(ang2) * (RADIUS + 12);
+          const dotY = b.y + Math.sin(ang2) * (RADIUS + 12);
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(dotX, dotY, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = si < NAOBITO_KYOUSEI_THRESHOLD ? '#8888ff' : '#ffffff';
+          ctx.shadowColor = '#aaaaff';
+          ctx.shadowBlur = 8;
+          ctx.globalAlpha = 0.9;
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+    }
     if (b.char.type === 'samurai' && b.samuraiIaidoing) {
       ctx.save();
       ctx.globalAlpha = 0.6;
@@ -4668,6 +5041,13 @@ function updateHUD() {
       })();
       if (nearEnemy) return `⚔️ 劍擊 CD:${swordCD}s (鍛造×${b.smithForgeStacks})`;
       return `🔨 鍛造${nextForge}s ×${b.smithForgeStacks}/${SMITH_FORGE_MAX_STACKS}`;
+    } else if (b.char.type === 'naobito') {
+      const shadows = state.naoShadows ? state.naoShadows.filter(s => s.owner === b.player).length : 0;
+      const cdLeft = Math.max(0, b.naoKyouseiTimer || 0).toFixed(1);
+      if (b.naoKyouseiFiring) return `💥 凶星軌跡！`;
+      if (shadows >= NAOBITO_KYOUSEI_THRESHOLD) return `👤×${shadows} ⚡凶星軌跡就緒`;
+      const dashStr = b.naoDashing ? '⚡衝刺中' : `投射${(b.naoPathTimer || 0).toFixed(1)}s`;
+      return `👤×${shadows}/${NAOBITO_SHADOW_MAX} ${dashStr}${cdLeft > 0 ? ` CD:${cdLeft}s` : ''}`;
     } else {
       return `🍺 轉向: ${b.drunkTimer ? b.drunkTimer.toFixed(1) : '-'}s`;
     }
@@ -4701,8 +5081,7 @@ function showResult(deadBalls) {
       return `<div style="${cardStyle}">
         <div style="font-size:1.1rem;margin-bottom:4px">${b.char.emoji} <span style="color:${b.char.color};font-weight:700">${b.char.displayName}</span></div>
         <div>💥 總傷害　<b style="color:#fff">${Math.round(s.totalDmg)}</b></div>
-        <div>🎯 技能使用　<b style="color:#fff">${s.skillUses}</b></div>
-      </div>`;
+              </div>`;
     });
     statsEl.innerHTML = `
       <div style="width:100%;text-align:center;font-size:0.75rem;color:#888;margin-bottom:6px;letter-spacing:.1em">⚔️ 戰鬥紀錄　${mm}:${ss}</div>
