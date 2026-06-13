@@ -941,85 +941,106 @@ const CHARACTERS = [
     id: 'chef', emoji: '👨‍🍳', weapon: '🔪', name: '地獄廚神',
     desc: '世界頂級大廚。手持兩把菜刀，可以投出菜刀。菜刀可穿透角色球並插在邊界，在手上沒刀時會將刀給回收。',
     stats: ['傷害 130', '冷卻2.0s', '刀數 2'],
-    color: '#e84545', glowColor: 'rgba(232,69,69,0.6)', type: 'chef'
+    color: '#e84545', glowColor: 'rgba(232,69,69,0.6)', type: 'chef',
+  winQuote: '這肉生的我還聽到他在叫呢。'
   },
   {
     id: 'drunk', emoji: '🍺', weapon: '🍾', name: '酒鬼',
     desc: '醉醺醺的戰士，軌跡飄忽不定。會投擲酒瓶造成傷害，隨機改變方向。',
     stats: ['傷害 150', '冷卻 1.75s', '方向 隨機'],
-    color: '#7b4cca', glowColor: 'rgba(123,76,202,0.6)', type: 'drunk'
+    color: '#7b4cca', glowColor: 'rgba(123,76,202,0.6)', type: 'drunk',
+  winQuote: '阿爸了beer?'
   },
   {
     id: 'opm', emoji: '👊', weapon: '💥', name: '一拳超人',
     desc: '絕對力量的具現。平時無所事事隨意漫步，每秒累積怒氣值——當達到上限時，對敵人造成血量上限的傷害，不可閃避。碰撞可額外增長怒氣值。',
     stats: ['傷害 ∞', '怒氣值上限40', '碰撞增加怒氣1'],
-    color: '#f5f5f5', glowColor: 'rgba(245,245,245,0.6)', type: 'opm'
+    color: '#f5f5f5', glowColor: 'rgba(245,245,245,0.6)', type: 'opm',
+  winQuote: '又是一拳結束了嗎？。'
   },
   {
     id: 'vampire', emoji: '🧛', weapon: '🦇', name: '暗夜領主',
     desc: '隱藏於黑暗中的掠食者。碰到敵人時鎖定撕咬，每次造成傷害並吸血，敵人被咬住期間無法移動。偶爾發動蝙蝠狂襲，高速衝向敵人。',
     stats: ['咬擊 25×4', '吸血 21×4', '衝刺 9s'],
-    color: '#8b1a8b', glowColor: 'rgba(139,26,139,0.6)', type: 'vampire'
+    color: '#8b1a8b', glowColor: 'rgba(139,26,139,0.6)', type: 'vampire',
+  winQuote: '我現在真是high到不行。'
   },
 {
   id: 'gojo', emoji: '😎', weapon: '🔵', name: '現代最強',
   desc: '持有無下限術式，可以使用帶有引力的術式順轉「蒼」及帶有斥力術式反轉「赫」。血量降低到一定程度時解放六眼，釋放大招「虛式紫」。',
   stats: ['蒼 130傷', '赫 150傷', '紫 8楨傷', '冷卻 2.0s'],
-  color: '#00cfff', glowColor: 'rgba(0,207,255,0.6)', type: 'gojo'
+  color: '#00cfff', glowColor: 'rgba(0,207,255,0.6)', type: 'gojo',
+  winQuote: '沒錯，是五條贏了。'
   },
   {
   id: 'cursed', emoji: '💀', weapon: '⚔️', name: '詛咒之王',
   desc: '平安時代最強的王，活躍於「咒術全盛時代」的人類術師，一段時間使用「解」造成傷害並緩速，在碰觸敵方時使用「捌」，在血量到一定值時，施放領域展開「伏魔域廚子」。',
   stats: ['解 140/4.5s', '捌 25×2s', '領域 5/楨','解冷卻4.25s'],
-  color: '#c0392b', glowColor: 'rgba(192,57,43,0.6)', type: 'cursed'
+  color: '#c0392b', glowColor: 'rgba(192,57,43,0.6)', type: 'cursed',
+  winQuote: '不過是沒出生在我時代的凡夫罷了。'
   },
   {
   id: 'trapper', emoji: '🪤', weapon: '⛓️', name: '陷阱大師',
   desc: '詭計多端的戰術家，碰到邊界時放置尖刺陷阱。敵人觸碰尖刺時將會中毒以及受傷。每隔一段時間能使一個尖刺射出鎖鏈，強制將敵人拉向它！',
   stats: ['尖刺 50+毒45/s', '鎖鏈冷卻 3s', '刺上限6'],
-  color: '#27ae60', glowColor: 'rgba(39,174,96,0.6)', type: 'trapper'
+  color: '#27ae60', glowColor: 'rgba(39,174,96,0.6)', type: 'trapper',
+  winQuote: '你逃不出我的手掌心。'
   },
   {
   id: 'yi', emoji: '⚫', weapon: '⬜', name: '奕',
   desc: '棋道高手，柯潔之下第一人，以黑棋圍困敵人。放滿四顆後，於四棋中心落白旗，黑棋被吸入爆炸！血量危急時，在敵方四周施放「運籌帷幄」，讓對手無路可逃。',
   stats: ['黑棋 50', '白旗爆炸 200', '運籌帷幄 600HP觸發', '攻擊冷卻1.5s'],
-  color: '#e8e8e8', glowColor: 'rgba(232,232,232,0.6)', type: 'yi'
+  color: '#e8e8e8', glowColor: 'rgba(232,232,232,0.6)', type: 'yi',
+  winQuote: '神之一手！。'
   },
   {
   id: 'gunner', emoji: '🔫', weapon: '💥', name: '無名槍手',
   desc: '沉默的槍手。沒人知道他的名字，每次撞牆裝彈，累積足夠子彈後停下來向敵人快速連射。定時投擲閃光彈，造成範圍傷害並暫時封鎖對手攻擊或技能。',
   stats: ['裝彈上限 6', '子彈傷害 45', '閃光彈 8s', '閃光彈傷害 80'],
-  color: '#b8860b', glowColor: 'rgba(184,134,11,0.6)', type: 'gunner'
+  color: '#b8860b', glowColor: 'rgba(184,134,11,0.6)', type: 'gunner',
+  winQuote: '顆秒！！！！！！。'
   },
   {
   id: 'samurai', emoji: '⚔️', weapon: '⚔️', name: '末代武士',
   desc: '最後的武士道傳人。定時進入「招架」狀態，可將飛來的投射物反彈。招架中碰到敵人球，立即反應以「居合」穿透斬擊，使用一定次數「居合」後，解鎖大招識滅斬。',
   stats: ['招架 1s/2s', '反彈傷害×1.2', '居合穿透 120', '識滅斬 140×4','招架減傷70%'],
-  color: '#d4af37', glowColor: 'rgba(212,175,55,0.6)', type: 'samurai'
+  color: '#d4af37', glowColor: 'rgba(212,175,55,0.6)', type: 'samurai',
+  winQuote: '此刻，識滅之時。'
   },
   {
   id: 'mage', emoji: '🎩', weapon: '🕊️', name: '魔術師',
   desc: '神出鬼沒的舞台魔術師。定時丟出鴿子造成傷害，丟出後瞬間消失在場地另一處。每命中一定次數，下一顆鴿子附帶隨機「魔術技巧」！',
   stats: ['鴿子80傷', '丟出後瞬移','冷卻1.25s', '3命中→魔術技巧', '技巧：回血/反彈/追蹤/定身'],
-  color: '#9b59b6', glowColor: 'rgba(155,89,182,0.6)', type: 'mage'
+  color: '#9b59b6', glowColor: 'rgba(155,89,182,0.6)', type: 'mage',
+  winQuote: '好戲開演！！！！。'
   },
   {
   id: 'thunder', emoji: '⚡', weapon: '🌩️', name: '雷電法王',
   desc: '掌控雷霆之力的法王。碰到牆壁時留下閃電柱，閃電柱定時在不同牆面之間產生閃電直線傷害。敵人被閃電擊中有機率麻痺，下一次攻擊或技能無法觸發（麻痺不能連續兩次）。',
-  stats: ['閃電傷害18', '麻痺機率10%', '閃電間隔2s', '上限7柱'],
-  color: '#f1c40f', glowColor: 'rgba(241,196,15,0.6)', type: 'thunder'
+  stats: ['閃電傷害18', '麻痺機率15%', '閃電間隔2s', '上限7柱'],
+  color: '#f1c40f', glowColor: 'rgba(241,196,15,0.6)', type: 'thunder',
+  winQuote: '以雷霆擊碎黑暗！。'
   },
   {
   id: 'blacksmith', emoji: '🔨', weapon: '⚔️', name: '鍛造師',
   desc: '鍛冶技藝精湛的戰士。平時不斷鍛造武器，每次鍛造累積基礎傷害並加快下一次鍛造速度。靠近敵人時拔出劍砍向對手。每次劍擊後重置鍛造速度。',
   stats: ['鍛造加傷 12×累積', '鍛造加速倍率×1.15', '劍擊 80+鍛造加傷', '攻擊距離120px'],
-  color: '#cd7f32', glowColor: 'rgba(205,127,50,0.6)', type: 'blacksmith'
+  color: '#cd7f32', glowColor: 'rgba(205,127,50,0.6)', type: 'blacksmith',
+  winQuote: '比蟑螂還不如。'
   },
   {
   id: 'naobito', emoji: '👤', weapon: '👊', name: '禪院直哉',
   desc: '禪院家天才，沿途留下殘影分身。殘影碰到敵人造成傷害，累積3個殘影時自動觸發「凶星軌跡」——所有殘影與本體同時衝向敵人。',
   stats: ['殘影接觸傷害 10', '殘影上限 6個','凶星軌跡穿刺 60+殘影20×N'],
-  color: '#e8e8f0', glowColor: 'rgba(220,220,255,0.6)', type: 'naobito'
+  color: '#e8e8f0', glowColor: 'rgba(220,220,255,0.6)', type: 'naobito',
+  winQuote: '能跟上甚爾的人，只能是我。'
+  },
+  {
+  id: 'itachi', emoji: '🐦‍⬛', weapon: '🔥', name: '宇治波鼬',
+  desc: '深愛弟弟的忍者。發射黑炎「天照」附加標記，標記引爆造成大量傷害；「月讀」可定身敵人。瀕死時化作烏鴉逃離，每場一次。血量過低時自動觸發「須佐能乎」。',
+  stats: ['天照 50 / 引爆120', '月讀定身2s', '須佐能乎 減傷50%', '烏鴉替身 回復150'],
+  color: '#8b0000', glowColor: 'rgba(139,0,0,0.6)', type: 'itachi',
+  winQuote: '沉浸在幻術的海洋之中吧。'
   }
 ];
 
@@ -1217,8 +1238,8 @@ const ARENA_LAVA_DMG_PER_SEC = 20;  // 熔岩場每秒傷害
 let selectedArena = 'normal'; // 'normal' | 'lava'
 const WALL               = 1;
 const MAX_HP             = 1200;
-const BASE_SPEED         = 180;
-const MIN_SPEED          = 80;   // 最低移動速度（技能停止中除外）
+const BASE_SPEED         = 200;
+const MIN_SPEED          = 100;   // 最低移動速度（技能停止中除外）
 const BOOST_INTERVAL_MIN = 3;
 const BOOST_INTERVAL_MAX = 5;
 const BOOST_MAGNITUDE    = 50;
@@ -1341,13 +1362,32 @@ const NAOBITO_KYOUSEI_SPEED       = 500;   // 凶星軌跡衝刺速度（px/s）
 const NAOBITO_KYOUSEI_COOLDOWN    = 5.0;   // 凶星軌跡觸發後冷卻（秒）
 const NAOBITO_PATH_DEVIATION      = 120;   // 路徑中繼點偏移量（px）
 
+
+// 宇治波鼬常數
+const ITACHI_AMATERASU_INTERVAL = 2.0;   // 天照冷卻（秒）
+const ITACHI_AMATERASU_SPEED    = 450;   // 黑炎飛行速度（px/s）
+const ITACHI_AMATERASU_DAMAGE   = 50;    // 天照命中傷害
+const ITACHI_AMATERASU_MARK_DMG = 120;   // 標記引爆傷害
+const ITACHI_TSUKUYOMI_INTERVAL = 6.0;   // 月讀冷卻（秒）
+const ITACHI_TSUKUYOMI_PIN_DUR  = 2.0;   // 定身持續時間（秒）
+const ITACHI_CROW_HEAL          = 200;   // 烏鴉替身恢復血量
+const ITACHI_SUSANOO_HP_THRESHOLD = 500; // 須佐能乎觸發血量
+const ITACHI_SUSANOO_DURATION   = 9.0;   // 須佐能乎持續時間（秒）
+const ITACHI_SUSANOO_DMG_REDUCE = 0.5;   // 須佐能乎減傷比例
+const ITACHI_SUSANOO_BITE_DAMAGE = 50;   // 須佐能乎近戰每擊傷害
+const ITACHI_SUSANOO_BITE_HEAL   = 30;   // 須佐能乎近戰每擊吸血
+const ITACHI_SUSANOO_BITE_COUNT  = 4;    // 近戰連擊次數
+const ITACHI_SUSANOO_BITE_INTERVAL = 0.3; // 刺擊冷卻（秒），避免擦身連續觸發過密
+const ITACHI_SUSANOO_BITE_COOLDOWN = 0.8;  // 近戰結束冷卻（秒）
+const ITACHI_SUSANOO_BITE_RANGE  = RADIUS * 2 + 50; // 須佐能乎近戰判定距離（px）
+
 // 雷電法王常數
 const THUNDER_PILLAR_MAX          = 7;        // 最多同時存在幾個閃電柱
 const THUNDER_PILLAR_RADIUS       = 14;       // 閃電柱半圓半徑（顯示用）
 const THUNDER_STRIKE_INTERVAL     = 2.0;      // 閃電連線發射間隔（秒）
 const THUNDER_PILLAR_DAMAGE       = 60;       // 閃電柱本體傷害（碰到柱子時）
 const THUNDER_STRIKE_DAMAGE       = 18;       // 每條閃電連線傷害（每條獨立計算）
-const THUNDER_PARALYZE_CHANCE     = 0.12;     // 麻痺機率
+const THUNDER_PARALYZE_CHANCE     = 0.15;     // 麻痺機率
 const THUNDER_PILLAR_LIFETIME     = 15; // 閃電柱存在時間（Infinity = 永久）
 const THUNDER_STRIKE_HIT_RADIUS   = 55;       // 閃電線命中判定額外半徑（px，需夠大才能跨牆命中）
 const THUNDER_STRIKE_FX_DURATION  = 0.35;     // 閃電特效持續時間（秒）
@@ -1438,8 +1478,8 @@ function startGame() {
   document.getElementById('game-screen').style.display = 'flex';
   document.getElementById('result-stats').innerHTML = '';
 
-  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc' };
+  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333' };
 
   const ch1base  = CHARACTERS.find(c => c.id === p1Choice);
   const ch2base  = CHARACTERS.find(c => c.id === p2Choice);
@@ -1565,6 +1605,21 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       naoKyouseiTimer: ch.type === 'naobito' ? 0 : null,       // 凶星軌跡冷卻
       naoKyouseiFiring: ch.type === 'naobito' ? false : null,  // 凶星軌跡發動中
       naoKyouseiTimer2: ch.type === 'naobito' ? 0 : null,      // 凶星軌跡動畫計時
+      // 宇治波鼬專屬狀態
+      itachiAmaterasuTimer: ch.type === 'itachi' ? ITACHI_AMATERASU_INTERVAL * 0.5 : null, // 天照冷卻
+      itachiTsukuyomiTimer: ch.type === 'itachi' ? ITACHI_TSUKUYOMI_INTERVAL * 0.6 : null, // 月讀冷卻
+      itachiCrowUsed: ch.type === 'itachi' ? false : null,        // 烏鴉替身是否已用
+      itachiSusanooUsed: ch.type === 'itachi' ? false : null,     // 須佐能乎是否已用
+      itachiSusanooActive: ch.type === 'itachi' ? false : null,   // 須佐能乎是否啟動中
+      itachiSusanooTimer: ch.type === 'itachi' ? 0 : null,        // 須佐能乎剩餘時間
+      // 須佐能乎近戰連擊狀態
+      itachiBiting: ch.type === 'itachi' ? false : null,
+      itachiBiteStep: ch.type === 'itachi' ? 0 : null,
+      itachiBiteTimer: ch.type === 'itachi' ? 0 : null,
+      itachiBiteCooldown: ch.type === 'itachi' ? 0 : null,
+      // 被天照標記 / 被月讀定身（任何角色都可能）
+      itachiMarked: false,
+      itachiPinnedTimer: 0,
     };
   }
 
@@ -1585,7 +1640,9 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       2: { totalDmg: 0, maxHit: 0, skillUses: 0 },
       duration: 0
     },
-    samuraiParticles: []
+    samuraiParticles: [],
+    itachiCrowFX: null,
+    itachiStabFX: []
   };
 
   updateHUD();
@@ -1606,7 +1663,8 @@ function dealDamage(target, dmg, options = {}) {
   if (target.invincible) return;
   // 一拳超人必殺拳穿透招架減傷（bypassParry flag）
   const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
-  const mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
+  let mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
+  if (target.itachiSusanooActive) mul *= (1 - ITACHI_SUSANOO_DMG_REDUCE);
   const actual = Math.min(target.hp, dmg * mul);
   target.hp = Math.max(0, target.hp - actual);
   // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
@@ -1936,7 +1994,7 @@ function update(dt) {
     if (b.curseSlowTimer > 0) b.curseSlowTimer -= dt;
 
     // 移動（凍結則不移動）
-    if (!b.frozenByVampire && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0)) {
+    if (!b.frozenByVampire && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting) {
       const speedMul = b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0;
 
       // 最低速度保證（排除技能主動停止的情況）
@@ -1946,6 +2004,8 @@ function update(dt) {
                               (b.char.type === 'vampire' && b.vampireBiting) ||
                               (b.char.type === 'mage' && b.mageTeleportTimer > 0) ||
                               (b.mageFreezeTimer > 0) ||
+                              (b.itachiPinnedTimer > 0) ||
+                              (b.itachiBiting) ||
                               (b.char.type === 'samurai' && (b.samuraiParrying || b.samuraiShimetsuing)) ||
                               (b.char.type === 'samurai' && b.samuraiIaidoing) ||
                               (b.char.type === 'blacksmith' && b.smithSwordSwinging) ||
@@ -2168,6 +2228,11 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (b.char.type === 'gunner')  { if (b.gunnerFlashTimer != null) b.gunnerFlashTimer = Math.min(b.gunnerFlashTimer + dt, GUNNER_FLASH_INTERVAL); }
       if (b.char.type === 'thunder') { if (b.thunderStrikeTimer != null) b.thunderStrikeTimer = Math.min(b.thunderStrikeTimer + dt, THUNDER_STRIKE_INTERVAL); }
       if (b.char.type === 'blacksmith') { if (b.smithForgeTimer != null) b.smithForgeTimer = Math.min(b.smithForgeTimer + dt, b.smithForgeInterval); }
+      if (b.char.type === 'itachi') {
+        if (b.itachiAmaterasuTimer != null) b.itachiAmaterasuTimer = Math.min(b.itachiAmaterasuTimer + dt, ITACHI_AMATERASU_INTERVAL);
+        if (b.itachiTsukuyomiTimer != null) b.itachiTsukuyomiTimer = Math.min(b.itachiTsukuyomiTimer + dt, ITACHI_TSUKUYOMI_INTERVAL);
+        if (b.itachiBiteCooldown != null) b.itachiBiteCooldown = Math.min(b.itachiBiteCooldown + dt, ITACHI_SUSANOO_BITE_COOLDOWN);
+      }
       // 武士：中斷招架、取消居合
       if (b.char.type === 'samurai') {
         if (b.samuraiParrying) {
@@ -3220,6 +3285,11 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       b.mageFreezeTimer -= dt;
       if (b.mageFreezeTimer <= 0) b.mageFreezeTimer = 0;
     }
+    // 月讀定身計時器更新
+    if (b.itachiPinnedTimer > 0) {
+      b.itachiPinnedTimer -= dt;
+      if (b.itachiPinnedTimer <= 0) b.itachiPinnedTimer = 0;
+    }
   }
 
   // ── 末代武士邏輯 ──
@@ -3239,6 +3309,13 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (id < RADIUS * 2 + 5 && !b.samuraiIaidoHit) {
         b.samuraiIaidoHit = true;
         dealDamage(enemy, SAMURAI_IAIDO_DAMAGE);
+        // 居合穿透命中可解除鼬的月讀定身
+        if (enemy.char.type === 'itachi' && enemy.itachiBiting) {
+          enemy.itachiBiting = false;
+          enemy.itachiBiteStep = 0;
+          enemy.itachiBiteTimer = 0;
+          enemy.itachiPinnedTimer = 0;
+        }
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 40, alpha: 1.2, color: '#d4af37', t: 0.4 });
         state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 22, alpha: 0.9, color: '#ffffff', t: 0.25 });
         playHitSound('samurai_iaido');
@@ -3452,9 +3529,9 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (pd < RADIUS+10) {
         // 末代武士招架反彈
         if (b.char.type === 'samurai' && b.samuraiParrying &&
-            (p.type === 'knife' || p.type === 'bottle' || p.type === 'bullet' || p.type === 'dove')) {
+            (p.type === 'knife' || p.type === 'bottle' || p.type === 'bullet' || p.type === 'dove' || p.type === 'amaterasu')) {
           // 反彈：方向反轉，用 reflected flag 標記；保留 owner 讓廚師仍可回收
-          const reflectDmg = (p.damage || 80) * SAMURAI_PARRY_REFLECT_MUL;
+          const reflectDmg = (p.damage || (p.type === 'amaterasu' ? ITACHI_AMATERASU_DAMAGE : 80)) * SAMURAI_PARRY_REFLECT_MUL;
           p.reflected = true;          // 標記為已反彈（傷害判斷改用此 flag）
           p.reflectedBy = b.player;    // 反彈者（武士）的 player
           p.vx = -p.vx; p.vy = -p.vy;
@@ -3495,6 +3572,24 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           state.hitFlashes.push({ x:p.x, y:p.y, r:GUNNER_FLASH_RADIUS, alpha:1.2, color:'#ffffff', t:0.5 });
           state.hitFlashes.push({ x:p.x, y:p.y, r:GUNNER_FLASH_RADIUS*0.6, alpha:1.0, color:'#ffffaa', t:0.35 });
           playHitSound('opm');
+          state.projectiles.splice(i, 1);
+          removed = true; break;
+        } else if (p.type === 'amaterasu') {
+          if (b.itachiMarked) {
+            // 已有標記：清空標記，造成大量傷害
+            b.itachiMarked = false;
+            dealDamage(b, p.reflected ? p.damage : ITACHI_AMATERASU_MARK_DMG);
+            state.hitFlashes.push({ x:b.x, y:b.y, r:65, alpha:1.3, color:'#ff2200', t:0.5 });
+            state.hitFlashes.push({ x:b.x, y:b.y, r:35, alpha:1.0, color:'#1a0a1a', t:0.4 });
+            playHitSound('opm');
+          } else {
+            // 無標記：造成基礎傷害並施加標記
+            dealDamage(b, p.reflected ? p.damage : ITACHI_AMATERASU_DAMAGE);
+            b.itachiMarked = true;
+            state.hitFlashes.push({ x:b.x, y:b.y, r:32, alpha:1.0, color:'#8b0000', t:0.35 });
+            state.hitFlashes.push({ x:b.x, y:b.y, r:16, alpha:0.8, color:'#1a0a1a', t:0.25 });
+            playHitSound('knife');
+          }
           state.projectiles.splice(i, 1);
           removed = true; break;
         } else if (p.type === 'dove') {
@@ -3591,6 +3686,141 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       } else if (p.type === 'shimetsu') {
         state.projectiles.splice(i, 1);
       } else { state.projectiles.splice(i, 1); }
+    }
+  }
+
+  // ── 宇治波鼬邏輯 ──
+  for (const b of state.balls) {
+    if (b.char.type !== 'itachi') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+
+    // 烏鴉替身：瀕死觸發（每場一次），優先判定
+    if (!b.itachiCrowUsed && b.hp <= 0) {
+      b.itachiCrowUsed = true;
+      b.hp = ITACHI_CROW_HEAL;
+      // 瞬移到隨機位置
+      b.x = randBetween(RADIUS*3, W - RADIUS*3);
+      b.y = randBetween(RADIUS*3, H - RADIUS*3);
+      b.vx = (Math.random() - 0.5) * BASE_SPEED * 2;
+      b.vy = (Math.random() - 0.5) * BASE_SPEED * 2;
+      // 解除任何定身/咬擊狀態
+      b.itachiBiting = false; b.itachiBiteStep = 0; b.itachiBiteTimer = 0;
+      b.itachiPinnedTimer = 0; b.mageFreezeTimer = 0; b.frozenByVampire = false;
+      b.invincible = false;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 60, alpha: 1.2, color: '#1a1a1a', t: 0.6 });
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1.0, color: '#8b0000', t: 0.4 });
+      state.itachiCrowFX = { x: b.x, y: b.y, life: 0.6, maxLife: 0.6 };
+      playHitSound('vampire_dash');
+      continue; // 本幀跳過其他邏輯
+    }
+
+    // 須佐能乎：血量低於門檻時自動觸發（每場一次）
+    if (!b.itachiSusanooUsed && !b.itachiSusanooActive && b.hp > 0 && b.hp <= ITACHI_SUSANOO_HP_THRESHOLD) {
+      b.itachiSusanooUsed = true;
+      b.itachiSusanooActive = true;
+      b.itachiSusanooTimer = ITACHI_SUSANOO_DURATION;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 90, alpha: 1.3, color: '#8b0000', t: 0.8 });
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.0, color: '#ff3333', t: 0.5 });
+      playHitSound('vampire_dash');
+    }
+
+    // 須佐能乎持續時間倒數
+    if (b.itachiSusanooActive) {
+      b.itachiSusanooTimer -= dt;
+      if (b.itachiSusanooTimer <= 0) {
+        b.itachiSusanooActive = false;
+        b.itachiSusanooTimer = 0;
+        b.itachiBiting = false; b.itachiBiteStep = 0; b.itachiBiteTimer = 0;
+      }
+    }
+
+    // 須佐能乎：刺擊冷卻倒數
+    if (b.itachiBiteCooldown > 0) {
+      b.itachiBiteCooldown -= dt;
+      if (b.itachiBiteCooldown < 0) b.itachiBiteCooldown = 0;
+    }
+
+    // 須佐能乎：靠近敵人時觸發單次刺擊（不停下、保留速度）
+    if (b.itachiSusanooActive && b.itachiBiteCooldown <= 0) {
+      const sd = Math.hypot(b.x - enemy.x, b.y - enemy.y);
+      if (sd < ITACHI_SUSANOO_BITE_RANGE) {
+        dealDamage(enemy, ITACHI_SUSANOO_BITE_DAMAGE);
+        b.hp = Math.min(MAX_HP, b.hp + ITACHI_SUSANOO_BITE_HEAL);
+        const stabAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+        state.itachiStabFX = state.itachiStabFX || [];
+        state.itachiStabFX.push({
+          x: b.x, y: b.y, angle: stabAngle,
+          life: 0.28, maxLife: 0.28
+        });
+        // 命中血花（誇張化）
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 50, alpha: 1.3, color: '#ff0000', t: 0.35 });
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 26, alpha: 1.2, color: '#ffffff', t: 0.2 });
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 70, alpha: 0.6, color: '#660000', t: 0.45 });
+        // 吸血回流特效（在須佐能乎位置）
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 36, alpha: 1.0, color: '#8b0000', t: 0.35 });
+        playHitSound('vampire_bite');
+        b.itachiBiteCooldown = ITACHI_SUSANOO_BITE_INTERVAL;
+        // 輕微推開，避免持續貼著重複觸發太密
+        const ex2 = b.x - enemy.x, ey2 = b.y - enemy.y;
+        const ed2 = Math.sqrt(ex2*ex2 + ey2*ey2) || 1;
+        b.vx += (ex2/ed2) * 80;
+        b.vy += (ey2/ed2) * 80;
+        enemy.vx -= (ex2/ed2) * 60;
+        enemy.vy -= (ey2/ed2) * 60;
+      }
+    }
+
+    // 須佐能乎啟動中：跳過天照/月讀施放（純近戰）
+    if (b.itachiSusanooActive) continue;
+
+    // 天照冷卻倒數與發射
+    b.itachiAmaterasuTimer -= dt;
+    if (b.itachiAmaterasuTimer <= 0) {
+      b.itachiAmaterasuTimer = ITACHI_AMATERASU_INTERVAL;
+      if (b.thunderParalyzed) {
+        b.thunderParalyzed = false;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+      } else {
+        const angle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+        state.projectiles.push({
+          x: b.x, y: b.y,
+          vx: Math.cos(angle) * ITACHI_AMATERASU_SPEED,
+          vy: Math.sin(angle) * ITACHI_AMATERASU_SPEED,
+          type: 'amaterasu', owner: b.player, color: '#1a0a1a',
+          damage: ITACHI_AMATERASU_DAMAGE, r: 13, active: true, angle
+        });
+        if (state.stats) state.stats[b.player].skillUses++;
+        playHitSound('knife');
+      }
+    }
+
+    // 月讀冷卻倒數與發射
+    b.itachiTsukuyomiTimer -= dt;
+    if (b.itachiTsukuyomiTimer <= 0) {
+      b.itachiTsukuyomiTimer = ITACHI_TSUKUYOMI_INTERVAL;
+      if (!b.thunderParalyzed) {
+        enemy.itachiPinnedTimer = ITACHI_TSUKUYOMI_PIN_DUR;
+        enemy.vx = 0; enemy.vy = 0;
+        if (state.stats) state.stats[b.player].skillUses++;
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 50, alpha: 1.2, color: '#aa0000', t: 0.5 });
+        state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 25, alpha: 1.0, color: '#1a0a1a', t: 0.35 });
+        playHitSound('opm');
+      }
+    }
+  }
+
+  // 宇治波鼬：烏鴉替身特效更新
+  if (state.itachiCrowFX) {
+    state.itachiCrowFX.life -= dt;
+    if (state.itachiCrowFX.life <= 0) state.itachiCrowFX = null;
+  }
+
+  // 宇治波鼬：刺擊特效更新
+  if (state.itachiStabFX) {
+    for (let i = state.itachiStabFX.length - 1; i >= 0; i--) {
+      state.itachiStabFX[i].life -= dt;
+      if (state.itachiStabFX[i].life <= 0) state.itachiStabFX.splice(i, 1);
     }
   }
 
@@ -4042,6 +4272,26 @@ function render() {
     } else if (p.type === 'flashbang') {
       ctx.font = '16px serif';
       ctx.fillText('💣', 0, 0);
+    } else if (p.type === 'amaterasu') {
+      ctx.filter = 'none';
+      const flick = 0.7 + 0.3 * Math.sin(elapsed * 30);
+      const ag = ctx.createRadialGradient(0,0,0,0,0,16);
+      ag.addColorStop(0, `rgba(139,0,0,${0.9*flick})`);
+      ag.addColorStop(0.5, `rgba(60,0,0,${0.6*flick})`);
+      ag.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(0,0,16,0,Math.PI*2);
+      ctx.fillStyle = ag; ctx.fill();
+      ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2);
+      ctx.fillStyle = '#0a0a0a';
+      ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 14;
+      ctx.fill();
+      for (let fi = 0; fi < 3; fi++) {
+        const fa = elapsed * 12 + fi * 2.1;
+        ctx.beginPath();
+        ctx.arc(Math.cos(fa)*5, Math.sin(fa)*5, 2.5, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,40,0,${0.7*flick})`;
+        ctx.fill();
+      }
     } else if (p.type === 'dove') {
       ctx.font = '18px serif';
       if (p.trickGlow) {
@@ -4119,21 +4369,97 @@ function render() {
     ctx.restore();
   }
 
-  // 暗夜領主：咬擊連線視覺
+  // 暗夜領主：吸血特效
   for (const b of state.balls) {
     if (b.char.type !== 'vampire' || !b.vampireBiting) continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    // 紫色連線
+
+    const dx = b.x - enemy.x, dy = b.y - enemy.y;
+
     ctx.save();
-    ctx.strokeStyle = `rgba(139,26,139,${0.4 + 0.3*Math.sin(elapsed*20)})`;
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([6, 4]);
+
+    // 1. 粗血管（3層疊加，外暈+中層+芯）
+    const layerWidths = [22, 12, 4];
+    const layerAlphas = [0.2, 0.4, 1.0];
+    const layerColors = ['rgba(180,0,0,', 'rgba(230,20,50,', 'rgba(255,90,90,'];
+    for (let layer = 0; layer < 3; layer++) {
+      const lg = ctx.createLinearGradient(enemy.x, enemy.y, b.x, b.y);
+      lg.addColorStop(0,   layerColors[layer] + layerAlphas[layer] + ')');
+      lg.addColorStop(0.7, layerColors[layer] + (layerAlphas[layer]*0.6) + ')');
+      lg.addColorStop(1,   'rgba(100,0,60,0.05)');
+      ctx.strokeStyle = lg;
+      ctx.lineWidth = layerWidths[layer];
+      ctx.lineCap = 'round';
+      ctx.shadowColor = '#ff0022';
+      ctx.shadowBlur = layer === 0 ? 35 : 8;
+      ctx.beginPath();
+      ctx.moveTo(enemy.x, enemy.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+
+    // 2. 流動虛線（往吸血鬼方向衝）
+    ctx.strokeStyle = 'rgba(255,180,180,1.0)';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#ff6688';
+    ctx.shadowBlur = 25;
+    ctx.setLineDash([10, 8]);
+    ctx.lineDashOffset = -(elapsed * 150 % 18);
     ctx.beginPath();
-    ctx.moveTo(b.x, b.y);
-    ctx.lineTo(enemy.x, enemy.y);
+    ctx.moveTo(enemy.x, enemy.y);
+    ctx.lineTo(b.x, b.y);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+
+    // 3. 流動血球（12顆，沿血管飄向吸血鬼）
+    for (let i = 0; i < 12; i++) {
+      const phase = ((elapsed * 2.5 + i / 12) % 1);
+      const px = enemy.x + dx * phase;
+      const py = enemy.y + dy * phase;
+      const size = 7 * Math.sin(phase * Math.PI) + 2;
+      const rg = ctx.createRadialGradient(px, py, 0, px, py, size);
+      rg.addColorStop(0, 'rgba(255,80,80,1)');
+      rg.addColorStop(0.5, 'rgba(200,0,30,0.8)');
+      rg.addColorStop(1, 'rgba(150,0,0,0)');
+      ctx.beginPath();
+      ctx.arc(px, py, size, 0, Math.PI * 2);
+      ctx.fillStyle = rg;
+      ctx.fill();
+    }
+
+    // 4. 敵人身上：大範圍紅暈 + 雙圈脈動
+    const bp = 0.6 + 0.4 * Math.abs(Math.sin(elapsed * 16));
+    const bg = ctx.createRadialGradient(enemy.x, enemy.y, RADIUS*0.3, enemy.x, enemy.y, RADIUS*3.5);
+    bg.addColorStop(0, `rgba(200,0,0,${0.55 * bp})`);
+    bg.addColorStop(0.5, `rgba(150,0,0,${0.25 * bp})`);
+    bg.addColorStop(1, 'transparent');
+    ctx.beginPath(); ctx.arc(enemy.x, enemy.y, RADIUS*3.5, 0, Math.PI*2);
+    ctx.fillStyle = bg; ctx.fill();
+    // 內圈實線
+    ctx.beginPath(); ctx.arc(enemy.x, enemy.y, RADIUS + 9, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(255,0,0,${bp})`;
+    ctx.lineWidth = 5;
+    ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 30;
+    ctx.stroke();
+    // 外圈擴散環
+    ctx.beginPath(); ctx.arc(enemy.x, enemy.y, RADIUS + 9 + 14*(1-bp), 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(200,0,0,${0.5 * bp})`;
+    ctx.lineWidth = 2.5; ctx.shadowBlur = 15; ctx.stroke();
+
+    // 5. 吸血鬼身上：紫紅吸收光暈
+    const ap = 0.5 + 0.5 * Math.abs(Math.sin(elapsed * 14));
+    const ag = ctx.createRadialGradient(b.x, b.y, RADIUS*0.5, b.x, b.y, RADIUS*2.5);
+    ag.addColorStop(0, `rgba(160,0,100,${0.6 * ap})`);
+    ag.addColorStop(1, 'transparent');
+    ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS*2.5, 0, Math.PI*2);
+    ctx.fillStyle = ag; ctx.fill();
+    ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 7 + 3*ap, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(220,0,100,${ap})`;
+    ctx.lineWidth = 4; ctx.shadowColor = '#ff0066'; ctx.shadowBlur = 25;
+    ctx.stroke();
+
     ctx.restore();
   }
 
@@ -4158,6 +4484,88 @@ function render() {
     ctx.beginPath(); ctx.arc(f.x,f.y,f.r*(1+(1-prog)*0.5),0,Math.PI*2);
     const alphaHex = Math.floor(f.alpha*prog*255).toString(16).padStart(2,'0');
     ctx.fillStyle = f.color+alphaHex; ctx.fill();
+  }
+
+  // 宇治波鼬：須佐能乎刺擊刀刃特效
+  if (state.itachiStabFX) {
+    for (const fx of state.itachiStabFX) {
+      const prog = fx.life / fx.maxLife; // 1→0
+      // 0→1 快速衝出，再慢慢淡出
+      const punch = Math.min(1, (1 - prog) * 4); // 前1/4時間內衝到滿長
+      const extend = punch * (RADIUS * 4.2);
+      const alpha = prog;
+      ctx.save();
+      ctx.translate(fx.x, fx.y);
+      ctx.rotate(fx.angle);
+      ctx.globalAlpha = alpha;
+
+      // 衝擊波寬幅紅色閃光（沿刺擊方向的扇形）
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, extend + 20, -0.35, 0.35);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(255,0,0,${0.25*alpha})`;
+      ctx.fill();
+
+      // 刀刃主體（大幅加長加粗）
+      ctx.beginPath();
+      ctx.moveTo(RADIUS * 0.5, 0);
+      ctx.lineTo(RADIUS * 0.5 + extend, -9);
+      ctx.lineTo(RADIUS * 0.5 + extend + 26, 0);
+      ctx.lineTo(RADIUS * 0.5 + extend, 9);
+      ctx.closePath();
+      ctx.fillStyle = '#f0f0f0';
+      ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 28;
+      ctx.fill();
+      // 刀刃中線反光
+      ctx.beginPath();
+      ctx.moveTo(RADIUS * 0.5, 0);
+      ctx.lineTo(RADIUS * 0.5 + extend + 18, 0);
+      ctx.strokeStyle = 'rgba(255,255,255,1)';
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 16;
+      ctx.stroke();
+
+      // 噴濺血線（多道，從刺中點往外炸開）
+      for (let si = 0; si < 5; si++) {
+        const sa = (si - 2) * 0.35;
+        const slen = (extend + 26) + Math.random()*18;
+        ctx.beginPath();
+        ctx.moveTo(RADIUS * 0.5 + extend, 0);
+        ctx.lineTo(
+          RADIUS * 0.5 + extend + Math.cos(sa)*slen,
+          Math.sin(sa)*slen
+        );
+        ctx.strokeStyle = `rgba(220,0,0,${0.8*alpha})`;
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 0;
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+  }
+
+
+  // 宇治波鼬：烏鴉替身飛散特效
+  if (state.itachiCrowFX) {
+    const fx = state.itachiCrowFX;
+    const prog = fx.life / fx.maxLife;
+    ctx.save();
+    ctx.font = '20px serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let ci = 0; ci < 8; ci++) {
+      const ang = (Math.PI*2/8)*ci + ci*0.4;
+      const dist = (1-prog) * 70;
+      const cx = fx.x + Math.cos(ang)*dist;
+      const cy = fx.y + Math.sin(ang)*dist - (1-prog)*30;
+      ctx.globalAlpha = prog;
+      ctx.fillText('🐦‍⬛', cx, cy);
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
   }
 
   // 一拳超人出拳特效
@@ -4372,6 +4780,132 @@ function render() {
       ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 14, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(0,207,255,0.2)`;
       ctx.lineWidth = 5; ctx.stroke();
+    }
+
+    // 被天照標記：暗紅黑色符紋光環（持續顯示直到引爆）
+    if (b.itachiMarked) {
+      const mPulse = 0.5 + 0.4 * Math.sin(elapsed * 6);
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 7, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(139,0,0,${0.6 + 0.3*mPulse})`;
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 12;
+      ctx.stroke();
+      // 旋轉黑色符紋三角
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(elapsed * 1.5);
+      ctx.beginPath();
+      for (let ti = 0; ti < 3; ti++) {
+        const a2 = ti * (Math.PI*2/3);
+        const rr = RADIUS + 11;
+        const px = Math.cos(a2)*rr, py = Math.sin(a2)*rr;
+        if (ti === 0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = `rgba(20,0,0,${0.7 + 0.3*mPulse})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+      ctx.shadowBlur = 0;
+    }
+
+    // 被月讀定身：暗紅漣漪光環 + 黑色瞳紋
+    if (b.itachiPinnedTimer > 0) {
+      const tp = 0.5 + 0.5 * Math.sin(elapsed * 10);
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 10, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(170,0,0,${0.6 + 0.3*tp})`;
+      ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 16 + 4*tp, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(170,0,0,0.25)`;
+      ctx.lineWidth = 2; ctx.stroke();
+      // 中心瞳紋
+      ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(20,0,0,${0.8})`;
+      ctx.fill();
+      ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI*2);
+      ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    // ── 須佐能乎：球外鎧甲特效 ──
+    if (b.char.type === 'itachi' && b.itachiSusanooActive) {
+      const susPulse = 0.7 + 0.3 * Math.sin(elapsed * 5);
+      const floatOff = Math.sin(elapsed * 2.2) * 3;
+      ctx.save();
+      ctx.translate(b.x, b.y + floatOff);
+
+      // 外暈
+      const sg = ctx.createRadialGradient(0,0,RADIUS*0.6,0,0,RADIUS*3.2);
+      sg.addColorStop(0, `rgba(139,0,0,${0.35*susPulse})`);
+      sg.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(0,0,RADIUS*3.2,0,Math.PI*2);
+      ctx.fillStyle = sg; ctx.fill();
+
+      // 多邊形鎧甲外殼（六邊形，發光描邊）
+      const shellR = RADIUS * 2.1;
+      const sides = 6;
+      ctx.beginPath();
+      for (let si = 0; si <= sides; si++) {
+        const a2 = (Math.PI*2/sides) * si - Math.PI/2 + elapsed*0.15;
+        const px = Math.cos(a2)*shellR, py = Math.sin(a2)*shellR;
+        if (si === 0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = `rgba(80,0,0,${0.18*susPulse})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(220,30,30,${0.85*susPulse})`;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 22;
+      ctx.stroke();
+
+      // 肋骨狀放射線（外殼頂點連到內圈）
+      for (let si = 0; si < sides; si++) {
+        const a2 = (Math.PI*2/sides) * si - Math.PI/2 + elapsed*0.15;
+        const ox = Math.cos(a2)*shellR, oy = Math.sin(a2)*shellR;
+        const ix = Math.cos(a2)*(RADIUS+4), iy = Math.sin(a2)*(RADIUS+4);
+        ctx.beginPath();
+        ctx.moveTo(ix,iy); ctx.lineTo(ox,oy);
+        ctx.strokeStyle = `rgba(255,60,60,${0.4*susPulse})`;
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+      }
+
+      // 內層胸甲護盾（橢圓）
+      ctx.beginPath();
+      ctx.ellipse(0, 0, RADIUS*1.5, RADIUS*1.3, 0, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(255,100,100,${0.7*susPulse})`;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#ff3333'; ctx.shadowBlur = 14;
+      ctx.stroke();
+
+      // 雙臂輪廓（左右延伸的弧形塊）
+      for (const side of [-1, 1]) {
+        ctx.save();
+        ctx.scale(side, 1);
+        ctx.beginPath();
+        ctx.moveTo(RADIUS*1.2, -RADIUS*0.3);
+        ctx.quadraticCurveTo(RADIUS*2.6, -RADIUS*0.6, RADIUS*2.9, RADIUS*0.2);
+        ctx.quadraticCurveTo(RADIUS*2.5, RADIUS*0.6, RADIUS*1.3, RADIUS*0.5);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(100,0,0,${0.25*susPulse})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(255,50,50,${0.6*susPulse})`;
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.restore();
+      ctx.shadowBlur = 0;
+
+      // 剩餘時間倒數環
+      const remainFrac = b.itachiSusanooTimer / ITACHI_SUSANOO_DURATION;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, RADIUS + 26, -Math.PI/2, -Math.PI/2 + Math.PI*2*remainFrac);
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
 
     // 末代武士：招架光盾
@@ -4646,6 +5180,17 @@ function render() {
     } else if (b.char.type === 'thunder') {
       atFrac = b.thunderStrikeTimer != null ? 1 - (b.thunderStrikeTimer / THUNDER_STRIKE_INTERVAL) : 0;
       barColor = b.thunderParalyzed ? '#f1c40f' : b.char.color;
+    } else if (b.char.type === 'itachi') {
+      if (b.itachiSusanooActive) {
+        // 須佐能乎啟動中：顯示剩餘時間倒數（由滿到空）
+        atFrac = Math.max(0, Math.min(1, b.itachiSusanooTimer / ITACHI_SUSANOO_DURATION));
+        barColor = '#ff3333';
+      } else {
+        // 顯示天照冷卻進度
+        atFrac = b.itachiAmaterasuTimer != null ? 1 - (b.itachiAmaterasuTimer / ITACHI_AMATERASU_INTERVAL) : 0;
+        atFrac = Math.max(0, Math.min(1, atFrac));
+        barColor = b.itachiMarked ? '#ff0000' : b.char.color;
+      }
     } else {
       atFrac = Math.min(1, b.attackTimer/b.attackInterval);
       barColor = (b.char.type!=='chef'||b.knives>0) ? b.char.color : '#555';
@@ -5048,8 +5593,16 @@ function updateHUD() {
       if (shadows >= NAOBITO_KYOUSEI_THRESHOLD) return `👤×${shadows} ⚡凶星軌跡就緒`;
       const dashStr = b.naoDashing ? '⚡衝刺中' : `投射${(b.naoPathTimer || 0).toFixed(1)}s`;
       return `👤×${shadows}/${NAOBITO_SHADOW_MAX} ${dashStr}${cdLeft > 0 ? ` CD:${cdLeft}s` : ''}`;
-    } else {
+    } else if (b.char.type === 'itachi') {
+      if (b.itachiSusanooActive) return `🟣 須佐能乎 ${Math.max(0, b.itachiSusanooTimer).toFixed(1)}s`;
+      if (b.itachiBiting) return `🦷 月讀定身中 ${b.itachiBiteStep}/3`;
+      const amaLeft = Math.max(0, b.itachiAmaterasuTimer || 0).toFixed(1);
+      const tsukuLeft = Math.max(0, b.itachiTsukuyomiTimer || 0).toFixed(1);
+      return `🔥 天照:${amaLeft}s 🌀月讀:${tsukuLeft}s${b.itachiMarked ? ' 🎯標記中' : ''}`;
+    } else if (b.char.type === 'drunk') {
       return `🍺 轉向: ${b.drunkTimer ? b.drunkTimer.toFixed(1) : '-'}s`;
+    } else {
+      return '';
     }
   }
   document.getElementById('p1-status').textContent = statusText(b0);
@@ -5067,7 +5620,8 @@ function showResult(deadBalls) {
     const winner = state.balls.find(b => b.player !== deadBalls[0].player);
     titleEl.textContent = `${winner.char.emoji} 勝利！`;
     titleEl.style.color = winner.char.color;
-    subEl.textContent = `${winner.char.displayName} 剩餘 ${Math.ceil(winner.hp)} 血`;
+    subEl.innerHTML = `${winner.char.displayName} 剩餘 ${Math.ceil(winner.hp)} 血` +
+      (winner.char.winQuote ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.85">「${winner.char.winQuote}」</div>` : '');
   }
 
   // 戰鬥紀錄
