@@ -953,8 +953,8 @@ const CHARACTERS = [
   },
   {
     id: 'opm', emoji: '👊', weapon: '💥', name: '一拳超人',
-    desc: '絕對力量的具現。平時無所事事隨意漫步，每秒累積怒氣值——當達到上限時，對敵人造成血量上限的傷害，不可閃避。碰撞可額外增長怒氣值。',
-    stats: ['傷害 ∞', '怒氣值上限40', '碰撞增加怒氣1'],
+    desc: '絕對力量的具現。，每秒累積怒氣值——當達到上限時，對敵人造成血量上限的傷害。碰撞可額外增長怒氣值，撞到邊界也會加速累積。承受所有傷害皆會大幅減免。',
+    stats: ['傷害 ∞', '怒氣值上限40', '受傷減免30%'],
     color: '#f5f5f5', glowColor: 'rgba(245,245,245,0.6)', type: 'opm',
   winQuote: '又是一拳結束了嗎？。'
   },
@@ -1238,7 +1238,7 @@ const ARENA_LAVA_DMG_PER_SEC = 20;  // 熔岩場每秒傷害
 let selectedArena = 'normal'; // 'normal' | 'lava'
 const WALL               = 1;
 const MAX_HP             = 1200;
-const BASE_SPEED         = 200;
+const BASE_SPEED         = 160;
 const MIN_SPEED          = 100;   // 最低移動速度（技能停止中除外）
 const BOOST_INTERVAL_MIN = 3;
 const BOOST_INTERVAL_MAX = 5;
@@ -1246,10 +1246,12 @@ const BOOST_MAGNITUDE    = 50;
 const BOOST_MIN_MAGNITUDE = 25; // 最低加速合力，避免幾乎沒動
 
 //一拳超人常數
-const OPM_COUNTDOWN_START    = 40;   // 怒氣值上限
+const OPM_COUNTDOWN_START    = 45;   // 怒氣值上限
 const OPM_COLLISION_COOLDOWN = 0.3;  // 每次碰撞的內置冷卻（秒），防連觸
 const OPM_COLLISION_REDUCE   = 1.0;    // 每次碰撞時增加的怒氣值
 const OPM_RAGE_PARTICLE_THRESHOLD = 0.3; // 怒氣超過此比例才出現粒子
+const OPM_DMG_REDUCE          = 0.3;  // 全局減傷比例（受到的所有傷害降低）
+const OPM_WALL_REDUCE          = 0.5; // 撞牆時減少的怒氣值倒數秒數
 
 //廚師常數
 const CHEF_ATTACK_INTERVAL = 2.0; //攻擊冷卻
@@ -1511,6 +1513,7 @@ const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc
       opmCountdown: ch.type === 'opm' ? OPM_COUNTDOWN_START : null,
       opmWasColliding: ch.type === 'opm' ? false : null,
       opmCollisionCooldown: ch.type === 'opm' ? 0 : null,
+      opmWallTouching: ch.type === 'opm' ? false : null,
       // 詛咒之王專屬狀態
       curseSlashTimer: ch.type === 'cursed' ? CURSE_SLASH_INTERVAL : null, // 解冷卻
       curseDomainActive: ch.type === 'cursed' ? false : null,               // 伏魔是否展開
@@ -1665,6 +1668,8 @@ function dealDamage(target, dmg, options = {}) {
   const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
   let mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
   if (target.itachiSusanooActive) mul *= (1 - ITACHI_SUSANOO_DMG_REDUCE);
+  // 一拳超人：全局減傷（一拳超人自身的必殺拳不受此減免影響）
+  if (target.char && target.char.type === 'opm' && !options.bypassParry) mul *= (1 - OPM_DMG_REDUCE);
   const actual = Math.min(target.hp, dmg * mul);
   target.hp = Math.max(0, target.hp - actual);
   // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
@@ -2320,6 +2325,16 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       } // else (not paralyzed)
       } // if opmCountdown <= 0
     } // if opm && !opmPunched
+
+    // 一拳超人：撞牆加速怒氣累積
+    if (b.char.type === 'opm' && !b.opmPunched) {
+      const touchingWall = b.x - RADIUS <= WALL || b.x + RADIUS >= W - WALL ||
+                            b.y - RADIUS <= WALL || b.y + RADIUS >= H - WALL;
+      if (touchingWall && !b.opmWallTouching) {
+        b.opmCountdown = Math.max(0, b.opmCountdown - OPM_WALL_REDUCE);
+      }
+      b.opmWallTouching = touchingWall;
+    }
 
     // 詛咒之王：解（定時斬）
     if (b.char.type === 'cursed') {
