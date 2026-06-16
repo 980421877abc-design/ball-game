@@ -613,6 +613,11 @@
     <button class="arena-btn lava" data-arena="lava">🌋 熔岩場地<span style="font-size:0.7rem;opacity:0.7;display:block">每秒灼燒 20 血</span></button>
   </div>
 
+  <div class="bg-color-select" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px">
+    <label for="bg-color-picker" style="font-size:0.75rem;color:#888;letter-spacing:.1em">🎨 背景顏色</label>
+    <input type="color" id="bg-color-picker" value="#a8d8f0" style="width:36px;height:28px;border:none;border-radius:6px;background:none;cursor:pointer;padding:0">
+  </div>
+
   <button class="start-btn" id="start-btn" disabled>開始對決</button>
 </div>
 
@@ -953,8 +958,8 @@ const CHARACTERS = [
   },
   {
     id: 'opm', emoji: '👊', weapon: '💥', name: '一拳超人',
-    desc: '絕對力量的具現。，每秒累積怒氣值——當達到上限時，對敵人造成血量上限的傷害。碰撞可額外增長怒氣值，撞到邊界也會加速累積。承受所有傷害皆會大幅減免。',
-    stats: ['傷害 ∞', '怒氣值上限40', '受傷減免30%'],
+    desc: '絕對力量的具現，每秒累積怒氣值——當達到上限時，對敵人造成血量上限的傷害。碰撞及碰牆可額外增長怒氣值超越限制器的肉體，承受所有傷害皆會大幅減免。',
+    stats: ['傷害 ∞', '怒氣值上限45', '減傷30%'],
     color: '#f5f5f5', glowColor: 'rgba(245,245,245,0.6)', type: 'opm',
   winQuote: '又是一拳結束了嗎？。'
   },
@@ -1236,9 +1241,10 @@ const RADIUS             = 25;
 const ARENA_LAVA_DMG_PER_SEC = 20;  // 熔岩場每秒傷害
 
 let selectedArena = 'normal'; // 'normal' | 'lava'
+let selectedBgColor = '#a8d8f0'; // 玩家自訂背景顏色
 const WALL               = 1;
 const MAX_HP             = 1200;
-const BASE_SPEED         = 160;
+const BASE_SPEED         = 140;
 const MIN_SPEED          = 100;   // 最低移動速度（技能停止中除外）
 const BOOST_INTERVAL_MIN = 3;
 const BOOST_INTERVAL_MAX = 5;
@@ -1356,11 +1362,11 @@ const NAOBITO_SHADOW_LIFETIME     = 2.5;   // 殘影存活時間（秒）
 const NAOBITO_SHADOW_MAX          = 6;     // 最多同時存在殘影數
 const NAOBITO_SHADOW_DAMAGE       = 10;    // 殘影接觸傷害
 const NAOBITO_SHADOW_HIT_RADIUS   = 20;    // 殘影命中判定半徑（px）
-const NAOBITO_SHADOW_HIT_COOLDOWN = 0.6;   // 同一殘影再次傷害冷卻（秒）
+const NAOBITO_SHADOW_HIT_COOLDOWN = 0.5;   // 同一殘影再次傷害冷卻（秒）
 const NAOBITO_KYOUSEI_THRESHOLD   = 6;     // 凶星軌跡觸發所需殘影數
 const NAOBITO_KYOUSEI_PIERCE_DMG  = 60;    // 凶星軌跡本體穿刺傷害
 const NAOBITO_KYOUSEI_SHADOW_DMG  = 20;    // 凶星軌跡每殘影傷害
-const NAOBITO_KYOUSEI_SPEED       = 500;   // 凶星軌跡衝刺速度（px/s）
+const NAOBITO_KYOUSEI_SPEED       = 550;   // 凶星軌跡衝刺速度（px/s）
 const NAOBITO_KYOUSEI_COOLDOWN    = 5.0;   // 凶星軌跡觸發後冷卻（秒）
 const NAOBITO_PATH_DEVIATION      = 120;   // 路徑中繼點偏移量（px）
 
@@ -1450,6 +1456,11 @@ document.querySelectorAll('.arena-btn').forEach(btn => {
     btn.classList.add('active');
     selectedArena = btn.dataset.arena;
   });
+});
+
+// 背景顏色選擇
+document.getElementById('bg-color-picker').addEventListener('input', (e) => {
+  selectedBgColor = e.target.value;
 });
 document.getElementById('back-btn').addEventListener('click', () => {
   document.getElementById('overlay').classList.remove('show');
@@ -1633,6 +1644,7 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     ],
     projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], opmFX: [], gojoKillFX: null, curseSliceKillFX: null, elapsed: 0,
     arena: selectedArena,
+    bgColor: selectedBgColor,
     thunderPillars: [],
     thunderStrikes: [],
     smithForgeParticles: [],
@@ -1667,10 +1679,22 @@ function dealDamage(target, dmg, options = {}) {
   // 一拳超人必殺拳穿透招架減傷（bypassParry flag）
   const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
   let mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
-  if (target.itachiSusanooActive) mul *= (1 - ITACHI_SUSANOO_DMG_REDUCE);
+  // bypassParry（目前僅一拳超人必殺拳）：穿透一切減傷效果，視為純粹的系統殺
+  if (target.itachiSusanooActive && !options.bypassParry) mul *= (1 - ITACHI_SUSANOO_DMG_REDUCE);
   // 一拳超人：全局減傷（一拳超人自身的必殺拳不受此減免影響）
-  if (target.char && target.char.type === 'opm' && !options.bypassParry) mul *= (1 - OPM_DMG_REDUCE);
-  const actual = Math.min(target.hp, dmg * mul);
+  const isOpmReduced = target.char && target.char.type === 'opm' && !options.bypassParry;
+  if (isOpmReduced) mul *= (1 - OPM_DMG_REDUCE);
+  const prevHp = target.hp;
+  let actual = Math.min(target.hp, dmg * mul);
+  // 系統殺：若原始傷害本應致命，一拳超人的減傷不應讓他逃過一死
+  if (isOpmReduced && dmg >= prevHp) {
+    actual = prevHp;
+  }
+  // bypassParry：必殺拳直接清空血量，標記系統殺，無視復活/替身類效果
+  if (options.bypassParry) {
+    actual = prevHp;
+    target.opmExecuted = true;
+  }
   target.hp = Math.max(0, target.hp - actual);
   // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
   if (state && state.stats && target.player) {
@@ -3711,7 +3735,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (!enemy) continue;
 
     // 烏鴉替身：瀕死觸發（每場一次），優先判定
-    if (!b.itachiCrowUsed && b.hp <= 0) {
+    if (!b.itachiCrowUsed && !b.opmExecuted && b.hp <= 0) {
       b.itachiCrowUsed = true;
       b.hp = ITACHI_CROW_HEAL;
       // 瞬移到隨機位置
@@ -3892,7 +3916,7 @@ function fireProjectile(ball, enemy, type) {
 
 function render() {
   ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = (state && state.bgColor) ? state.bgColor : '#a8d8f0'; ctx.fillRect(0, 0, W, H);
 
   // 熔岩場地背景
   if (state.arena === 'lava') {
