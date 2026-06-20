@@ -1034,16 +1034,22 @@ const CHARACTERS = [
 {
   id: 'gojo', emoji: '😎', weapon: '🔵', name: '現代最強',
   desc: '持有無下限術式，可以使用帶有引力的術式順轉「蒼」及帶有斥力術式反轉「赫」。血量降低到一定程度時解放六眼，釋放大招「虛式紫」。',
-  stats: ['蒼 130傷', '赫 150傷', '紫 8幀傷', '冷卻 2.0s'],
+  stats: ['蒼 穿透+光線引力', '赫 150傷', '紫 8幀傷', '冷卻 2.0s'],
   color: '#00cfff', glowColor: 'rgba(0,207,255,0.6)', type: 'gojo',
-  winQuote: '沒錯，是五條贏了。'
+  winQuote: '沒錯，是五條贏了。',
+  vsQuotes: { cursed: '會贏喔。',
+  yuta:'我很看好你喔，憂太。'}
   },
   {
   id: 'cursed', emoji: '💀', weapon: '⚔️', name: '詛咒之王',
   desc: '平安時代最強的王，活躍於「咒術全盛時代」的人類術師，一段時間使用「解」造成傷害並緩速，在碰觸敵方時使用「捌」，在血量到一定值時，施放領域展開「伏魔域廚子」。',
   stats: ['解 140/4.25s', '捌 25×2s', '領域 5/幀'],
   color: '#c0392b', glowColor: 'rgba(192,57,43,0.6)', type: 'cursed',
-  winQuote: '不過是沒出生在我時代的凡夫罷了。'
+  winQuote: '不過是沒出生在我時代的凡夫罷了。',
+   vsQuotes: {cannondad : '呦，身體比我想的還強些。' ,
+gojo:'我可能一輩子都不會忘了你吧',
+  },
+  
   },
   {
   id: 'trapper', emoji: '🪤', weapon: '⛓️', name: '陷阱大師',
@@ -1113,15 +1119,32 @@ const CHARACTERS = [
   desc: '愛是最深刻的詛咒。發射咒言禁錮人，靠近時揮出咒力斬。咒力斬命中三次後，里香完全顯現，定時揮爪與釋放純愛大炮，並為乙骨的攻擊全面增幅。',
   stats: ['咒言50/2.5s', '禁錮1.5s', '咒力斬40/1.0s', '里香揮爪200/4s', '純愛大砲60/s×6s'],
   color: '#ff6fa5', glowColor: 'rgba(255,111,165,0.6)', type: 'yuta',
-  winQuote: '里香，謝謝妳。'
+  winQuote: '里香，謝謝妳。',
+  vsQuotes: {cannondad : '僅限一次喔。' ,
+gojo:'五條老師，指教了',
+cursed:'我會親手殺了宿儺' , 
+ itachi:'你沒有朋友或是家人嗎？'
+ }
   },
   {
   id: 'engineer', emoji: '👷', weapon: '🔧', name: '工程師',
   desc: '鋼鐵與電流的信徒。原地部署自動炮台持續攻擊敵人，並定時於敵人周圍佈下電網困住對手。累積一定數量炮台後，啟動機甲模式，全身換上重裝甲，改以雷射光束橫掃戰場。',
-  stats: ['炮台傷害20', '電網 暈眩+30/s', '機甲雷射35', '機甲減傷10%'],
+  stats: ['炮台傷害20', '電網 暈眩+20/s', '機甲雷射35', '機甲減傷10%'],
   color: '#3a8fd6', glowColor: 'rgba(58,143,214,0.6)', type: 'engineer',
   winQuote: '在大量子彈中找到少量受害者。'
-  }
+  },
+  {
+  id: 'cannondad', emoji: '🚬', weapon: '💥', name: '砲爹',
+  desc: '單論咒力輸出為死滅洄游的最強，持有咒術「冰沙衝擊波」，隨機發射追蹤光球、光柱或蓄力光砲攻擊敵人，近身時直接揮拳。',
+  stats: ['追蹤 30×3/0.9s', '光柱 50/1.6s', '光砲 60×3/2.2s', '近戰 20'],
+  color: '#bdbdbd', glowColor: 'rgba(189,189,189,0.6)', type: 'cannondad',
+  winQuote: '就這點實力，根本填不飽我。',
+vsQuotes: { yuta: '真的很甜美啊！！！！乙骨。',
+cursed:'格蘭尼達.... '}    
+  } 
+  
+ 
+   
 ];
 
 // ──────────────── CAROUSEL STATE ────────────────
@@ -1445,7 +1468,8 @@ const NAOBITO_KYOUSEI_PIERCE_DMG  = 60;    // 凶星軌跡本體穿刺傷害
 const NAOBITO_KYOUSEI_SHADOW_DMG  = 20;    // 凶星軌跡每殘影傷害
 const NAOBITO_KYOUSEI_SPEED       = 550;   // 凶星軌跡衝刺速度（px/s）
 const NAOBITO_KYOUSEI_COOLDOWN    = 5.0;   // 凶星軌跡觸發後冷卻（秒）
-const NAOBITO_PATH_DEVIATION      = 120;   // 路徑中繼點偏移量（px）
+const NAOBITO_PATH_DEVIATION      = 100;   // 路徑中繼點偏移量（px）
+const NAOBITO_RETREAT_DISTANCE    = 100;   // 接近敵人後，遠離的距離（px）
 
 
 // 宇治波鼬常數
@@ -1477,11 +1501,11 @@ const YUTA_SLASH_COOLDOWN        = 1.0;   // 咒力斬冷卻（秒，佔位數�
 const YUTA_SLASH_DAMAGE          = 40;    // 咒力斬固定傷害（無蓄力疊層）
 const YUTA_SLASH_HIT_THRESHOLD   = 3;     // 咒力斬累積命中幾次後永久召喚里香
 const YUTA_RIKA_FOLLOW_RADIUS    = 40;    // 里香跟隨乙骨的距離（px）
-const YUTA_RIKA_CLAW_INTERVAL    = 4.0;   // 里香揮爪冷卻（秒）
+const YUTA_RIKA_CLAW_INTERVAL    = 3.0;   // 里香揮爪冷卻（秒）
 const YUTA_RIKA_CLAW_WARN_DUR    = 0.3;   // 揮爪預警時間（秒，預警結束才造成傷害）
-const YUTA_RIKA_CLAW_DAMAGE      = 200;   // 里香揮爪傷害
-const YUTA_RIKA_CLAW_RANGE       = 110;   // 里香揮爪判定距離（px）
-const YUTA_RIKA_CANNON_INTERVAL  = 10.0;  // 純愛大砲冷卻（秒）
+const YUTA_RIKA_CLAW_DAMAGE      = 180;   // 里香揮爪傷害
+const YUTA_RIKA_CLAW_RANGE       = 120;   // 里香揮爪判定距離（px）
+const YUTA_RIKA_CANNON_INTERVAL  = 8.0;  // 純愛大砲冷卻（秒）
 const YUTA_RIKA_CANNON_WARN_DUR  = 0.5;   // 大砲預警時間（秒，預警結束才開始造成傷害）
 const YUTA_RIKA_CANNON_DURATION  = 6.0;  // 純愛大砲持續時間（秒）
 const YUTA_RIKA_CANNON_DPS       = 60;    // 純愛大砲每秒傷害
@@ -1506,8 +1530,39 @@ const ENGINEER_LASER_TRAVEL_TIME  = 0.18;  // 雷射判定持續時間（視覺�
 const ENGINEER_GRID_INTERVAL      = 7;   // 電網部署間隔（秒）
 const ENGINEER_GRID_HALF          = 70;    // 電網半邊長（px，略小於奕的100px）
 const ENGINEER_GRID_LIFETIME      = 2.5;   // 電網存在時間（秒）
-const ENGINEER_GRID_DPS           = 30;    // 電網每秒傷害
+const ENGINEER_GRID_DPS           = 20;    // 電網每秒傷害
 const ENGINEER_GRID_STUN_BUFFER   = 0.15;  // 每次重新施加暈眩的緩衝（秒，避免每幀重置造成卡頓視覺）
+
+// 砲爹常數
+const CANNON_MELEE_DAMAGE        = 20;    // 近戰拳頭傷害
+const CANNON_MELEE_COOLDOWN      = 0.6;   // 近戰拳頭冷卻（秒）
+// 追蹤光球
+const CANNON_TRACK_COUNT         = 3;     // 追蹤光球數量
+const CANNON_TRACK_DAMAGE        = 30;    // 每顆追蹤光球傷害
+const CANNON_TRACK_COOLDOWN      = 0.9;   // 使用完追蹤後的冷卻（秒）
+const CANNON_TRACK_SPEED         = 280;   // 追蹤光球飛行速度（px/s）
+const CANNON_TRACK_RADIUS        = 7;     // 追蹤光球半徑
+const CANNON_TRACK_TURN_RATE     = 1.6;   // 追蹤轉向速率（弧度/秒）
+const CANNON_TRACK_SPREAD        = 0.45;  // 初始散射角度（弧度）
+const CANNON_TRACK_LIFESPAN      = 4.0;   // 追蹤光球存在時間（秒）
+// 光柱
+const CANNON_BEAM_DAMAGE         = 50;    // 光柱傷害
+const CANNON_BEAM_COOLDOWN       = 1.6;   // 光柱冷卻（秒）
+const CANNON_BEAM_WIDTH          = 22;    // 光柱寬度（px）
+const CANNON_BEAM_RANGE          = 900;   // 光柱長度（px）
+const CANNON_BEAM_TRAVEL_TIME    = 0.18;  // 光柱視覺＋判定持續時間（秒）
+// 光砲
+const CANNON_BLAST_CHARGE_TIME   = 0.3;   // 光砲蓄力時間（秒）
+const CANNON_BLAST_SHOT_TIME     = 0.2;   // 每次發射持續時間（秒）
+const CANNON_BLAST_SHOTS         = 3;     // 連射次數
+const CANNON_BLAST_DAMAGE        = 60;   // 每次發射傷害
+const CANNON_BLAST_HALFWIDTH     = 55;    // 光砲半寬（約乙骨純愛大砲的一半）
+const CANNON_BLAST_COOLDOWN      = 2.2;   // 光砲冷卻（秒）
+// 砲爹 vs 乙骨 專屬決鬥終結
+const CANNON_DUEL_HP_THRESHOLD   = 300;   // 雙方血量都低於此值時觸發
+const CANNON_DUEL_CHARGE_TIME    = 2.5;   // 決鬥蓄力時間（秒）
+const CANNON_DUEL_BEAM_TIME      = 1;   // 雙方光砲對射時間（秒）
+const CANNON_DUEL_EXPLODE_TIME   = 0.6;   // 中間爆炸膨脹時間（秒）
 
 // 雷電法王常數
 const THUNDER_PILLAR_MAX          = 7;        // 最多同時存在幾個閃電柱
@@ -1546,16 +1601,21 @@ const SAMURAI_IAIDO_MAX        = 4;     // 累積幾次居合觸發識滅斬
 //現代最強
 
 const GOJO_COOLDOWN        = 2.0;   // 蒼/赫冷卻（秒）
-const GOJO_BLUE_DAMAGE     = 130;   // 蒼傷害
+const GOJO_BLUE_FRAMEDMG   = 9;    // 蒼每幀傷害（穿透持續）
 const GOJO_RED_DAMAGE      = 150;   // 赫傷害
+const GOJO_RED_KNOCKBACK   = 320;   // 赫球命中時的擊退強度（直接設定速度，效果明顯）
 const GOJO_PURPLE_FRAMEDMG = 8;     // 紫每幀傷害
-const GOJO_BLUE_SPEED      = 5;   // 蒼/赫飛行速度（乘dt*60）
+const GOJO_BLUE_SPEED      = 5;     // 蒼飛行速度
 const GOJO_RED_SPEED       = 4.5;
 const GOJO_PURPLE_SPEED    = 6.0;   // 紫飛行速度
-const GOJO_BLUE_RADIUS     = 12;     // 蒼/赫球半徑
+const GOJO_BLUE_RADIUS     = 13;    // 蒼球半徑
+const GOJO_BLUE_RING_R     = 32;    // 蒼球光圈半徑
+const GOJO_BLUE_RAY_RANGE  = 140;   // 蒼球光線射程
+const GOJO_BLUE_RAY_FORCE  = 22;    // 蒼球光線引力強度
+const GOJO_BLUE_LIFESPAN   = 4.0;   // 蒼球存在時間（秒），超時自動消失
 const GOJO_PURPLE_RADIUS   = 24;    // 紫球半徑
-const GOJO_CHARGE_TIME     = 2.0;     // 虛式蓄力時間（秒）
-const GOJO_FORCE           = 15;    // 引力/斥力強度
+const GOJO_CHARGE_TIME     = 2.0;   // 虛式蓄力時間（秒）
+const GOJO_FORCE           = 10;    // 引力/斥力強度（碰撞區域）
 const GOJO_FORCE_RANGE     = 100;   // 引力/斥力作用範圍
 const GOJO_HP_THRESHOLD    = 850;   // 觸發虛式的血量門檻
 const GOJO_PURPLE_CHANCE   = 0.10;  // 解鎖後紫出現機率
@@ -1621,8 +1681,8 @@ function startGame() {
   document.getElementById('game-screen').style.display = 'flex';
   document.getElementById('result-stats').innerHTML = '';
 
-  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff' };
+  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878' };
 
   const ch1base  = CHARACTERS.find(c => c.id === p1Choice);
   const ch2base  = CHARACTERS.find(c => c.id === p2Choice);
@@ -1792,6 +1852,16 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       engMechTimer: ch.type === 'engineer' ? 0 : null,                        // 機甲模式剩餘時間
       engLaserTimer: ch.type === 'engineer' ? ENGINEER_LASER_INTERVAL : null,  // 雷射發射冷卻
       engGridTimer: ch.type === 'engineer' ? ENGINEER_GRID_INTERVAL : null,    // 電網部署冷卻
+      // 砲爹專屬狀態
+      cannonSkillTimer: ch.type === 'cannondad' ? 0 : null,                    // 技能冷卻計時
+      cannonSkillCooldown: ch.type === 'cannondad' ? CANNON_BEAM_COOLDOWN : null, // 當前冷卻長度（依上次技能決定）
+      cannonMeleeCooldown: ch.type === 'cannondad' ? 0 : null,                 // 近戰拳頭冷卻
+      cannonBalls: ch.type === 'cannondad' ? [] : null,                       // 追蹤光球列表
+      cannonBlastShotsLeft: ch.type === 'cannondad' ? 0 : null,                // 光砲剩餘連射次數
+      cannonBlastTimer: ch.type === 'cannondad' ? 0 : null,                    // 光砲單次發射計時
+      cannonBlastAngle: ch.type === 'cannondad' ? 0 : null,                    // 光砲鎖定角度
+      cannonBlastFiring: ch.type === 'cannondad' ? false : null,               // 光砲是否發射中
+      cannonBlastHitThisShot: ch.type === 'cannondad' ? false : null,          // 本次發射是否已命中
     };
   }
 
@@ -1821,7 +1891,11 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     turrets: [],        // 工程師：炮台列表
     engGrids: [],        // 工程師：電網列表
     engLaserFX: [],        // 工程師：雷射視覺特效列表
-    matchEnded: false      // 比賽是否已分出勝負（凍結後續戰鬥邏輯用）
+    matchEnded: false,      // 比賽是否已分出勝負（凍結後續戰鬥邏輯用）
+    cannonBeamFX: [],        // 砲爹：光柱視覺特效列表
+    cannonBlastFX: [],       // 砲爹：光砲視覺特效列表
+    cannonDuelFX: null,      // 砲爹 vs 乙骨：決鬥終結特效
+    cannonDuelTriggered: false // 是否已觸發過決鬥終結（避免重複觸發）
   };
 
   updateHUD();
@@ -1944,6 +2018,47 @@ function tick(now) {
     }
   }
 
+  // 砲爹 vs 乙骨 決鬥終結特效更新（在 update 之外，避免被 early return 跳過）
+  if (state.cannonDuelFX) {
+    const fx = state.cannonDuelFX;
+    fx.timer -= dt;
+    if (fx.phase === 'charge') {
+      if (fx.timer <= 0) {
+        fx.phase = 'beam';
+        fx.timer = CANNON_DUEL_BEAM_TIME;
+        fx.angleA = Math.atan2(fx.c.y - fx.a.y, fx.c.x - fx.a.x);
+        fx.angleC = Math.atan2(fx.a.y - fx.c.y, fx.a.x - fx.c.x);
+        fx.midX = (fx.a.x + fx.c.x) / 2;
+        fx.midY = (fx.a.y + fx.c.y) / 2;
+        playHitSound('opm');
+      }
+    } else if (fx.phase === 'beam') {
+      if (fx.timer <= 0) {
+        fx.phase = 'explode';
+        fx.timer = CANNON_DUEL_EXPLODE_TIME;
+        fx.explodeR = 10;
+        state.hitFlashes.push({ x: fx.midX, y: fx.midY, r: 90, alpha: 1, color: '#ffffff', t: 0.4 });
+        playHitSound('vampire_dash');
+      }
+    } else if (fx.phase === 'explode') {
+      const prog = 1 - Math.max(0, fx.timer) / CANNON_DUEL_EXPLODE_TIME;
+      fx.explodeR = 10 + prog * 240;
+      if (fx.timer <= 0) {
+        // 結算勝負：血量較高的一方存活，相同則乙骨贏
+        const a = fx.a, c = fx.c;
+        const loser = a.hp === c.hp ? a : (a.hp > c.hp ? c : a);
+        loser.hp = 0;
+        for (const b of state.balls) b.invincible = false;
+        state.cannonDuelFX = null;
+        cancelAnimationFrame(gameLoop);
+        gameLoop = null;
+        const dead = state.balls.filter(b => b.hp <= 0);
+        setTimeout(() => showResult(dead), 100);
+        return;
+      }
+    }
+  }
+
   render();
   updateHUD();
   const dead = state.balls.filter(b => b.hp <= 0);
@@ -2037,12 +2152,29 @@ function update(dt) {
   // 詛咒橫切動畫播放中：跳過所有遊戲邏輯
   if (state.curseSliceKillFX) return;
 
+  // 砲爹 vs 乙骨 決鬥終結特效播放中：跳過所有遊戲邏輯（特效本身於 tick() 中推進）
+  if (state.cannonDuelFX) return;
+
   // 已有一方倒下（比賽已結束，僅播放收尾特效）：凍結所有戰鬥邏輯，避免分出勝負後雙方仍持續互動造成誤判（例如一拳超人出拳擊殺瞬間，特效播放期間吸血鬼仍咬擊導致反輸）
   if (state.matchEnded) return;
   if (state.balls.some(b => b.hp <= 0)) {
     state.matchEnded = true;
     for (const b of state.balls) { b.vx = 0; b.vy = 0; }
     return;
+  }
+
+  // 砲爹 vs 乙骨：雙方血量同時低於門檻時，觸發決鬥終結
+  if (!state.cannonDuelTriggered) {
+    const cd = state.balls.find(b => b.char.type === 'cannondad');
+    const yt = state.balls.find(b => b.char.type === 'yuta');
+    if (cd && yt && cd.hp <= CANNON_DUEL_HP_THRESHOLD && yt.hp <= CANNON_DUEL_HP_THRESHOLD) {
+      state.cannonDuelTriggered = true;
+      state.cannonDuelFX = { phase: 'charge', timer: CANNON_DUEL_CHARGE_TIME, a: cd, c: yt };
+      for (const b of state.balls) { b.vx = 0; b.vy = 0; b.invincible = true; }
+      state.hitFlashes.push({ x: cd.x, y: cd.y, r: 26, alpha: 1, color: '#ff8a3d', t: CANNON_DUEL_CHARGE_TIME });
+      state.hitFlashes.push({ x: yt.x, y: yt.y, r: 26, alpha: 1, color: '#ff9fc6', t: CANNON_DUEL_CHARGE_TIME });
+      return;
+    }
   }
 
   // ── 場地效果 ──
@@ -2694,13 +2826,16 @@ for (let bi = 0; bi < state.balls.length; bi++) {
         else sk = 'red';
         const spd = sk==='purple' ? GOJO_PURPLE_SPEED : sk==='blue' ? GOJO_BLUE_SPEED : GOJO_RED_SPEED;
         const rad = sk==='purple' ? GOJO_PURPLE_RADIUS : GOJO_BLUE_RADIUS;
-        const dmg = sk==='blue' ? GOJO_BLUE_DAMAGE : sk==='red' ? GOJO_RED_DAMAGE : 0;
+        const dmg = sk==='red' ? GOJO_RED_DAMAGE : 0;
         b.gojoBalls.push({ x:b.x, y:b.y,
           vx:(ddx/dd)*spd+(Math.random()-0.5)*0.5,
           vy:(ddy/dd)*spd+(Math.random()-0.5)*0.5,
           type:sk, r:rad, damage:dmg,
-          frameDmg:sk==='purple'?GOJO_PURPLE_FRAMEDMG:0,
-          active:true, stickTimer:0 });
+          frameDmg: sk==='blue' ? GOJO_BLUE_FRAMEDMG : sk==='purple' ? GOJO_PURPLE_FRAMEDMG : 0,
+          active:true, stickTimer:0,
+          ringAngle: 0,  // 蒼球光圈旋轉角度
+          life: sk==='blue' ? GOJO_BLUE_LIFESPAN : undefined // 蒼球存在時間
+        });
         playHitSound(sk==='red'?'knife':'vampire_bite');
         } // end else (not paralyzed)
       }
@@ -2711,8 +2846,32 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (!ball.active) continue;
       ball.x += ball.vx * dt * 60; ball.y += ball.vy * dt * 60;
 
+      // 旋轉光圈角度
+      if (ball.type === 'blue') ball.ringAngle = (ball.ringAngle || 0) + dt * 3.5;
+
+      // 蒼球存在時間倒數，時間到自動消散
+      if (ball.type === 'blue' && ball.life != null) {
+        ball.life -= dt;
+        if (ball.life <= 0) { ball.active = false; continue; }
+      }
+
       // 每幀持續施力（引力/斥力）
-      applyGojoForce(ball, state.balls);
+      applyGojoForce(ball, state.balls, b);
+
+      // 蒼球：對射程內敵人發射光線引力
+      if (ball.type === 'blue') {
+        for (const f of state.balls) {
+          if (f === b) continue; // 不對自己
+          const dx = f.x - ball.x, dy = f.y - ball.y;
+          const d = Math.sqrt(dx*dx+dy*dy) || 1;
+          if (d < GOJO_BLUE_RAY_RANGE) {
+            // 引力：把敵人往蒼球方向拉
+            const pull = GOJO_BLUE_RAY_FORCE * (1 - d / GOJO_BLUE_RAY_RANGE);
+            f.vx -= (dx/d) * pull;
+            f.vy -= (dy/d) * pull;
+          }
+        }
+      }
 
       // 碰邊界
       let hitWall = false;
@@ -2720,19 +2879,32 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (ball.x+ball.r > W) { ball.x=W-ball.r; ball.vx*=-1; hitWall=true; }
       if (ball.y-ball.r < 0) { ball.y=ball.r; ball.vy*=-1; hitWall=true; }
       if (ball.y+ball.r > H) { ball.y=H-ball.r; ball.vy*=-1; hitWall=true; }
-      if (hitWall && ball.type!=='purple') { ball.active=false; continue; }
+      if (hitWall && ball.type!=='purple' && ball.type!=='blue') { ball.active=false; continue; }
+      if (hitWall && ball.type==='blue') {
+        // 蒼球碰牆反彈，留下撞牆光閃
+        state.hitFlashes.push({ x: ball.x, y: ball.y, r: ball.r+10, alpha: 0.7, color: '#00cfff', t: 0.25 });
+      }
 
       // 碰敵人
       const ed = Math.sqrt((ball.x-enemy.x)**2+(ball.y-enemy.y)**2);
       if (ed < ball.r+RADIUS) {
-        if (ball.type==='purple') {
+        if (ball.type==='purple' || ball.type==='blue') {
           // 穿透飛行，經過時每幀扣血
           dealDamage(enemy, ball.frameDmg);
-          state.hitFlashes.push({ x:enemy.x, y:enemy.y, r:22, alpha:0.9, color:'#bf00ff', t:0.12 });
+          state.hitFlashes.push({ x:enemy.x, y:enemy.y, r:22, alpha:0.9,
+            color: ball.type==='blue' ? '#00cfff' : '#bf00ff', t:0.12 });
         } else {
           dealDamage(enemy, ball.damage);
+          // 赫：命中瞬間把敵人撞飛（仿鍛造師劍擊擊退寫法：疊加速度 + 立即位移，確保視覺上立刻看得到）
+          const kdx = enemy.x - ball.x, kdy = enemy.y - ball.y;
+          const kd = Math.sqrt(kdx*kdx + kdy*kdy) || 1;
+          const knx = kdx / kd, kny = kdy / kd;
+          enemy.x += knx * 22;
+          enemy.y += kny * 22;
+          enemy.vx += knx * GOJO_RED_KNOCKBACK;
+          enemy.vy += kny * GOJO_RED_KNOCKBACK;
           state.hitFlashes.push({ x:ball.x, y:ball.y, r:25, alpha:1,
-            color: ball.type==='blue'?'#00cfff':'#ff4444', t:0.3 });
+            color:'#ff4444', t:0.3 });
           playHitSound('knife');
           ball.active=false;
         }
@@ -3121,6 +3293,176 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     }
   }
 
+  // ── 砲爹邏輯 ──
+  for (let bi = 0; bi < state.balls.length; bi++) {
+    const b = state.balls[bi];
+    if (b.char.type !== 'cannondad') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+
+    // 近戰拳頭：貼近敵人時揮拳
+    if (b.cannonMeleeCooldown > 0) b.cannonMeleeCooldown -= dt;
+    {
+      const md = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+      if (md < RADIUS * 2 + 6 && b.cannonMeleeCooldown <= 0) {
+        b.cannonMeleeCooldown = CANNON_MELEE_COOLDOWN;
+        dealDamage(enemy, CANNON_MELEE_DAMAGE);
+        state.hitFlashes.push({ x: (b.x+enemy.x)/2, y: (b.y+enemy.y)/2, r: 18, alpha: 0.8, color: '#ffd76b', t: 0.25 });
+        playHitSound('knife');
+      }
+    }
+
+    // 光砲發射中：每次發射期間鎖定角度，可移動不可轉向
+    if (b.cannonBlastFiring) {
+      b.cannonBlastTimer -= dt;
+      if (!b.cannonBlastHitThisShot) {
+        const ang = b.cannonBlastAngle;
+        const dx = Math.cos(ang), dy = Math.sin(ang);
+        const ex = enemy.x - b.x, ey = enemy.y - b.y;
+        const proj = ex*dx + ey*dy;
+        if (proj > 0) {
+          const perp = Math.abs(ex*dy - ey*dx);
+          if (perp < CANNON_BLAST_HALFWIDTH + RADIUS) {
+            dealDamage(enemy, CANNON_BLAST_DAMAGE);
+            b.cannonBlastHitThisShot = true;
+            state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 36, alpha: 1, color: '#ff8a3d', t: 0.3 });
+            playHitSound('opm');
+          }
+        }
+      }
+      if (b.cannonBlastTimer <= 0) {
+        b.cannonBlastShotsLeft--;
+        if (b.cannonBlastShotsLeft > 0) {
+          b.cannonBlastTimer = CANNON_BLAST_SHOT_TIME;
+          b.cannonBlastHitThisShot = false;
+          state.cannonBlastFX.push({ x:b.x, y:b.y, angle: b.cannonBlastAngle, owner:b.player,
+            life: CANNON_BLAST_SHOT_TIME, maxLife: CANNON_BLAST_SHOT_TIME,
+            length: CANNON_BLAST_HALFWIDTH*2 + 700, halfWidth: CANNON_BLAST_HALFWIDTH });
+        } else {
+          b.cannonBlastFiring = false;
+          b.cannonSkillCooldown = CANNON_BLAST_COOLDOWN;
+          b.cannonSkillTimer = 0;
+        }
+      }
+      continue; // 發射期間跳過下方的技能選擇判定
+    }
+
+    // 蓄力中：不可選擇新技能
+    if (b.cannonBlastCharging) {
+      b.cannonBlastChargeTimer -= dt;
+      if (b.cannonBlastChargeTimer <= 0) {
+        b.cannonBlastCharging = false;
+        b.cannonBlastFiring = true;
+        b.cannonBlastShotsLeft = CANNON_BLAST_SHOTS;
+        b.cannonBlastTimer = CANNON_BLAST_SHOT_TIME;
+        b.cannonBlastHitThisShot = false;
+        state.cannonBlastFX.push({ x:b.x, y:b.y, angle: b.cannonBlastAngle, owner:b.player,
+          life: CANNON_BLAST_SHOT_TIME, maxLife: CANNON_BLAST_SHOT_TIME,
+          length: CANNON_BLAST_HALFWIDTH*2 + 700, halfWidth: CANNON_BLAST_HALFWIDTH });
+      }
+    } else {
+      // 技能冷卻：到時隨機選一招（追蹤／光柱／光砲）
+      b.cannonSkillTimer += dt;
+      if (b.cannonSkillTimer >= b.cannonSkillCooldown) {
+        b.cannonSkillTimer = 0;
+        if (b.thunderParalyzed) {
+          b.thunderParalyzed = false;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 22, alpha: 0.8, color: '#f1c40f', t: 0.4 });
+          b.cannonSkillCooldown = CANNON_BEAM_COOLDOWN;
+        } else {
+          const roll = Math.random();
+          const ddx = enemy.x - b.x, ddy = enemy.y - b.y;
+          const baseAngle = Math.atan2(ddy, ddx);
+          if (roll < 0.34) {
+            // 追蹤：先散射發射三顆光球，再各自小幅轉向追蹤
+            for (let i = 0; i < CANNON_TRACK_COUNT; i++) {
+              const off = (i - (CANNON_TRACK_COUNT-1)/2) * CANNON_TRACK_SPREAD;
+              const a = baseAngle + off;
+              b.cannonBalls.push({
+                x: b.x, y: b.y,
+                vx: Math.cos(a)*CANNON_TRACK_SPEED, vy: Math.sin(a)*CANNON_TRACK_SPEED,
+                r: CANNON_TRACK_RADIUS, damage: CANNON_TRACK_DAMAGE,
+                life: CANNON_TRACK_LIFESPAN, active: true
+              });
+            }
+            b.cannonSkillCooldown = CANNON_TRACK_COOLDOWN;
+            playHitSound('knife');
+          } else if (roll < 0.67) {
+            // 光柱：類似工程師機甲雷射，瞬間判定一發
+            state.cannonBeamFX.push({
+              x: b.x, y: b.y, angle: baseAngle, owner: b.player,
+              life: CANNON_BEAM_TRAVEL_TIME, maxLife: CANNON_BEAM_TRAVEL_TIME,
+              length: CANNON_BEAM_RANGE, width: CANNON_BEAM_WIDTH, hit: false
+            });
+            b.cannonSkillCooldown = CANNON_BEAM_COOLDOWN;
+            playHitSound('vampire_dash');
+          } else {
+            // 光砲：進入蓄力，鎖定方向
+            b.cannonBlastCharging = true;
+            b.cannonBlastChargeTimer = CANNON_BLAST_CHARGE_TIME;
+            b.cannonBlastAngle = baseAngle;
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1, color: '#ff8a3d', t: CANNON_BLAST_CHARGE_TIME });
+            playHitSound('opm');
+          }
+        }
+      }
+    }
+
+    // 追蹤光球：移動、轉向、撞牆／命中消散
+    b.cannonBalls = b.cannonBalls.filter(cb => cb.active);
+    for (const cb of b.cannonBalls) {
+      const desiredAng = Math.atan2(enemy.y - cb.y, enemy.x - cb.x);
+      const curAng = Math.atan2(cb.vy, cb.vx);
+      let diff = desiredAng - curAng;
+      while (diff > Math.PI) diff -= Math.PI*2;
+      while (diff < -Math.PI) diff += Math.PI*2;
+      const maxTurn = CANNON_TRACK_TURN_RATE * dt;
+      const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
+      const newAng = curAng + turn;
+      const spd = Math.hypot(cb.vx, cb.vy);
+      cb.vx = Math.cos(newAng)*spd; cb.vy = Math.sin(newAng)*spd;
+      cb.x += cb.vx*dt; cb.y += cb.vy*dt;
+      cb.life -= dt;
+      if (cb.life <= 0) { cb.active = false; continue; }
+      if (cb.x < cb.r || cb.x > W-cb.r || cb.y < cb.r || cb.y > H-cb.r) { cb.active = false; continue; }
+      const dd = Math.hypot(enemy.x - cb.x, enemy.y - cb.y);
+      if (dd < RADIUS + cb.r) {
+        dealDamage(enemy, cb.damage);
+        cb.active = false;
+        state.hitFlashes.push({ x: cb.x, y: cb.y, r: 20, alpha: 0.9, color: '#ffb347', t: 0.25 });
+        playHitSound('knife');
+      }
+    }
+  }
+
+  // 砲爹：光柱特效（壽命衰減 & 命中判定，與工程師雷射判定方式相同）
+  for (let i = state.cannonBeamFX.length - 1; i >= 0; i--) {
+    const lz = state.cannonBeamFX[i];
+    lz.life -= dt;
+    if (lz.life <= 0) { state.cannonBeamFX.splice(i, 1); continue; }
+    if (!lz.hit) {
+      const target = state.balls.find(x => x.player !== lz.owner);
+      if (target) {
+        const dx = target.x - lz.x, dy = target.y - lz.y;
+        const cos = Math.cos(lz.angle), sin = Math.sin(lz.angle);
+        const localX = dx * cos + dy * sin;
+        const localY = -dx * sin + dy * cos;
+        if (localX > 0 && localX < lz.length && Math.abs(localY) < lz.width / 2 + RADIUS) {
+          dealDamage(target, CANNON_BEAM_DAMAGE);
+          lz.hit = true;
+          state.hitFlashes.push({ x: target.x, y: target.y, r: 28, alpha: 1.0, color: '#ffd9a0', t: 0.3 });
+          playHitSound('opm');
+        }
+      }
+    }
+  }
+
+  // 砲爹：光砲視覺特效壽命衰減（傷害判定已在主邏輯處理，此處純粹視覺用）
+  for (let i = state.cannonBlastFX.length - 1; i >= 0; i--) {
+    state.cannonBlastFX[i].life -= dt;
+    if (state.cannonBlastFX[i].life <= 0) state.cannonBlastFX.splice(i, 1);
+  }
+
   // 炮台：壽命衰減 & 開火
   for (let i = state.turrets.length - 1; i >= 0; i--) {
     const t = state.turrets[i];
@@ -3439,7 +3781,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
 
     // 凶星軌跡觸發判定
     const myShadows = state.naoShadows ? state.naoShadows.filter(s => s.owner === b.player) : [];
-    if (myShadows.length >= NAOBITO_KYOUSEI_THRESHOLD && b.naoKyouseiTimer <= 0 && !b.naoKyouseiFiring) {
+    if (myShadows.length >= NAOBITO_KYOUSEI_THRESHOLD && b.naoKyouseiTimer <= 0 && !b.naoKyouseiFiring && !b.naoDashing) {    
       // 本體穿刺衝向敵人
       const ex = enemy.x - b.x, ey = enemy.y - b.y;
       const ed = Math.hypot(ex, ey) || 1;
@@ -3508,7 +3850,13 @@ for (let bi = 0; bi < state.balls.length; bi++) {
           y: Math.max(RADIUS + 5, Math.min(H - RADIUS - 5, my + Math.sin(perp) * dev))
         });
       }
-      waypoints.push({ x: enemy.x, y: enemy.y }); // 最終目標
+      waypoints.push({ x: enemy.x, y: enemy.y });  // 最終目標
+      const retreatAng = Math.atan2(b.y - enemy.y, b.x - enemy.x);
+waypoints.push({
+  x: Math.max(RADIUS + 5, Math.min(W - RADIUS - 5, enemy.x + Math.cos(retreatAng) * NAOBITO_RETREAT_DISTANCE)),
+  y: Math.max(RADIUS + 5, Math.min(H - RADIUS - 5, enemy.y + Math.sin(retreatAng) * NAOBITO_RETREAT_DISTANCE))
+});
+
       b.naoWaypoints = waypoints;
       b.naoWaypointIdx = 0;
       b.naoDashing = true;
@@ -4407,19 +4755,22 @@ for (let bi = 0; bi < state.balls.length; bi++) {
 
   // 特效更新
   for (let i = state.hitFlashes.length-1; i >= 0; i--) {
-    state.hitFlashes[i].t -= dt;
-    if (state.hitFlashes[i].t <= 0) state.hitFlashes.splice(i, 1);
+    const hf = state.hitFlashes[i];
+    if (hf.maxT === undefined) hf.maxT = hf.t; // 記錄真實初始時長，避免不同 t 值造成負半徑
+    hf.t -= dt;
+    if (hf.t <= 0) state.hitFlashes.splice(i, 1);
   }
 }
 
-function applyGojoForce(ball, fighters) {
+function applyGojoForce(ball, fighters, owner) {
   const FORCE = GOJO_FORCE;
   for (const f of fighters) {
+    if (f === owner) continue; // 不對自己本體施力
     const dx = f.x - ball.x, dy = f.y - ball.y;
     const d = Math.sqrt(dx*dx + dy*dy) || 1;
     if (d > GOJO_FORCE_RANGE) continue;
     if (ball.type === 'blue') { f.vx -= (dx/d)*FORCE; f.vy -= (dy/d)*FORCE; }
-    else if (ball.type === 'red') { f.vx += (dx/d)*FORCE; f.vy += (dy/d)*FORCE; }
+    // 赫球不再持續施加斥力，改為命中時直接擊退（見碰撞判定處）
   }
 }
 // 生成蝙蝠粒子
@@ -4789,7 +5140,70 @@ function render() {
     ctx.restore();
   }
 
-  // 奕：小競技場
+  // 砲爹：光柱渲染（橙黃色，比照工程師雷射）
+  for (const lz of state.cannonBeamFX) {
+    const prog = lz.life / lz.maxLife;
+    ctx.save();
+    ctx.translate(lz.x, lz.y);
+    ctx.rotate(lz.angle);
+    ctx.globalAlpha = Math.max(0, prog);
+    const grad = ctx.createLinearGradient(0, 0, lz.length, 0);
+    grad.addColorStop(0, 'rgba(255,217,160,0.95)');
+    grad.addColorStop(0.5, 'rgba(255,138,61,0.55)');
+    grad.addColorStop(1, 'rgba(255,138,61,0)');
+    ctx.fillStyle = grad;
+    ctx.shadowColor = '#ff8a3d';
+    ctx.shadowBlur = 20;
+    ctx.fillRect(0, -lz.width / 2, lz.length, lz.width);
+    ctx.fillStyle = `rgba(255,255,255,${0.8 * prog})`;
+    ctx.fillRect(0, -lz.width * 0.12, lz.length, lz.width * 0.24);
+    ctx.restore();
+  }
+
+  // 砲爹：光砲渲染（寬版橙色光柱，約乙骨純愛大砲一半寬度）
+  for (const bz of state.cannonBlastFX) {
+    const prog = bz.life / bz.maxLife;
+    ctx.save();
+    ctx.translate(bz.x, bz.y);
+    ctx.rotate(bz.angle);
+    ctx.globalAlpha = Math.max(0, prog);
+    const grad = ctx.createLinearGradient(0, 0, bz.length, 0);
+    grad.addColorStop(0, 'rgba(255,200,140,0.95)');
+    grad.addColorStop(0.4, 'rgba(255,120,40,0.6)');
+    grad.addColorStop(1, 'rgba(255,120,40,0)');
+    ctx.fillStyle = grad;
+    ctx.shadowColor = '#ff5c1a';
+    ctx.shadowBlur = 30;
+    ctx.fillRect(0, -bz.halfWidth, bz.length, bz.halfWidth * 2);
+    ctx.fillStyle = `rgba(255,255,255,${0.7 * prog})`;
+    ctx.fillRect(0, -bz.halfWidth * 0.18, bz.length, bz.halfWidth * 0.36);
+    ctx.restore();
+  }
+
+  // 砲爹：追蹤光球渲染
+  for (const b of state.balls) {
+    if (b.char.type !== 'cannondad' || !b.cannonBalls) continue;
+    for (const cb of b.cannonBalls) {
+      ctx.save();
+      ctx.shadowColor = '#ffb347';
+      ctx.shadowBlur = 18;
+      const bg = ctx.createRadialGradient(cb.x - 2, cb.y - 2, 1, cb.x, cb.y, cb.r);
+      bg.addColorStop(0, '#ffffff');
+      bg.addColorStop(0.4, '#ffd28a');
+      bg.addColorStop(1, '#ff8a3d');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.arc(cb.x, cb.y, cb.r, 0, Math.PI*2); ctx.fill();
+      // 尾焰
+      const tailAng = Math.atan2(-cb.vy, -cb.vx);
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#ff8a3d';
+      ctx.beginPath();
+      ctx.ellipse(cb.x + Math.cos(tailAng)*cb.r*1.6, cb.y + Math.sin(tailAng)*cb.r*1.6, cb.r*1.3, cb.r*0.6, tailAng, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
   for (const b of state.balls) {
     if (b.char.type !== 'yi' || !b.yiArenaActive) continue;
     const half = YI_ARENA_SIZE;
@@ -4952,15 +5366,71 @@ function render() {
       if (!ball.active && !ball.sticking) continue;
       ctx.save();
       if (ball.type==='blue') {
-        ctx.shadowColor='#00cfff'; ctx.shadowBlur=18; ctx.fillStyle='#00cfff';
+        // ── 蒼球光線（朝附近角色，加強亮度） ──
+        for (const f of state.balls) {
+          const dx = f.x - ball.x, dy = f.y - ball.y;
+          const d = Math.sqrt(dx*dx+dy*dy) || 1;
+          if (d < GOJO_BLUE_RAY_RANGE) {
+            const alpha = 0.85 * (1 - d / GOJO_BLUE_RAY_RANGE) + 0.1;
+            const grad = ctx.createLinearGradient(ball.x, ball.y, f.x, f.y);
+            grad.addColorStop(0, `rgba(180,245,255,${alpha})`);
+            grad.addColorStop(0.5, `rgba(0,207,255,${alpha*0.7})`);
+            grad.addColorStop(1, `rgba(0,207,255,0)`);
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            ctx.lineTo(f.x, f.y);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 4.5;
+            ctx.shadowColor = '#00eaff';
+            ctx.shadowBlur = 22;
+            ctx.stroke();
+            // 核心亮線，讓光束更銳利明顯
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            ctx.lineTo(f.x, f.y);
+            ctx.strokeStyle = `rgba(255,255,255,${alpha*0.6})`;
+            ctx.lineWidth = 1.5;
+            ctx.shadowBlur = 0;
+            ctx.stroke();
+          }
+        }
+
+        // ── 旋轉光圈（加強亮度） ──
+        const ang = ball.ringAngle || 0;
+        const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 200);
+        ctx.shadowColor = '#00eaff';
+        ctx.shadowBlur = 28 * pulse;
+        ctx.strokeStyle = `rgba(120,235,255,${0.9 * pulse})`;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.ellipse(ball.x, ball.y, GOJO_BLUE_RING_R, GOJO_BLUE_RING_R * 0.35, ang, 0, Math.PI * 2);
+        ctx.stroke();
+        // 第二圈，垂直方向
+        ctx.strokeStyle = `rgba(200,250,255,${0.6 * pulse})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(ball.x, ball.y, GOJO_BLUE_RING_R, GOJO_BLUE_RING_R * 0.35, ang + Math.PI/2, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // ── 蒼球主體（加強光暈） ──
+        ctx.shadowColor = '#00eaff'; ctx.shadowBlur = 34;
+        const bg = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 1, ball.x, ball.y, ball.r);
+        bg.addColorStop(0, '#ffffff');
+        bg.addColorStop(0.35, '#aaf0ff');
+        bg.addColorStop(0.7, '#00cfff');
+        bg.addColorStop(1, '#0066aa');
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+
       } else if (ball.type==='red') {
         ctx.shadowColor='#ff4444'; ctx.shadowBlur=18; ctx.fillStyle='#ff4444';
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
       } else {
         const pulse = 0.7+0.3*Math.sin(Date.now()/150);
         ctx.shadowColor='#bf00ff'; ctx.shadowBlur=28*pulse;
         ctx.fillStyle='#bf00ff'; ctx.globalAlpha=pulse;
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
       }
-      ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
       ctx.restore();
     }
   }
@@ -5208,8 +5678,9 @@ function render() {
 
   // 命中特效
   for (const f of state.hitFlashes) {
-    const prog = f.t/0.35;
-    ctx.beginPath(); ctx.arc(f.x,f.y,f.r*(1+(1-prog)*0.5),0,Math.PI*2);
+    const prog = f.t/(f.maxT || 0.35);
+    const flashRadius = Math.max(0, f.r*(1+(1-prog)*0.5));
+    ctx.beginPath(); ctx.arc(f.x,f.y,flashRadius,0,Math.PI*2);
     const alphaHex = Math.floor(f.alpha*prog*255).toString(16).padStart(2,'0');
     ctx.fillStyle = f.color+alphaHex; ctx.fill();
   }
@@ -6568,6 +7039,56 @@ function render() {
     ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
     ctx.fillStyle = rg; ctx.fill();
   }
+
+  // ── 砲爹 vs 乙骨 決鬥終結 ──
+  if (state.cannonDuelFX) {
+    const fx = state.cannonDuelFX;
+    if (fx.phase === 'charge') {
+      const prog = 1 - fx.timer / CANNON_DUEL_CHARGE_TIME;
+      for (const who of [fx.a, fx.c]) {
+        const pulse = 0.5 + 0.5 * Math.sin(elapsed * 14);
+        ctx.save();
+        ctx.shadowColor = who === fx.a ? '#ff8a3d' : '#ff9fc6';
+        ctx.shadowBlur = 25 + prog * 30;
+        ctx.strokeStyle = who === fx.a ? `rgba(255,138,61,${0.5+0.4*pulse})` : `rgba(255,159,198,${0.5+0.4*pulse})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(who.x, who.y, 28 + prog * 18 + pulse*6, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    } else if (fx.phase === 'beam') {
+      const prog = 1 - fx.timer / CANNON_DUEL_BEAM_TIME;
+      const len = Math.hypot(fx.c.x - fx.a.x, fx.c.y - fx.a.y) * Math.min(1, prog * 1.6);
+      for (const [origin, ang, col] of [[fx.a, fx.angleA, '255,138,61'], [fx.c, fx.angleC, '255,159,198']]) {
+        ctx.save();
+        ctx.translate(origin.x, origin.y);
+        ctx.rotate(ang);
+        const grad = ctx.createLinearGradient(0,0,len,0);
+        grad.addColorStop(0, `rgba(${col},0.95)`);
+        grad.addColorStop(1, `rgba(${col},0.15)`);
+        ctx.fillStyle = grad;
+        ctx.shadowColor = `rgb(${col})`;
+        ctx.shadowBlur = 35;
+        ctx.fillRect(0, -32, len, 64);
+        ctx.fillStyle = `rgba(255,255,255,0.7)`;
+        ctx.fillRect(0, -10, len, 20);
+        ctx.restore();
+      }
+    } else if (fx.phase === 'explode') {
+      const r = fx.explodeR || 10;
+      const grad = ctx.createRadialGradient(fx.midX, fx.midY, 0, fx.midX, fx.midY, r);
+      grad.addColorStop(0, 'rgba(255,255,255,0.95)');
+      grad.addColorStop(0.4, 'rgba(255,200,140,0.8)');
+      grad.addColorStop(1, 'rgba(255,138,61,0)');
+      ctx.save();
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 40;
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(fx.midX, fx.midY, r, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
 }
 
 function updateHUD() {
@@ -6687,6 +7208,11 @@ function updateHUD() {
       }
       const turretLeft = Math.max(0, b.engTurretTimer || 0).toFixed(1);
       return `🔧×${turretCount} ${turretLeft}s(${b.engTurretTotalSummoned||0}/${ENGINEER_MECH_TURRET_THRESHOLD}) ⚡${gridLeft}s`;
+    } else if (b.char.type === 'cannondad') {
+      if (b.cannonBlastCharging) return `🚬 光砲蓄力中⚠️`;
+      if (b.cannonBlastFiring) return `🚬 光砲連射 ${b.cannonBlastShotsLeft}`;
+      const cdLeft = Math.max(0, (b.cannonSkillCooldown||0) - (b.cannonSkillTimer||0)).toFixed(1);
+      return `🚬 CD:${cdLeft}s`;
     } else {
       return '';
     }
@@ -6704,10 +7230,14 @@ function showResult(deadBalls) {
     titleEl.textContent = '平局！'; titleEl.style.color = '#c8a84b'; subEl.textContent = '兩位勇士同歸於盡';
   } else {
     const winner = state.balls.find(b => b.player !== deadBalls[0].player);
+    const loser  = deadBalls[0];
     titleEl.textContent = `${winner.char.emoji} 勝利！`;
     titleEl.style.color = winner.char.color;
+    // 特定對手專屬勝利台詞：若 winner.char.vsQuotes[loser角色id] 有設定，優先使用；否則用一般 winQuote
+    const specialQuote = winner.char.vsQuotes && loser.char && winner.char.vsQuotes[loser.char.id];
+    const quote = specialQuote || winner.char.winQuote;
     subEl.innerHTML = `${winner.char.displayName} 剩餘 ${Math.ceil(winner.hp)} 血` +
-      (winner.char.winQuote ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.85">「${winner.char.winQuote}」</div>` : '');
+      (quote ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.85">「${quote}」</div>` : '');
   }
 
   // 戰鬥紀錄
