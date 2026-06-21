@@ -1141,6 +1141,13 @@ cursed:'我會親手殺了宿儺' ,
   winQuote: '就這點實力，根本填不飽我。',
 vsQuotes: { yuta: '真的很甜美啊！！！！乙骨。',
 cursed:'格蘭尼達.... '}    
+  },
+  {
+  id: 'dio', emoji: '🧏', weapon: '🔪', name: 'DIO',
+  desc: '惡人的救世主。持有替身「世界」。可發動「the world」使時間停止，並在時停中丟刀。吃下場上的麵包可以回血並丟刀，吃滿一定數量後進入HIGH狀態。',
+  stats: ['替身連打 10/0.2s', '世界冷卻 10s／時停 3s', '飛刀 25', 'HIGH 時停 5s'],
+  color: '#f5d020', glowColor: 'rgba(245,208,32,0.6)', type: 'dio',
+  winQuote: '我現在真是high到不行！'
   } 
   
  
@@ -1564,6 +1571,33 @@ const CANNON_DUEL_CHARGE_TIME    = 2.5;   // 決鬥蓄力時間（秒）
 const CANNON_DUEL_BEAM_TIME      = 1;   // 雙方光砲對射時間（秒）
 const CANNON_DUEL_EXPLODE_TIME   = 0.6;   // 中間爆炸膨脹時間（秒）
 
+// DIO 常數
+const DIO_STAND_RADIUS        = 50;    // 替身環繞半徑
+const DIO_STAND_ORBIT_SPEED   = 2.0;   // 替身環繞角速度（弧度/秒）
+const DIO_STAND_HIT_RANGE     = RADIUS + 16; // 替身觸碰判定距離
+const DIO_STAND_PUNCH_INTERVAL = 0.2;  // 替身連打間隔（秒）
+const DIO_STAND_PUNCH_DAMAGE  = 10;    // 替身每拳傷害
+const DIO_WORLD_COOLDOWN      = 10;    // 世界冷卻（秒）
+const DIO_WORLD_DURATION      = 3;     // 世界時停持續（秒）
+const DIO_WORLD_HIGH_DURATION = 5;     // HIGH狀態時停持續（秒）
+const DIO_WORLD_KNIFE_COUNT   = 3;     // 時停中布刀數量
+const DIO_WORLD_KNIFE_INTERVAL = 0.5;  // 時停中布刀間隔（秒）
+const DIO_STAND_SIZE          = 1.5;   // 替身大小倍率（相對於 RADIUS）
+const DIO_KNIFE_DAMAGE        = 25;    // 飛刀傷害
+const DIO_KNIFE_SPEED         = 700;   // 飛刀飛行速度
+const DIO_BREAD_SPAWN_MIN     = 2;     // 麵包生成間隔下限（秒）
+const DIO_BREAD_SPAWN_MAX     = 5;     // 麵包生成間隔上限（秒）
+const DIO_BREAD_RADIUS        = 16;    // 麵包判定半徑
+const DIO_BREAD_HEAL          = 40;    // 吃麵包回血量
+const DIO_BREAD_HIGH_THRESHOLD = 6;    // 吃幾個麵包進入HIGH狀態
+const DIO_STEAMROLLER_SPEED   = 400;   // 壓路機衝刺速度
+const DIO_STEAMROLLER_DAMAGE  = 80;    // 壓路機命中傷害
+const DIO_STEAMROLLER_RADIUS  = 40;    // 壓路機碰撞半徑
+const DIO_RUSH_SPEED          = 260;   // HIGH結束後衝刺速度
+const DIO_RUSH_DURATION       = 2.2;   // 衝刺連打持續時間（秒）
+const DIO_RUSH_PUNCH_INTERVAL = 0.15;  // 衝刺連打間隔（秒）
+const DIO_RUSH_PUNCH_DAMAGE   = 15;    // 衝刺連打每拳傷害
+
 // 雷電法王常數
 const THUNDER_PILLAR_MAX          = 7;        // 最多同時存在幾個閃電柱
 const THUNDER_PILLAR_RADIUS       = 14;       // 閃電柱半圓半徑（顯示用）
@@ -1674,15 +1708,136 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066' };
+
+const PROGRESS_HANDLERS = {
+  opm(b) {
+    return {
+      atFrac: Math.min(1 - b.opmCountdown / OPM_COUNTDOWN_START, 1),
+      barColor: b.opmPunched ? '#555' : (b.opmCountdown <= OPM_COUNTDOWN_START * 0.1 ? '#ff5050' : b.char.color)
+    };
+  },
+  vampire(b) {
+    const dashProgress = 1 - (b.vampireDashTimer / VAMPIRE_DASH_INTERVAL);
+    return {
+      atFrac: Math.max(0, Math.min(1, dashProgress)),
+      barColor: b.vampireDashing ? '#ff44ff' : (b.vampireBiting ? '#aa00ff' : b.char.color)
+    };
+  },
+  gojo(b) {
+    if (b.gojoCharging) return { atFrac: Math.min(b.gojoChargeTimer / GOJO_CHARGE_TIME, 1), barColor: '#bf00ff' };
+    return { atFrac: Math.min(b.gojoTimer / GOJO_COOLDOWN, 1), barColor: b.gojoUnlocked ? '#bf00ff' : b.char.color };
+  },
+  cursed(b) {
+    return {
+      atFrac: b.curseSlashTimer != null ? 1 - (b.curseSlashTimer / CURSE_SLASH_INTERVAL) : 0,
+      barColor: b.curseDomainActive ? '#c0392b' : b.char.color
+    };
+  },
+  trapper(b) {
+    return {
+      atFrac: b.trapChainTimer != null ? 1 - (b.trapChainTimer / TRAP_CHAIN_INTERVAL) : 0,
+      barColor: b.trapChainActive ? '#f1c40f' : b.char.color
+    };
+  },
+  yi(b) {
+    return {
+      atFrac: b.yiBlackTimer != null ? 1 - (b.yiBlackTimer / YI_BLACK_INTERVAL) : 0,
+      barColor: (b.yiBlackCount != null && b.yiBlackCount >= YI_BLACK_MAX) ? '#ffffff' : b.char.color
+    };
+  },
+  gunner(b) {
+    return {
+      atFrac: b.gunnerFiring ? (b.gunnerAmmoFired / GUNNER_MAG_SIZE) : (b.gunnerAmmo / GUNNER_MAG_SIZE),
+      barColor: b.gunnerFiring ? '#ff6600' : b.char.color
+    };
+  },
+  mage(b) {
+    return {
+      atFrac: 1 - Math.min(b.mageDoveTimer / MAGE_DOVE_INTERVAL, 1),
+      barColor: b.mageTeleportTimer > 0 ? '#ffffff' : b.char.color
+    };
+  },
+  samurai(b) {
+    if (b.samuraiParrying) return { atFrac: Math.min(b.samuraiParryElapsed / SAMURAI_PARRY_DURATION, 1), barColor: b.samuraiNextIsShimetsu ? '#ff4400' : '#d4af37' };
+    if (b.samuraiIaidoing) return { atFrac: 1 - (b.samuraiIaidoTimer / SAMURAI_IAIDO_DURATION), barColor: '#ffd700' };
+    return {
+      atFrac: 1 - Math.min(b.samuraiParryTimer / SAMURAI_PARRY_INTERVAL, 1),
+      barColor: b.samuraiNextIsShimetsu ? '#ff6600' : b.char.color
+    };
+  },
+  thunder(b) {
+    return {
+      atFrac: b.thunderStrikeTimer != null ? 1 - (b.thunderStrikeTimer / THUNDER_STRIKE_INTERVAL) : 0,
+      barColor: b.thunderParalyzed ? '#f1c40f' : b.char.color
+    };
+  },
+  itachi(b) {
+    if (b.itachiSusanooActive) return { atFrac: Math.max(0, Math.min(1, b.itachiSusanooTimer / ITACHI_SUSANOO_DURATION)), barColor: '#ff3333' };
+    return {
+      atFrac: Math.max(0, Math.min(1, b.itachiAmaterasuTimer != null ? 1 - (b.itachiAmaterasuTimer / ITACHI_AMATERASU_INTERVAL) : 0)),
+      barColor: b.itachiMarked ? '#ff0000' : b.char.color
+    };
+  },
+  blacksmith(b) {
+    if (b.smithSwordSwinging) return { atFrac: 1, barColor: '#ff6600' };
+    if (b.smithSwordTimer > 0) return { atFrac: 1 - Math.min(b.smithSwordTimer / SMITH_SWORD_COOLDOWN, 1), barColor: b.char.color };
+    return {
+      atFrac: Math.max(0, Math.min(1, b.smithForgeTimer != null ? 1 - (b.smithForgeTimer / (b.smithForgeInterval || SMITH_FORGE_INTERVAL_BASE)) : 0)),
+      barColor: '#cd7f32'
+    };
+  },
+  naobito(b) {
+    if (b.naoKyouseiFiring) return { atFrac: 1, barColor: '#ffffff' };
+    if (b.naoKyouseiTimer > 0) return { atFrac: 1 - Math.min(b.naoKyouseiTimer / NAOBITO_KYOUSEI_COOLDOWN, 1), barColor: '#e8e8f0' };
+    return {
+      atFrac: Math.max(0, Math.min(1, b.naoPathTimer != null ? 1 - Math.min(b.naoPathTimer / NAOBITO_PATH_INTERVAL, 1) : 0)),
+      barColor: b.char.color
+    };
+  },
+  yuta(b) {
+    return {
+      atFrac: Math.max(0, Math.min(1, b.yutaCurseWordTimer != null ? 1 - Math.min(b.yutaCurseWordTimer / YUTA_CURSEWORD_INTERVAL, 1) : 0)),
+      barColor: (b.itachiPinnedTimer > 0 || b.gunnerStunTimer > 0) ? '#ff3333' : b.char.color
+    };
+  },
+  engineer(b) {
+    if (b.engMechActive) return { atFrac: Math.max(0, Math.min(1, b.engMechTimer / ENGINEER_MECH_DURATION)), barColor: '#aee0ff' };
+    return {
+      atFrac: Math.max(0, Math.min(1, b.engTurretTimer != null ? 1 - Math.min(b.engTurretTimer / ENGINEER_TURRET_INTERVAL, 1) : 0)),
+      barColor: b.char.color
+    };
+  },
+  cannondad(b) {
+    if (b.cannonBlastFiring) return { atFrac: 1, barColor: '#ff8a3d' };
+    return {
+      atFrac: Math.max(0, Math.min(1, b.cannonSkillTimer != null ? b.cannonSkillTimer / (b.cannonSkillCooldown || CANNON_BEAM_COOLDOWN) : 0)),
+      barColor: b.char.color
+    };
+  },
+  __default(b) {
+    return {
+      atFrac: Math.min(1, b.attackTimer / b.attackInterval),
+      barColor: (b.char.type !== 'chef' || b.knives > 0) ? b.char.color : '#555'
+    };
+  }
+};
+
+for (const c of CHARACTERS) {
+  if (!(c.type in P1_COLORS)) console.warn(`[檢查] P1_COLORS 缺少角色: ${c.type}`);
+  if (!(c.type in P2_COLORS)) console.warn(`[檢查] P2_COLORS 缺少角色: ${c.type}`);
+  if (!(c.type in PROGRESS_HANDLERS) && c.type !== 'chef' && c.type !== 'drunk') {
+    console.warn(`[檢查] PROGRESS_HANDLERS 缺少角色: ${c.type}（會用預設攻擊計時器，可能不準）`);
+  }
+}
+
 // ──────────────── START GAME ────────────────
 function startGame() {
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('select-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
   document.getElementById('result-stats').innerHTML = '';
-
-  const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878' };
 
   const ch1base  = CHARACTERS.find(c => c.id === p1Choice);
   const ch2base  = CHARACTERS.find(c => c.id === p2Choice);
@@ -1862,6 +2017,23 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       cannonBlastAngle: ch.type === 'cannondad' ? 0 : null,                    // 光砲鎖定角度
       cannonBlastFiring: ch.type === 'cannondad' ? false : null,               // 光砲是否發射中
       cannonBlastHitThisShot: ch.type === 'cannondad' ? false : null,          // 本次發射是否已命中
+      // DIO 專屬狀態
+      dioStandAngle: ch.type === 'dio' ? Math.random() * Math.PI * 2 : null,  // 替身環繞角度
+      dioStandX: ch.type === 'dio' ? x : null,
+      dioStandY: ch.type === 'dio' ? y : null,
+      dioStandPunchTimer: ch.type === 'dio' ? 0 : null,        // 替身連打冷卻
+      dioWorldActive: ch.type === 'dio' ? false : null,        // 世界是否啟動中
+      dioWorldTimer: ch.type === 'dio' ? 0 : null,             // 時停剩餘時間
+      dioWorldCooldownTimer: ch.type === 'dio' ? 3 : null,     // 世界冷卻倒數
+      dioWorldKnifeTimer: ch.type === 'dio' ? 0 : null,         // 時停中持續布刀的間隔計時
+      dioBreadSpawnTimer: ch.type === 'dio' ? randBetween(DIO_BREAD_SPAWN_MIN, DIO_BREAD_SPAWN_MAX) : null, // 麵包生成倒數
+      dioBreadEaten: ch.type === 'dio' ? 0 : null,             // 已吃麵包數
+      dioHighActive: ch.type === 'dio' ? false : null,         // 是否在HIGH觸發的世界中
+      dioSteamrollerPending: ch.type === 'dio' ? false : null, // 壓路機是否待生成
+      dioSteamrollerThrown: ch.type === 'dio' ? false : null,  // 壓路機是否已使用過（僅一次）
+      dioRushing: ch.type === 'dio' ? false : null,            // 是否在HIGH結束衝刺連打中
+      dioRushTimer: ch.type === 'dio' ? 0 : null,              // 衝刺連打剩餘時間
+      dioRushPunchTimer: ch.type === 'dio' ? 0 : null,         // 衝刺連打冷卻
     };
   }
 
@@ -1895,7 +2067,11 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     cannonBeamFX: [],        // 砲爹：光柱視覺特效列表
     cannonBlastFX: [],       // 砲爹：光砲視覺特效列表
     cannonDuelFX: null,      // 砲爹 vs 乙骨：決鬥終結特效
-    cannonDuelTriggered: false // 是否已觸發過決鬥終結（避免重複觸發）
+    cannonDuelTriggered: false, // 是否已觸發過決鬥終結（避免重複觸發）
+    dioBreads: [],           // DIO：場上麵包列表
+    dioSteamroller: null,    // DIO：壓路機物件
+    dioWorldGlobalActive: false, // DIO：世界時停是否全域生效中（凍結敵方與投射物）
+    dioWorldCaster: null     // DIO：施放世界的球參考
   };
 
   updateHUD();
@@ -2177,6 +2353,20 @@ function update(dt) {
     }
   }
 
+  // ── DIO 世界（時停）：凍結敵方狀態快照 ──
+  let dioFreezeTarget = null;
+  let dioFreezeSnapshot = null;
+  const dioWorldCasterBall = state.balls.find(b => b.char.type === 'dio' && b.dioWorldActive);
+  if (dioWorldCasterBall) {
+    state.dioWorldGlobalActive = true;
+    state.dioWorldCaster = dioWorldCasterBall;
+    dioFreezeTarget = state.balls.find(b => b !== dioWorldCasterBall);
+    if (dioFreezeTarget) dioFreezeSnapshot = { ...dioFreezeTarget };
+  } else {
+    state.dioWorldGlobalActive = false;
+    state.dioWorldCaster = null;
+  }
+
   // ── 場地效果 ──
   if (state.arena === 'lava') {
     for (const b of state.balls) {
@@ -2443,6 +2633,7 @@ function update(dt) {
   // 球碰球（遍歷所有跨玩家配對）
   for (let _ci = 0; _ci < state.balls.length; _ci++) {
   for (let _cj = _ci+1; _cj < state.balls.length; _cj++) {
+  if (state.dioWorldGlobalActive) continue; // 時停中：碰球傷害不觸發
   const b0 = state.balls[_ci], b1 = state.balls[_cj];
   if (b0.player === b1.player) continue;
   const dx = b1.x - b0.x, dy = b1.y - b0.y;
@@ -3302,7 +3493,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
 
     // 近戰拳頭：貼近敵人時揮拳
     if (b.cannonMeleeCooldown > 0) b.cannonMeleeCooldown -= dt;
-    {
+    if (!state.dioWorldGlobalActive) {
       const md = Math.hypot(enemy.x - b.x, enemy.y - b.y);
       if (md < RADIUS * 2 + 6 && b.cannonMeleeCooldown <= 0) {
         b.cannonMeleeCooldown = CANNON_MELEE_COOLDOWN;
@@ -3645,7 +3836,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const distToEnemy = Math.hypot(enemy.x - b.x, enemy.y - b.y);
     const nearEnemy = distToEnemy < SMITH_SWORD_RANGE;
 
-    if (nearEnemy) {
+    if (nearEnemy && !state.dioWorldGlobalActive) {
       // 靠近敵人：嘗試揮劍
       if (b.smithSwordTimer <= 0) {
         if (b.thunderParalyzed) {
@@ -3912,6 +4103,7 @@ waypoints.push({
     for (let i = state.projectiles.length - 1; i >= 0; i--) {
       const p = state.projectiles[i];
       if (p.type !== 'naobito_kyousei') continue;
+      if (state.dioWorldGlobalActive) continue;
       p.life -= dt;
       if (p.life <= 0 || p.hit) { state.projectiles.splice(i, 1); continue; }
       p.x += p.vx * dt;
@@ -4238,6 +4430,8 @@ waypoints.push({
   // 投射物更新
   for (let i = state.projectiles.length-1; i >= 0; i--) {
     const p = state.projectiles[i];
+    // DIO 世界時停中：所有投射物完全停止移動與判定
+    if (state.dioWorldGlobalActive) continue;
     // 技巧3：追蹤鴿子 — 稍微轉向敵方球
     if (p.type === 'dove' && Number(p.mageTrick) === 3) {
       const target = state.balls.find(b => b.player !== p.owner);
@@ -4426,7 +4620,11 @@ waypoints.push({
       if (p.type === 'knife') {
         p.x = Math.max(WALL, Math.min(W-WALL, p.x));
         p.y = Math.max(WALL, Math.min(H-WALL, p.y));
-        state.wallKnives.push({ x:p.x, y:p.y, angle:p.angle, owner:p.owner, color:p.color });
+        // 只有廚師的刀才插牆等待回收，其他飛刀（如DIO）碰牆直接消失
+        const knifeOwnerBall = state.balls.find(b => b.player === p.owner);
+        if (knifeOwnerBall && knifeOwnerBall.char.type === 'chef') {
+          state.wallKnives.push({ x:p.x, y:p.y, angle:p.angle, owner:p.owner, color:p.color });
+        }
         state.projectiles.splice(i, 1);
       } else if ((p.type === 'dove' && Number(p.mageTrick) === 2) || p.doveWallBounce) {
         // 技巧2穿透反彈鴿子：碰牆反彈
@@ -4619,7 +4817,7 @@ waypoints.push({
     if (b.yutaSlashTimer > 0) b.yutaSlashTimer -= dt;
 
     const distToEnemy = Math.hypot(enemy.x - b.x, enemy.y - b.y);
-    if (distToEnemy < YUTA_SLASH_RANGE && b.yutaSlashTimer <= 0) {
+    if (distToEnemy < YUTA_SLASH_RANGE && b.yutaSlashTimer <= 0 && !state.dioWorldGlobalActive) {
       if (b.thunderParalyzed) {
         b.thunderParalyzed = false;
         b.yutaSlashTimer = Math.max(0.2, YUTA_SLASH_COOLDOWN - rikaCdCut);
@@ -4745,11 +4943,226 @@ waypoints.push({
     }
   }
 
+  // ── DIO 邏輯 ──
+  for (const b of state.balls) {
+    if (b.char.type !== 'dio') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+
+    // 替身：環繞跟隨本體
+    b.dioStandAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);    const standX = b.x + Math.cos(b.dioStandAngle) * DIO_STAND_RADIUS;
+    const standY = b.y + Math.sin(b.dioStandAngle) * DIO_STAND_RADIUS;
+    b.dioStandX = standX;
+    b.dioStandY = standY;
+
+    // 替身：碰到敵人時連打（包含時停狀態下也會造成傷害）
+    if (b.dioStandPunchTimer > 0) b.dioStandPunchTimer -= dt;
+    const standDist = Math.hypot(enemy.x - standX, enemy.y - standY);
+    if (standDist < DIO_STAND_HIT_RANGE && b.dioStandPunchTimer <= 0) {
+      dealDamage(enemy, DIO_STAND_PUNCH_DAMAGE);
+      b.dioStandPunchTimer = DIO_STAND_PUNCH_INTERVAL;
+      if (state.stats) state.stats[b.player].skillUses++;
+      const pAngle = Math.atan2(enemy.y - standY, enemy.x - standX);
+      // 衝擊閃光
+      state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 22, alpha: 1.1, color: '#ffd34d', t: 0.18 });
+      state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 12, alpha: 0.9, color: '#ffffff', t: 0.12 });
+      if (!state.dioPunchFX) state.dioPunchFX = [];
+      const mudaWords = [];
+      for (let _mi = 0; _mi < 4; _mi++) {
+        mudaWords.push({
+          angle: pAngle + (_mi - 1.5) * 0.55 + (Math.random() - 0.5) * 0.3,
+          dist: 28 + Math.random() * 18,
+          rot: (Math.random() - 0.5) * 0.6,
+          size: 9 + Math.random() * 5
+        });
+      }
+      state.dioPunchFX.push({ x: enemy.x, y: enemy.y, angle: pAngle, life: 0.22, maxLife: 0.22, mudaWords });
+      // 衝擊線條（放射狀）
+      if (!state.dioImpactLines) state.dioImpactLines = [];
+      for (let _li = 0; _li < 6; _li++) {
+        const la = pAngle + (Math.random() - 0.5) * Math.PI * 0.7;
+        state.dioImpactLines.push({ x: enemy.x, y: enemy.y, angle: la,
+          len: 18 + Math.random() * 22, life: 0.16, maxLife: 0.16 });
+      }
+      playHitSound('knife');
+    }
+
+    // 世界：冷卻倒數（時停中不倒數）
+    if (!b.dioWorldActive && b.dioWorldCooldownTimer > 0) {
+      b.dioWorldCooldownTimer -= dt;
+    }
+
+    // 麵包：定時生成（場上共用）
+    b.dioBreadSpawnTimer -= dt;
+    if (b.dioBreadSpawnTimer <= 0) {
+      b.dioBreadSpawnTimer = randBetween(DIO_BREAD_SPAWN_MIN, DIO_BREAD_SPAWN_MAX);
+      const bx = RADIUS * 2 + Math.random() * (W - RADIUS * 4);
+      const by = RADIUS * 2 + Math.random() * (H - RADIUS * 4);
+      state.dioBreads.push({ x: bx, y: by, r: DIO_BREAD_RADIUS });
+    }
+
+    // 麵包：碰撞判定（回血＋丟刀＋累積HIGH計數）
+    for (let i = state.dioBreads.length - 1; i >= 0; i--) {
+      const br = state.dioBreads[i];
+      if (Math.hypot(b.x - br.x, b.y - br.y) < RADIUS + br.r) {
+        state.dioBreads.splice(i, 1);
+        b.hp = Math.min(MAX_HP, b.hp + DIO_BREAD_HEAL);
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 26, alpha: 0.8, color: '#e8a33d', t: 0.3 });
+        const bAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+        if (b.dioWorldActive) {
+          state.projectiles.push({
+            x: b.x, y: b.y, vx: 0, vy: 0,
+            dioFrozenVx: Math.cos(bAngle) * DIO_KNIFE_SPEED, dioFrozenVy: Math.sin(bAngle) * DIO_KNIFE_SPEED,
+            type: 'knife', owner: b.player, color: '#f5e642', angle: bAngle, damage: DIO_KNIFE_DAMAGE, dioKnife: true
+          });
+        } else {
+          state.projectiles.push({
+            x: b.x, y: b.y, vx: Math.cos(bAngle) * DIO_KNIFE_SPEED, vy: Math.sin(bAngle) * DIO_KNIFE_SPEED,
+            type: 'knife', owner: b.player, color: '#f5e642', angle: bAngle, damage: DIO_KNIFE_DAMAGE
+          });
+        }
+        playHitSound('knife');
+
+        b.dioBreadEaten = (b.dioBreadEaten || 0) + 1;
+        if (b.dioBreadEaten >= DIO_BREAD_HIGH_THRESHOLD && !b.dioWorldActive) {
+          b.dioBreadEaten = 0;
+          b.dioHighActive = true;
+          b.dioWorldActive = true;
+          b.dioWorldTimer = DIO_WORLD_HIGH_DURATION;
+          b.dioWorldKnifeTimer = 0;
+          b.dioWorldCooldownTimer = DIO_WORLD_COOLDOWN;
+          if (!b.dioSteamrollerThrown) b.dioSteamrollerPending = true;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 70, alpha: 1.3, color: '#ff4444', t: 0.6 });
+          playHitSound('knife');
+        }
+      }
+    }
+
+    // 世界：自動施放（冷卻完成時觸發，非HIGH狀態）
+    if (!b.dioWorldActive && b.dioWorldCooldownTimer <= 0) {
+      b.dioWorldActive = true;
+      b.dioWorldTimer = DIO_WORLD_DURATION;
+      b.dioWorldKnifeTimer = 0;
+      b.dioWorldCooldownTimer = DIO_WORLD_COOLDOWN;
+      playHitSound('knife');
+    }
+
+    // 世界：時停中的邏輯（布刀、倒數、結束時釋放飛刀、HIGH壓路機）
+    if (b.dioWorldActive) {
+      b.dioWorldTimer -= dt;
+
+      if (!b.dioWorldKnifeTimer || b.dioWorldKnifeTimer <= 0) {
+        b.dioWorldKnifeTimer = DIO_WORLD_KNIFE_INTERVAL;
+        const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+        state.projectiles.push({
+          x: b.x + Math.cos(ang) * (RADIUS + 8), y: b.y + Math.sin(ang) * (RADIUS + 8),
+          vx: 0, vy: 0,
+          dioFrozenVx: Math.cos(ang) * DIO_KNIFE_SPEED, dioFrozenVy: Math.sin(ang) * DIO_KNIFE_SPEED,
+          type: 'knife', owner: b.player, color: '#f5e642', angle: ang,
+          damage: DIO_KNIFE_DAMAGE, dioKnife: true
+        });
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 22, alpha: 0.8, color: '#ffe66d', t: 0.2 });
+        playHitSound('knife');
+      } else {
+        b.dioWorldKnifeTimer -= dt;
+      }
+
+      // HIGH狀態：時停剩餘2秒時丟出壓路機（整場僅一次）
+      if (b.dioSteamrollerPending && b.dioWorldTimer <= 2 && !b.dioSteamrollerThrown) {
+        b.dioSteamrollerThrown = true;
+        b.dioSteamrollerPending = false;
+        const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+        state.dioSteamroller = {
+          x: b.x, y: b.y, vx: Math.cos(ang) * DIO_STEAMROLLER_SPEED, vy: Math.sin(ang) * DIO_STEAMROLLER_SPEED,
+          hitTargets: new Set(), owner: b.player, life: 0
+        };
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1, color: '#888888', t: 0.4 });
+      }
+
+      if (b.dioWorldTimer <= 0) {
+        b.dioWorldActive = false;
+        b.dioWorldTimer = 0;
+        // 時停結束：所有DIO飛刀按原方向恢復飛行
+        for (const p of state.projectiles) {
+          if (p.dioKnife && p.owner === b.player) {
+            p.vx = p.dioFrozenVx; p.vy = p.dioFrozenVy;
+            p.dioKnife = false;
+          }
+        }
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1, color: '#bbbbbb', t: 0.5 });
+        // HIGH狀態結束：DIO衝上前連續毆打
+        if (b.dioHighActive) {
+          b.dioHighActive = false;
+          b.dioRushing = true;
+          b.dioRushTimer = DIO_RUSH_DURATION;
+          b.dioRushPunchTimer = 0;
+        }
+      }
+    }
+
+    // 衝刺連打（HIGH狀態時停結束後）
+    if (b.dioRushing) {
+      b.dioRushTimer -= dt;
+      const rdx = enemy.x - b.x, rdy = enemy.y - b.y;
+      const rd = Math.hypot(rdx, rdy) || 1;
+      b.vx = (rdx / rd) * DIO_RUSH_SPEED;
+      b.vy = (rdy / rd) * DIO_RUSH_SPEED;
+      if (rd < RADIUS * 2 + 10) {
+        b.dioRushPunchTimer -= dt;
+        if (b.dioRushPunchTimer <= 0) {
+          dealDamage(enemy, DIO_RUSH_PUNCH_DAMAGE);
+          b.dioRushPunchTimer = DIO_RUSH_PUNCH_INTERVAL;
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 20, alpha: 1, color: '#ffd34d', t: 0.15 });
+          if (state.stats) state.stats[b.player].skillUses++;
+        }
+      }
+      if (b.dioRushTimer <= 0) b.dioRushing = false;
+    }
+  }
+
+  // DIO 壓路機更新（世界時停中靜止，時停結束後才衝出）
+  if (state.dioSteamroller) {
+    const sr = state.dioSteamroller;
+    if (!state.dioWorldGlobalActive) {
+      sr.x += sr.vx * dt; sr.y += sr.vy * dt;
+      sr.life = (sr.life || 0) + dt;
+      const srEnemy = state.balls.find(x => x.player !== sr.owner);
+      if (srEnemy && !sr.hitTargets.has(srEnemy.player)) {
+        const d = Math.hypot(srEnemy.x - sr.x, srEnemy.y - sr.y);
+        if (d < RADIUS + DIO_STEAMROLLER_RADIUS) {
+          sr.hitTargets.add(srEnemy.player);
+          dealDamage(srEnemy, DIO_STEAMROLLER_DAMAGE);
+          const kx = (srEnemy.x - sr.x) / (d || 1), ky = (srEnemy.y - sr.y) / (d || 1);
+          srEnemy.vx += kx * 420; srEnemy.vy += ky * 420;
+          state.hitFlashes.push({ x: srEnemy.x, y: srEnemy.y, r: 45, alpha: 1.2, color: '#666666', t: 0.4 });
+          playHitSound('vampire_dash');
+        }
+      }
+      if (sr.life > 4 || sr.x < -100 || sr.x > W + 100 || sr.y < -100 || sr.y > H + 100) {
+        state.dioSteamroller = null;
+      }
+    }
+  }
+
   // 乙骨憂太：咒力斬軌跡特效更新
   if (state.yutaSlashFX) {
     for (let i = state.yutaSlashFX.length - 1; i >= 0; i--) {
       state.yutaSlashFX[i].life -= dt;
       if (state.yutaSlashFX[i].life <= 0) state.yutaSlashFX.splice(i, 1);
+    }
+  }
+
+  // DIO：替身拳擊特效更新
+  if (state.dioPunchFX) {
+    for (let i = state.dioPunchFX.length - 1; i >= 0; i--) {
+      state.dioPunchFX[i].life -= dt;
+      if (state.dioPunchFX[i].life <= 0) state.dioPunchFX.splice(i, 1);
+    }
+  }
+  if (state.dioImpactLines) {
+    for (let i = state.dioImpactLines.length - 1; i >= 0; i--) {
+      state.dioImpactLines[i].life -= dt;
+      if (state.dioImpactLines[i].life <= 0) state.dioImpactLines.splice(i, 1);
     }
   }
 
@@ -4759,6 +5172,13 @@ waypoints.push({
     if (hf.maxT === undefined) hf.maxT = hf.t; // 記錄真實初始時長，避免不同 t 值造成負半徑
     hf.t -= dt;
     if (hf.t <= 0) state.hitFlashes.splice(i, 1);
+  }
+
+  // ── DIO 世界（時停）：將敵方所有狀態還原為本幀凍結前的樣子（HP變化除外，讓DIO的傷害保留）──
+  if (dioFreezeTarget && dioFreezeSnapshot) {
+    const survivedHp = dioFreezeTarget.hp;
+    Object.assign(dioFreezeTarget, dioFreezeSnapshot);
+    dioFreezeTarget.hp = survivedHp;
   }
 }
 
@@ -6132,6 +6552,109 @@ function render() {
     ctx.restore();
   }
 
+  // DIO：麵包（場上物件）
+  if (state.dioBreads) {
+    for (const br of state.dioBreads) {
+      ctx.save();
+      ctx.font = '22px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = '#e8a33d'; ctx.shadowBlur = 8;
+      ctx.fillText('🍞', br.x, br.y);
+      ctx.restore();
+    }
+  }
+
+  // DIO：替身（跟隨環繞 + 拳擊特效）
+  for (const b of state.balls) {
+    if (b.char.type !== 'dio') continue;
+    const sx = b.dioStandX != null ? b.dioStandX : b.x;
+    const sy = b.dioStandY != null ? b.dioStandY : b.y;
+    ctx.save();
+    const standPulse = 0.8 + 0.2 * Math.sin(elapsed * 5 + b.player);
+    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, RADIUS * DIO_STAND_SIZE);
+    sg.addColorStop(0, `rgba(245,208,32,${0.35 * standPulse})`);
+    sg.addColorStop(1, 'rgba(245,208,32,0)');
+    ctx.beginPath(); ctx.arc(sx, sy, RADIUS * DIO_STAND_SIZE, 0, Math.PI * 2);
+    ctx.fillStyle = sg; ctx.fill();
+    ctx.font = `${RADIUS * DIO_STAND_SIZE}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.globalAlpha = 0.85;
+    ctx.shadowColor = '#f5d020'; ctx.shadowBlur = 10;
+    ctx.fillText('🧍', sx, sy);
+    ctx.restore();
+  }
+  if (state.dioPunchFX) {
+    for (const fx of state.dioPunchFX) {
+      const prog = fx.life / fx.maxLife;
+      const eased = 1 - (1 - prog) * (1 - prog);
+      ctx.save();
+      // 擴散圓環
+      ctx.beginPath();
+      ctx.arc(fx.x, fx.y, 14 + (1 - prog) * 20, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,211,77,${prog * 0.7})`;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      // 👊 emoji（往打擊方向飛出）
+      ctx.translate(fx.x + Math.cos(fx.angle) * (1 - eased) * 18,
+                    fx.y + Math.sin(fx.angle) * (1 - eased) * 18);
+      ctx.rotate(fx.angle);
+      ctx.globalAlpha = Math.max(0, eased);
+      ctx.font = `${16 + (1 - prog) * 8}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = '#f5d020'; ctx.shadowBlur = 8;
+      ctx.fillText('👊', 0, 0);
+      ctx.restore();
+      // 無駄無駄文字（往四周爆散）
+      if (fx.mudaWords) {
+        for (const mw of fx.mudaWords) {
+          const mp = fx.life / fx.maxLife;
+          ctx.save();
+          const mx = fx.x + Math.cos(mw.angle) * mw.dist * (1 - mp);
+          const my = fx.y + Math.sin(mw.angle) * mw.dist * (1 - mp);
+          ctx.translate(mx, my);
+          ctx.rotate(mw.rot);
+          ctx.globalAlpha = Math.max(0, mp * 1.2);
+          ctx.font = `bold ${mw.size + (1 - mp) * 4}px sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 6;
+          ctx.fillStyle = mp > 0.5 ? '#ffffff' : '#ffd34d';
+          ctx.fillText('無駄', 0, 0);
+          ctx.restore();
+        }
+      }
+    }
+  }
+  // 衝擊線條
+  if (state.dioImpactLines) {
+    for (const ln of state.dioImpactLines) {
+      const prog = ln.life / ln.maxLife;
+      ctx.save();
+      ctx.translate(ln.x, ln.y);
+      ctx.rotate(ln.angle);
+      ctx.globalAlpha = prog * 0.85;
+      ctx.strokeStyle = '#ffd34d';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(6, 0);
+      ctx.lineTo(6 + ln.len * prog, 0);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // DIO：壓路機
+  if (state.dioSteamroller) {
+    const sr = state.dioSteamroller;
+    ctx.save();
+    ctx.translate(sr.x, sr.y);
+    ctx.rotate(Math.atan2(sr.vy, sr.vx));
+    ctx.font = `${DIO_STEAMROLLER_RADIUS * 1.6}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = '#444444'; ctx.shadowBlur = 14;
+    ctx.fillText('🚜', 0, 0);
+    ctx.restore();
+  }
+
   // 凶星軌跡投射物（殘影飛撲）
   if (state.projectiles) {
     for (const p of state.projectiles) {
@@ -6625,106 +7148,9 @@ function render() {
     }
 
     // 攻擊/技能進度條
-    let atFrac, barColor;
-    if (b.char.type === 'opm') {
-      atFrac = Math.min(1 - b.opmCountdown / OPM_COUNTDOWN_START, 1);
-      barColor = b.opmPunched ? '#555' : (b.opmCountdown <= OPM_COUNTDOWN_START * 0.1 ? '#ff5050' : b.char.color);
-    } else if (b.char.type === 'vampire') {
-      // 顯示衝刺冷卻進度
-      const dashProgress = 1 - (b.vampireDashTimer / VAMPIRE_DASH_INTERVAL);
-      atFrac = Math.max(0, Math.min(1, dashProgress));
-      barColor = b.vampireDashing ? '#ff44ff' : (b.vampireBiting ? '#aa00ff' : b.char.color);
-      } else if (b.char.type === 'gojo') {
-      if (b.gojoCharging) {
-        atFrac = Math.min(b.gojoChargeTimer / GOJO_CHARGE_TIME, 1);
-        barColor = '#bf00ff';
-      } else {
-        atFrac = Math.min(b.gojoTimer / GOJO_COOLDOWN, 1);
-        barColor = b.gojoUnlocked ? '#bf00ff' : b.char.color;
-      }
-    } else if (b.char.type === 'cursed') {
-      atFrac = b.curseSlashTimer != null ? 1 - (b.curseSlashTimer / CURSE_SLASH_INTERVAL) : 0;
-      barColor = b.curseDomainActive ? '#c0392b' : b.char.color;
-    } else if (b.char.type === 'trapper') {
-      atFrac = b.trapChainTimer != null ? 1 - (b.trapChainTimer / TRAP_CHAIN_INTERVAL) : 0;
-      barColor = b.trapChainActive ? '#f1c40f' : b.char.color;
-    } else if (b.char.type === 'yi') {
-      // 顯示落黑棋倒計時進度
-      atFrac = b.yiBlackTimer != null ? 1 - (b.yiBlackTimer / YI_BLACK_INTERVAL) : 0;
-      // 若當前是白旗蓄力週期（yiBlackCount >= MAX）用白色
-      barColor = (b.yiBlackCount != null && b.yiBlackCount >= YI_BLACK_MAX) ? '#ffffff' : b.char.color;
-    } else if (b.char.type === 'gunner') {
-      atFrac = b.gunnerFiring ? (b.gunnerAmmoFired / GUNNER_MAG_SIZE) : (b.gunnerAmmo / GUNNER_MAG_SIZE);
-      barColor = b.gunnerFiring ? '#ff6600' : b.char.color;
-    } else if (b.char.type === 'mage') {
-      atFrac = 1 - Math.min(b.mageDoveTimer / MAGE_DOVE_INTERVAL, 1);
-      barColor = b.mageTeleportTimer > 0 ? '#ffffff' : b.char.color;
-    } else if (b.char.type === 'samurai') {
-      if (b.samuraiParrying) {
-        atFrac = Math.min(b.samuraiParryElapsed / SAMURAI_PARRY_DURATION, 1);
-        barColor = b.samuraiNextIsShimetsu ? '#ff4400' : '#d4af37';
-      } else if (b.samuraiIaidoing) {
-        atFrac = 1 - (b.samuraiIaidoTimer / SAMURAI_IAIDO_DURATION);
-        barColor = '#ffd700';
-      } else {
-        atFrac = 1 - Math.min(b.samuraiParryTimer / SAMURAI_PARRY_INTERVAL, 1);
-        barColor = b.samuraiNextIsShimetsu ? '#ff6600' : b.char.color;
-      }
-    } else if (b.char.type === 'thunder') {
-      atFrac = b.thunderStrikeTimer != null ? 1 - (b.thunderStrikeTimer / THUNDER_STRIKE_INTERVAL) : 0;
-      barColor = b.thunderParalyzed ? '#f1c40f' : b.char.color;
-    } else if (b.char.type === 'itachi') {
-      if (b.itachiSusanooActive) {
-        // 須佐能乎啟動中：顯示剩餘時間倒數（由滿到空）
-        atFrac = Math.max(0, Math.min(1, b.itachiSusanooTimer / ITACHI_SUSANOO_DURATION));
-        barColor = '#ff3333';
-      } else {
-        // 顯示天照冷卻進度
-        atFrac = b.itachiAmaterasuTimer != null ? 1 - (b.itachiAmaterasuTimer / ITACHI_AMATERASU_INTERVAL) : 0;
-        atFrac = Math.max(0, Math.min(1, atFrac));
-        barColor = b.itachiMarked ? '#ff0000' : b.char.color;
-      }
-    } else if (b.char.type === 'blacksmith') {
-      if (b.smithSwordSwinging) {
-        atFrac = 1;
-        barColor = '#ff6600';
-      } else if (b.smithSwordTimer > 0) {
-        atFrac = 1 - Math.min(b.smithSwordTimer / SMITH_SWORD_COOLDOWN, 1);
-        barColor = b.char.color;
-      } else {
-        atFrac = b.smithForgeTimer != null ? 1 - (b.smithForgeTimer / (b.smithForgeInterval || SMITH_FORGE_INTERVAL_BASE)) : 0;
-        atFrac = Math.max(0, Math.min(1, atFrac));
-        barColor = '#cd7f32';
-      }
-    } else if (b.char.type === 'naobito') {
-      if (b.naoKyouseiFiring) {
-        atFrac = 1;
-        barColor = '#ffffff';
-      } else if (b.naoKyouseiTimer > 0) {
-        atFrac = 1 - Math.min(b.naoKyouseiTimer / NAOBITO_KYOUSEI_COOLDOWN, 1);
-        barColor = '#e8e8f0';
-      } else {
-        atFrac = b.naoPathTimer != null ? 1 - Math.min(b.naoPathTimer / NAOBITO_PATH_INTERVAL, 1) : 0;
-        atFrac = Math.max(0, Math.min(1, atFrac));
-        barColor = b.char.color;
-      }
-    } else if (b.char.type === 'yuta') {
-      atFrac = b.yutaCurseWordTimer != null ? 1 - Math.min(b.yutaCurseWordTimer / YUTA_CURSEWORD_INTERVAL, 1) : 0;
-      atFrac = Math.max(0, Math.min(1, atFrac));
-      barColor = (b.itachiPinnedTimer > 0 || b.gunnerStunTimer > 0) ? '#ff3333' : b.char.color;
-    } else if (b.char.type === 'engineer') {
-      if (b.engMechActive) {
-        atFrac = Math.max(0, Math.min(1, b.engMechTimer / ENGINEER_MECH_DURATION));
-        barColor = '#aee0ff';
-      } else {
-        atFrac = b.engTurretTimer != null ? 1 - Math.min(b.engTurretTimer / ENGINEER_TURRET_INTERVAL, 1) : 0;
-        atFrac = Math.max(0, Math.min(1, atFrac));
-        barColor = b.char.color;
-      }
-    } else {
-      atFrac = Math.min(1, b.attackTimer/b.attackInterval);
-      barColor = (b.char.type!=='chef'||b.knives>0) ? b.char.color : '#555';
-    }
+    const progHandler = PROGRESS_HANDLERS[b.char.type] || PROGRESS_HANDLERS.__default;
+    const progResult = progHandler(b);
+    const atFrac = progResult.atFrac, barColor = progResult.barColor;
     const barW = RADIUS*2, barH = 4, barX = b.x-RADIUS, barY = b.y+RADIUS+7;
     ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(barX,barY,barW,barH);
     ctx.fillStyle = barColor;
@@ -7088,6 +7514,17 @@ function render() {
       ctx.beginPath(); ctx.arc(fx.midX, fx.midY, r, 0, Math.PI*2); ctx.fill();
       ctx.restore();
     }
+  }
+
+  // DIO 世界：時停灰色濾鏡覆蓋全畫面
+  if (state.dioWorldGlobalActive) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(120,120,120,0.45)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'saturation';
+    ctx.fillStyle = 'rgba(0,0,0,1)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
   }
 }
 
