@@ -1477,6 +1477,7 @@ const NAOBITO_KYOUSEI_SPEED       = 550;   // 凶星軌跡衝刺速度（px/s）
 const NAOBITO_KYOUSEI_COOLDOWN    = 5.0;   // 凶星軌跡觸發後冷卻（秒）
 const NAOBITO_PATH_DEVIATION      = 100;   // 路徑中繼點偏移量（px）
 const NAOBITO_RETREAT_DISTANCE    = 100;   // 接近敵人後，遠離的距離（px）
+const NAOBITO_DASH_MAX_DURATION   = 2.5;   // 單次衝刺最大持續時間（秒），超時強制結束避免卡住
 
 
 // 宇治波鼬常數
@@ -1815,6 +1816,16 @@ const PROGRESS_HANDLERS = {
       atFrac: Math.max(0, Math.min(1, b.cannonSkillTimer != null ? b.cannonSkillTimer / (b.cannonSkillCooldown || CANNON_BEAM_COOLDOWN) : 0)),
       barColor: b.char.color
     };
+  },
+  dio(b) {
+    if (b.dioWorldActive) {
+      // 時停中：顯示剩餘時停時間
+      const dur = b.dioHighActive ? DIO_WORLD_HIGH_DURATION : DIO_WORLD_DURATION;
+      return { atFrac: Math.max(0, Math.min(1, b.dioWorldTimer / dur)), barColor: '#ffe566' };
+    }
+    // 冷卻中：顯示冷卻進度（滿格=可發動）
+    const frac = Math.max(0, Math.min(1, 1 - (b.dioWorldCooldownTimer || 0) / DIO_WORLD_COOLDOWN));
+    return { atFrac: frac, barColor: frac >= 1 ? '#ffe566' : b.char.color };
   },
   __default(b) {
     return {
@@ -2531,6 +2542,9 @@ function update(dt) {
       if (Math.random() < 0.3) state.hitFlashes.push({ x: b.x+randBetween(-15,15), y: b.y+randBetween(-15,15), r: 8, alpha: 0.7, color: '#c0392b', t: 0.4 });
     }
 
+    // 捌冷卻倒數
+    if (b.hachiCooldown > 0) b.hachiCooldown -= dt;
+
     // 緩速計時器
     if (b.curseSlowTimer > 0) b.curseSlowTimer -= dt;
 
@@ -2698,22 +2712,26 @@ function update(dt) {
       const target = state.balls.find(x => x.player !== vamp_me.player);
       if (!target) continue;
         if (curser.char.type === 'cursed') {
-          target.curseDotTimer = CURSE_DOT_DURATION;
-          target.curseDotDmg   = CURSE_DOT_DAMAGE;
-          // 捌：斬擊特效（多道斬線爆開）
-          for (let si = 0; si < 4; si++) {
-            const sAngle = (Math.PI * 2 / 4) * si + (Math.random() - 0.5) * 0.4;
-            state.slashMarks.push({
-              x: target.x + randBetween(-12, 12),
-              y: target.y + randBetween(-12, 12),
-              angle: sAngle,
-              life: 0.55, maxLife: 0.55,
-              hit: false, owner: curser.player,
-              style: 'hachi'
-            });
+          // 捌小冷卻：避免持續碰觸重複觸發
+          if (!curser.hachiCooldown || curser.hachiCooldown <= 0) {
+            curser.hachiCooldown = 0.55;
+            target.curseDotTimer = CURSE_DOT_DURATION;
+            target.curseDotDmg   = CURSE_DOT_DAMAGE;
+            // 捌：斬擊特效（多道斬線爆開）
+            for (let si = 0; si < 4; si++) {
+              const sAngle = (Math.PI * 2 / 4) * si + (Math.random() - 0.5) * 0.4;
+              state.slashMarks.push({
+                x: target.x + randBetween(-12, 12),
+                y: target.y + randBetween(-12, 12),
+                angle: sAngle,
+                life: 0.55, maxLife: 0.55,
+                hit: false, owner: curser.player,
+                style: 'hachi'
+              });
+            }
+            state.hitFlashes.push({ x: target.x, y: target.y, r: 22, alpha: 0.6, color: '#c0392b', t: 0.3 });
+            playHitSound('curse_slash');
           }
-          state.hitFlashes.push({ x: target.x, y: target.y, r: 22, alpha: 0.6, color: '#c0392b', t: 0.3 });
-          playHitSound('curse_slash');
         }
       }
     } else {
@@ -2757,6 +2775,11 @@ function update(dt) {
   // 攻擊計時
 for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi], enemy = state.balls.find(x => x.player !== b.player);
+    // 時停中：敵方（非DIO）攻擊計時器凍結，避免時停結束後瞬間觸發堆積的攻擊
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) {
+      // 不累積 attackTimer；各技能計時器也凍結
+      continue;
+    }
     b.attackTimer += dt;
     if (b.char.type === 'opm' && b.opmCollisionCooldown > 0) b.opmCollisionCooldown -= dt;
     // 閃光暈眩：凍結攻擊計時 + 各角色術式計時器
@@ -2881,7 +2904,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
 
     // 詛咒之王：解（定時斬）
     if (b.char.type === 'cursed') {
-      b.curseSlashTimer -= dt;
+      if (!state.dioWorldGlobalActive) b.curseSlashTimer -= dt;
       if (b.curseSlashTimer <= 0) {
         b.curseSlashTimer = CURSE_SLASH_INTERVAL;
         // 麻痺：跳過本次
@@ -2969,6 +2992,10 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (b.char.type !== 'gojo') continue;
     if (!enemy) continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) {
+      // 時停中：術式球仍可移動（已在投射物迴圈凍結），但不觸發新技能
+      continue;
+    }
 
     // 血量觸發紫
     if (!b.gojoHasTriggered && b.hp <= GOJO_HP_THRESHOLD)
@@ -3109,6 +3136,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'yi') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 落黑棋計時
     b.yiBlackTimer -= dt;
@@ -3235,6 +3263,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'gunner') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 連射邏輯
     if (b.gunnerFiring) {
@@ -3298,6 +3327,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'trapper') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 鎖鏈冷卻計時
     if (!b.trapChainActive) {
@@ -3399,6 +3429,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'engineer') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 機甲模式倒數
     if (b.engMechActive) {
@@ -3490,6 +3521,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (b.char.type !== 'cannondad') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 近戰拳頭：貼近敵人時揮拳
     if (b.cannonMeleeCooldown > 0) b.cannonMeleeCooldown -= dt;
@@ -3506,7 +3538,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     // 光砲發射中：每次發射期間鎖定角度，可移動不可轉向
     if (b.cannonBlastFiring) {
       b.cannonBlastTimer -= dt;
-      if (!b.cannonBlastHitThisShot) {
+      if (!b.cannonBlastHitThisShot && !state.dioWorldGlobalActive) {
         const ang = b.cannonBlastAngle;
         const dx = Math.cos(ang), dy = Math.sin(ang);
         const ex = enemy.x - b.x, ey = enemy.y - b.y;
@@ -3729,13 +3761,21 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'thunder') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) {
+      // 時停中只更新閃電柱壽命（已在上方處理），不觸發新閃電
+      for (let i = state.thunderPillars.length - 1; i >= 0; i--) {
+        const p = state.thunderPillars[i];
+        if (p.spawnFlash > 0) p.spawnFlash -= dt;
+      }
+      continue;
+    }
 
     // 麻痺計時器清除（麻痺只持續到下一次攻擊觸發，在閃電攻擊中消耗）
-    // 閃電柱計時（無限壽命不衰減）
+    // 閃電柱計時（無限壽命不衰減；時停期間凍結壽命）
     for (let i = state.thunderPillars.length - 1; i >= 0; i--) {
       const p = state.thunderPillars[i];
       if (p.spawnFlash > 0) p.spawnFlash -= dt;
-      if (p.life !== Infinity) {
+      if (p.life !== Infinity && !state.dioWorldGlobalActive) {
         p.life -= dt;
         if (p.life <= 0) state.thunderPillars.splice(i, 1);
       }
@@ -3823,6 +3863,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'blacksmith') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 揮劍動畫計時
     if (b.smithSwordSwinging) {
@@ -3938,7 +3979,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
       if (sh.life <= 0) { state.naoShadows.splice(i, 1); continue; }
       // 接觸判定：碰到敵人
       const enemy = state.balls.find(b => b.player !== sh.owner);
-      if (enemy && sh.hitCooldown <= 0) {
+      if (enemy && sh.hitCooldown <= 0 && !state.dioWorldGlobalActive) {
         const dist = Math.hypot(enemy.x - sh.x, enemy.y - sh.y);
         if (dist < NAOBITO_SHADOW_HIT_RADIUS + RADIUS) {
           dealDamage(enemy, NAOBITO_SHADOW_DAMAGE);
@@ -3960,6 +4001,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (b.char.type !== 'naobito') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 凶星軌跡冷卻倒數
     if (b.naoKyouseiTimer > 0) b.naoKyouseiTimer -= dt;
@@ -4066,6 +4108,17 @@ waypoints.push({
 
     // 沿路徑衝刺
     if (b.naoDashing && b.naoWaypoints && b.naoWaypointIdx < b.naoWaypoints.length) {
+      // 最大衝刺時間：避免卡在無法完成的路徑上
+      b.naoDashElapsed = (b.naoDashElapsed || 0) + dt;
+      if (b.naoDashElapsed >= NAOBITO_DASH_MAX_DURATION) {
+        b.naoDashing = false;
+        b.naoWaypoints = null;
+        b.naoWaypointIdx = 0;
+        b.naoDashElapsed = 0;
+        const ang = Math.random() * Math.PI * 2;
+        b.vx = Math.cos(ang) * BASE_SPEED;
+        b.vy = Math.sin(ang) * BASE_SPEED;
+      } else {
       const target = b.naoWaypoints[b.naoWaypointIdx];
       const dx = target.x - b.x, dy = target.y - b.y;
       const dist = Math.hypot(dx, dy);
@@ -4087,14 +4140,17 @@ waypoints.push({
         b.naoWaypointIdx++;
         if (b.naoWaypointIdx >= b.naoWaypoints.length) {
           b.naoDashing = false;
+          b.naoDashElapsed = 0;
         }
       } else {
         // 朝中繼點衝刺
         b.vx = (dx / dist) * NAOBITO_DASH_SPEED;
         b.vy = (dy / dist) * NAOBITO_DASH_SPEED;
       }
+      }
     } else {
       b.naoDashing = false;
+      b.naoDashElapsed = 0;
     }
   }
 
@@ -4148,6 +4204,7 @@ waypoints.push({
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'mage') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 鴿子冷卻
     if (b.mageDoveTimer > 0) b.mageDoveTimer -= dt;
@@ -4226,6 +4283,7 @@ waypoints.push({
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'samurai') continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 居合衝刺中（穿透）
     if (b.samuraiIaidoing) {
@@ -4641,6 +4699,7 @@ waypoints.push({
     if (b.char.type !== 'itachi') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 烏鴉替身：瀕死觸發（每場一次），優先判定
     if (!b.itachiCrowUsed && !b.opmExecuted && b.hp <= 0) {
@@ -4688,8 +4747,8 @@ waypoints.push({
       if (b.itachiBiteCooldown < 0) b.itachiBiteCooldown = 0;
     }
 
-    // 須佐能乎：靠近敵人時觸發單次刺擊（不停下、保留速度）
-    if (b.itachiSusanooActive && b.itachiBiteCooldown <= 0) {
+    // 須佐能乎：靠近敵人時觸發單次刺擊（不停下、保留速度；時停中跳過）
+    if (b.itachiSusanooActive && b.itachiBiteCooldown <= 0 && !state.dioWorldGlobalActive) {
       const sd = Math.hypot(b.x - enemy.x, b.y - enemy.y);
       if (sd < ITACHI_SUSANOO_BITE_RANGE) {
         dealDamage(enemy, ITACHI_SUSANOO_BITE_DAMAGE);
@@ -4776,6 +4835,7 @@ waypoints.push({
     if (b.char.type !== 'yuta') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
 
     // 禁錮自身冷卻倒數
     if (b.yutaBindCooldown > 0) {
@@ -6556,9 +6616,14 @@ function render() {
   if (state.dioBreads) {
     for (const br of state.dioBreads) {
       ctx.save();
+      // 穩定光圈（取代 shadowBlur，避免 emoji shadow 閃爍）
+      const bg = ctx.createRadialGradient(br.x, br.y, 0, br.x, br.y, br.r + 10);
+      bg.addColorStop(0, 'rgba(232,163,61,0.35)');
+      bg.addColorStop(1, 'rgba(232,163,61,0)');
+      ctx.beginPath(); ctx.arc(br.x, br.y, br.r + 10, 0, Math.PI * 2);
+      ctx.fillStyle = bg; ctx.fill();
       ctx.font = '22px serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.shadowColor = '#e8a33d'; ctx.shadowBlur = 8;
       ctx.fillText('🍞', br.x, br.y);
       ctx.restore();
     }
