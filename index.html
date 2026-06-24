@@ -696,13 +696,13 @@
   <div class="hud">
     <div class="hp-block">
       <div class="hp-name" id="p1-hud-name">─</div>
-      <div class="hp-bar-wrap"><div class="hp-bar p1" id="p1-bar" style="width:100%"></div></div>
+      <div class="hp-bar-wrap" style="position:relative"><div class="hp-bar p1" id="p1-bar" style="width:100%"></div><div id="p1-bleed-bar" style="position:absolute;top:0;height:100%;background:linear-gradient(90deg,#880000,#cc2200);opacity:0.7;border-radius:5px;width:0;left:100%"></div></div>
       <div class="hp-num" id="p1-hp-num">1000 / 1000</div>
     </div>
     <div class="hud-center"><div class="round-num" id="timer-display">0s</div></div>
     <div class="hp-block right">
       <div class="hp-name" id="p2-hud-name" style="flex-direction:row-reverse">─</div>
-      <div class="hp-bar-wrap"><div class="hp-bar p2" id="p2-bar" style="width:100%"></div></div>
+      <div class="hp-bar-wrap" style="position:relative"><div class="hp-bar p2" id="p2-bar" style="width:100%"></div><div id="p2-bleed-bar" style="position:absolute;top:0;height:100%;background:linear-gradient(90deg,#cc2200,#880000);opacity:0.7;border-radius:5px;width:0;right:100%"></div></div>
       <div class="hp-num" id="p2-hp-num">1000 / 1000</div>
     </div>
   </div>
@@ -1029,7 +1029,7 @@ const CHARACTERS = [
     desc: '隱藏於黑暗中的掠食者。碰到敵人時鎖定撕咬，每次造成傷害並吸血，敵人被咬住期間無法移動。偶爾發動蝙蝠狂襲，高速衝向敵人。',
     stats: ['咬擊 25×4', '吸血 21×4', '衝刺 9s'],
     color: '#8b1a8b', glowColor: 'rgba(139,26,139,0.6)', type: 'vampire',
-  winQuote: '我現在真是high到不行。'
+  winQuote: '我跨越過時代，如獸般的姿態。'
   },
 {
   id: 'gojo', emoji: '😎', weapon: '🔵', name: '現代最強',
@@ -1037,8 +1037,10 @@ const CHARACTERS = [
   stats: ['蒼 穿透+光線引力', '赫 150傷', '紫 8幀傷', '冷卻 2.0s'],
   color: '#00cfff', glowColor: 'rgba(0,207,255,0.6)', type: 'gojo',
   winQuote: '沒錯，是五條贏了。',
-  vsQuotes: { cursed: '會贏喔。',
-  yuta:'我很看好你喔，憂太。'}
+  vsQuotes: { cursed: ['我的學生可都在身後看著呢。',
+ '好乏味啊' ,'先聲明，你才是挑戰者'],
+  yuta:'學會如何運用你身上的能力吧去保護他人吧，憂太。',
+  tiger:['我很看好你喔，悠仁。','五條什麼的，無所喂了吧。','放馬過來吧！']}
   },
   {
   id: 'cursed', emoji: '💀', weapon: '⚔️', name: '詛咒之王',
@@ -1047,7 +1049,9 @@ const CHARACTERS = [
   color: '#c0392b', glowColor: 'rgba(192,57,43,0.6)', type: 'cursed',
   winQuote: '不過是沒出生在我時代的凡夫罷了。',
    vsQuotes: {cannondad : '呦，身體比我想的還強些。' ,
-gojo:'我可能一輩子都不會忘了你吧',
+gojo:['我可能一輩子都不會忘了你吧。','從小鬼出來後第一個就殺了你','你不過是板上的魚肉罷了','好無聊啊！'],
+yuta:'沒想到你能做到這地步，乙骨憂太！',
+tiger:['你那同情我的態度真是令人作嘔，這只顯得你很懦弱。','小鬼，別用你那套可悲的理想來衡量我。','你實在無聊，令我毫無興致。']
   },
   
   },
@@ -1089,7 +1093,7 @@ gojo:'我可能一輩子都不會忘了你吧',
   {
   id: 'thunder', emoji: '⚡', weapon: '🌩️', name: '雷電法王',
   desc: '掌控雷霆之力的法王。碰到牆壁時留下閃電柱，閃電柱定時在不同牆面之間產生閃電直線傷害。敵人被閃電擊中有機率麻痺，下一次攻擊或技能無法觸發（麻痺不能連續兩次）。',
-  stats: ['閃電傷害20', '麻痺機率15%', '閃電間隔2s', '上限7柱'],
+  stats: ['閃電傷害20', '麻痺機率15%', '閃電間隔1.8s', '上限7柱'],
   color: '#f1c40f', glowColor: 'rgba(241,196,15,0.6)', type: 'thunder',
   winQuote: '以雷霆擊碎黑暗！。'
   },
@@ -1105,7 +1109,9 @@ gojo:'我可能一輩子都不會忘了你吧',
   desc: '禪院家天才，沿途留下殘影分身。敵人碰到殘影時造成傷害，累積3個殘影時自動觸發「凶星軌跡」——所有殘影與本體同時衝向敵人。',
   stats: ['殘影接觸傷害 15', '殘影上限 6個','凶星軌跡穿刺 60+殘影20×N'],
   color: '#e8e8f0', glowColor: 'rgba(220,220,255,0.6)', type: 'naobito',
-  winQuote: '能跟上甚爾的人，只能是我。'
+  winQuote: '能跟上甚爾的人，只能是我。',
+  vsQuotes: { yuta: '我可是真希的哥哥啊。',
+tiger:'是宿儺的容器啊，順便殺了吧'}
   },
   {
   id: 'itachi', emoji: '🐦‍⬛', weapon: '🔥', name: '宇治波鼬',
@@ -1122,8 +1128,9 @@ gojo:'我可能一輩子都不會忘了你吧',
   winQuote: '里香，謝謝妳。',
   vsQuotes: {cannondad : '僅限一次喔。' ,
 gojo:'五條老師，指教了',
-cursed:'我會親手殺了宿儺' , 
- itachi:'你沒有朋友或是家人嗎？'
+cursed:'我會親手殺了宿儺，為老師報仇。' , 
+ itachi:'你沒有朋友或是家人嗎？',
+ tiger:'你背負的罪惡不屬於你，你沒有錯。'
  }
   },
   {
@@ -1139,7 +1146,7 @@ cursed:'我會親手殺了宿儺' ,
   stats: ['追蹤 30×3/0.9s', '光柱 50/1.6s', '光砲 60×3/2.2s', '近戰 20'],
   color: '#bdbdbd', glowColor: 'rgba(189,189,189,0.6)', type: 'cannondad',
   winQuote: '就這點實力，根本填不飽我。',
-vsQuotes: { yuta: '真的很甜美啊！！！！乙骨。',
+vsQuotes: { yuta: ['真的很甜美啊！！！！乙骨。','你就是我的甜點嘛！','謝謝你我吃飽了。'],
 cursed:'格蘭尼達.... '}    
   },
   {
@@ -1148,7 +1155,17 @@ cursed:'格蘭尼達.... '}
   stats: ['替身連打 10/0.2s', '世界冷卻 10s／時停 3s', '飛刀 25', 'HIGH 時停 5s'],
   color: '#f5d020', glowColor: 'rgba(245,208,32,0.6)', type: 'dio',
   winQuote: '我現在真是high到不行！'
-  } 
+  },
+  {
+  id: 'tiger', emoji: '🐯', weapon: '👊', name: '虎天帝',
+  desc: '西中之虎。「徑庭拳」，延遲二段傷，有機率觸發「黑閃」。將部分受傷轉為流血緩慢扣除。消耗自身血量使出「穿血」，並在落點留下血球；累積足夠血球後觸發「超新星」！',
+  stats: ['徑庭拳 ', '黑閃 ', '穿血' , '宿儺容器 受傷延遲'],
+  color: '#cc2200', glowColor: 'rgba(204,34,0,0.6)', type: 'tiger',
+  winQuote: '我只是個零件。就算我是個零件，也要盡可能地祓除詛咒。',
+  vsQuotes: { yuta: '乙骨前輩，辛苦你了。',
+gojo:['這樣就可以了吧，老師。','老師你的術式好礙事啊。'],
+cursed:'我不會憎恨你，但我會殺了你。如果你願意回到我體內，我就放過你。'}
+  }
   
  
    
@@ -1477,7 +1494,7 @@ const NAOBITO_KYOUSEI_SPEED       = 550;   // 凶星軌跡衝刺速度（px/s）
 const NAOBITO_KYOUSEI_COOLDOWN    = 5.0;   // 凶星軌跡觸發後冷卻（秒）
 const NAOBITO_PATH_DEVIATION      = 100;   // 路徑中繼點偏移量（px）
 const NAOBITO_RETREAT_DISTANCE    = 100;   // 接近敵人後，遠離的距離（px）
-const NAOBITO_DASH_MAX_DURATION   = 2.5;   // 單次衝刺最大持續時間（秒），超時強制結束避免卡住
+const NAOBITO_DASH_MAX_DURATION   = 2.0;   // 單次衝刺最大持續時間（秒），超時強制結束避免卡住
 
 
 // 宇治波鼬常數
@@ -1599,10 +1616,38 @@ const DIO_RUSH_DURATION       = 2.2;   // 衝刺連打持續時間（秒）
 const DIO_RUSH_PUNCH_INTERVAL = 0.15;  // 衝刺連打間隔（秒）
 const DIO_RUSH_PUNCH_DAMAGE   = 15;    // 衝刺連打每拳傷害
 
+// 虎天帝常數
+const TIGER_PUNCH_INTERVAL      = 2.6;   // 徑庭拳冷卻（秒）
+const TIGER_PUNCH_CHARGE_TIME   = 0.4;   // 蓄力時間（秒）
+const TIGER_PUNCH_RANGE         = 130;   // 徑庭拳判定範圍（px）
+const TIGER_PUNCH_DMG1          = 80;    // 徑庭拳第一段傷害
+const TIGER_PUNCH_DMG2          = 50;    // 徑庭拳第二段傷害（延遲追加）
+const TIGER_PUNCH_DELAY2        = 1;  // 第二段傷害延遲（秒）
+const TIGER_PUNCH_KNOCKBACK     = 280;   // 徑庭拳擊退力道
+const TIGER_BLACK_FLASH_CHANCE  = 0.20;  // 黑閃機率
+const TIGER_BLACK_FLASH_MUL1    = 1.5;   // 黑閃第一段倍率
+const TIGER_BLACK_FLASH_MUL2    = 1.5;   // 黑閃第二段倍率
+const TIGER_BLOODSHOT_COST      = 60;    // 穿血自耗血量
+const TIGER_BLOODSHOT_DMG       = 60;    // 穿血傷害
+const TIGER_BLOODSHOT_SPEED     = 600;   // 穿血速度
+const TIGER_BLOODSHOT_COOLDOWN  = 2.2;   // 穿血冷卻（秒）
+const TIGER_BLOOD_ORB_RADIUS    = 10;    // 血球半徑
+const TIGER_BLOOD_ORB_LIFETIME  = 12.0;  // 血球存活時間（秒）
+const TIGER_NOVA_THRESHOLD      = 3;     // 超新星觸發所需血球數
+const TIGER_NOVA_COOLDOWN       = 4.0;   // 超新星最少冷卻（秒）：兩次引爆間至少間隔這麼久
+const TIGER_NOVA_CHARGE_TIME    = 0.7;   // 超新星發動前在原地蓄力的時間（秒）
+const TIGER_NOVA_NEEDLE_COUNT   = 14;    // 超新星血流針數量
+const TIGER_NOVA_NEEDLE_SPEED   = 400;   // 血流針飛行速度
+const TIGER_NOVA_NEEDLE_DMG     = 30;    // 每根血流針傷害
+const TIGER_NOVA_NEEDLE_RANGE   = 140;   // 血流針有效射程
+const TIGER_BLEED_RATIO         = 0.60;  // 受傷有多少比例轉為流血
+const TIGER_BLEED_DPS           = 18;    // 流血每秒傷害
+const TIGER_BLEED_MAX_POOL      = 600;   // 流血最大累積量（血條未扣部分上限）
+
 // 雷電法王常數
 const THUNDER_PILLAR_MAX          = 7;        // 最多同時存在幾個閃電柱
 const THUNDER_PILLAR_RADIUS       = 14;       // 閃電柱半圓半徑（顯示用）
-const THUNDER_STRIKE_INTERVAL     = 2.0;      // 閃電連線發射間隔（秒）
+const THUNDER_STRIKE_INTERVAL     = 1.8;      // 閃電連線發射間隔（秒）
 const THUNDER_PILLAR_DAMAGE       = 60;       // 閃電柱本體傷害（碰到柱子時）
 const THUNDER_STRIKE_DAMAGE       = 20;       // 每條閃電連線傷害（每條獨立計算）
 const THUNDER_PARALYZE_CHANCE     = 0.15;     // 麻痺機率
@@ -1636,7 +1681,7 @@ const SAMURAI_IAIDO_MAX        = 4;     // 累積幾次居合觸發識滅斬
 //現代最強
 
 const GOJO_COOLDOWN        = 2.0;   // 蒼/赫冷卻（秒）
-const GOJO_BLUE_FRAMEDMG   = 9;    // 蒼每幀傷害（穿透持續）
+const GOJO_BLUE_FRAMEDMG   = 6;    // 蒼每幀傷害（穿透持續）
 const GOJO_RED_DAMAGE      = 150;   // 赫傷害
 const GOJO_RED_KNOCKBACK   = 320;   // 赫球命中時的擊退強度（直接設定速度，效果明顯）
 const GOJO_PURPLE_FRAMEDMG = 8;     // 紫每幀傷害
@@ -1645,11 +1690,11 @@ const GOJO_RED_SPEED       = 4.5;
 const GOJO_PURPLE_SPEED    = 6.0;   // 紫飛行速度
 const GOJO_BLUE_RADIUS     = 13;    // 蒼球半徑
 const GOJO_BLUE_RING_R     = 32;    // 蒼球光圈半徑
-const GOJO_BLUE_RAY_RANGE  = 140;   // 蒼球光線射程
-const GOJO_BLUE_RAY_FORCE  = 22;    // 蒼球光線引力強度
-const GOJO_BLUE_LIFESPAN   = 4.0;   // 蒼球存在時間（秒），超時自動消失
+const GOJO_BLUE_RAY_RANGE  = 130;   // 蒼球光線射程
+const GOJO_BLUE_RAY_FORCE  = 10;    // 蒼球光線引力強度
+const GOJO_BLUE_LIFESPAN   = 2.0;   // 蒼球存在時間（秒），超時自動消失
 const GOJO_PURPLE_RADIUS   = 24;    // 紫球半徑
-const GOJO_CHARGE_TIME     = 2.0;   // 虛式蓄力時間（秒）
+const GOJO_CHARGE_TIME     = 1.5;   // 虛式蓄力時間（秒）
 const GOJO_FORCE           = 10;    // 引力/斥力強度（碰撞區域）
 const GOJO_FORCE_RANGE     = 100;   // 引力/斥力作用範圍
 const GOJO_HP_THRESHOLD    = 850;   // 觸發虛式的血量門檻
@@ -1709,8 +1754,8 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
-const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066' };
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422' };
 
 const PROGRESS_HANDLERS = {
   opm(b) {
@@ -1826,6 +1871,17 @@ const PROGRESS_HANDLERS = {
     // 冷卻中：顯示冷卻進度（滿格=可發動）
     const frac = Math.max(0, Math.min(1, 1 - (b.dioWorldCooldownTimer || 0) / DIO_WORLD_COOLDOWN));
     return { atFrac: frac, barColor: frac >= 1 ? '#ffe566' : b.char.color };
+  },
+  tiger(b) {
+    if (b.tigerCharging) return { atFrac: Math.min(1, (b.tigerChargeTimer || 0) / TIGER_PUNCH_CHARGE_TIME), barColor: '#ff6600' };
+    if (b.tigerNovaCharging) return { atFrac: Math.min(1, (b.tigerNovaChargeTimer || 0) / TIGER_NOVA_CHARGE_TIME), barColor: '#ff0044' };
+    if (b.tigerNovaActive) return { atFrac: 1, barColor: '#ff0044' };
+    const bloodOrbCount = state.tigerBloodOrbs ? state.tigerBloodOrbs.filter(o => o.owner === b.player).length : 0;
+    if (bloodOrbCount >= TIGER_NOVA_THRESHOLD) return { atFrac: 1, barColor: '#ff0044' };
+    return {
+      atFrac: Math.max(0, Math.min(1, b.tigerPunchTimer != null ? 1 - (b.tigerPunchTimer / TIGER_PUNCH_INTERVAL) : 0)),
+      barColor: b.tigerBleedPool > 50 ? '#aa0000' : b.char.color
+    };
   },
   __default(b) {
     return {
@@ -2045,6 +2101,21 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       dioRushing: ch.type === 'dio' ? false : null,            // 是否在HIGH結束衝刺連打中
       dioRushTimer: ch.type === 'dio' ? 0 : null,              // 衝刺連打剩餘時間
       dioRushPunchTimer: ch.type === 'dio' ? 0 : null,         // 衝刺連打冷卻
+      // 虎天帝專屬狀態
+      tigerPunchTimer: ch.type === 'tiger' ? TIGER_PUNCH_INTERVAL * 0.5 : null, // 徑庭拳冷卻
+      tigerCharging: ch.type === 'tiger' ? false : null,        // 是否蓄力中
+      tigerChargeTimer: ch.type === 'tiger' ? 0 : null,         // 蓄力計時
+      tigerBlackFlash: ch.type === 'tiger' ? false : null,      // 本次是否黑閃
+      tigerPendingSecond: ch.type === 'tiger' ? false : null,   // 是否有二段傷害待觸發
+      tigerPendingTimer: ch.type === 'tiger' ? 0 : null,        // 二段傷害倒數
+      tigerPendingDmg: ch.type === 'tiger' ? 0 : null,          // 二段傷害量
+      tigerPendingTarget: ch.type === 'tiger' ? null : null,    // 二段傷害目標
+      tigerBloodCooldown: ch.type === 'tiger' ? 0 : null,       // 穿血冷卻
+      tigerNovaActive: ch.type === 'tiger' ? false : null,      // 超新星是否發動中
+      tigerNovaCooldown: ch.type === 'tiger' ? 0 : null,        // 超新星最少冷卻倒數
+      tigerNovaCharging: ch.type === 'tiger' ? false : null,    // 是否在原地蓄力準備引爆超新星
+      tigerNovaChargeTimer: ch.type === 'tiger' ? 0 : null,     // 超新星蓄力計時
+      tigerBleedPool: 0,   // 流血池（任何角色都可能被流血，虎天帝也有自己的）
     };
   }
 
@@ -2082,7 +2153,12 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     dioBreads: [],           // DIO：場上麵包列表
     dioSteamroller: null,    // DIO：壓路機物件
     dioWorldGlobalActive: false, // DIO：世界時停是否全域生效中（凍結敵方與投射物）
-    dioWorldCaster: null     // DIO：施放世界的球參考
+    dioWorldCaster: null,     // DIO：施放世界的球參考
+    tigerBloodOrbs: [],       // 虎天帝：場上血球列表
+    tigerNovaNeedles: [],     // 虎天帝：超新星血流針列表
+    tigerPunchFX: [],         // 虎天帝：出拳特效列表
+    tigerBlackFlashFX: [],    // 虎天帝：黑閃特效列表
+    tigerCurseFX: [],         // 虎天帝：藍色咒力特效列表
   };
 
   updateHUD();
@@ -2121,6 +2197,14 @@ function dealDamage(target, dmg, options = {}) {
   if (options.bypassParry) {
     actual = prevHp;
     target.opmExecuted = true;
+  }
+  // 虎天帝被動一：部分傷害轉為流血（只有虎天帝自身具有流血值；不是bypassParry時才觸發，穿血自傷也觸發）
+  if (!options.bypassParry && !options.noBleed && target.char && target.char.type === 'tiger') {
+    const bleedAmt = actual * TIGER_BLEED_RATIO;
+    if (bleedAmt > 0) {
+      target.tigerBleedPool = Math.min((target.tigerBleedPool || 0) + bleedAmt, TIGER_BLEED_MAX_POOL);
+      actual -= bleedAmt; // 這部分傷害先不立即扣，改為流血慢扣
+    }
   }
   target.hp = Math.max(0, target.hp - actual);
   // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
@@ -2548,8 +2632,8 @@ function update(dt) {
     // 緩速計時器
     if (b.curseSlowTimer > 0) b.curseSlowTimer -= dt;
 
-    // 移動（凍結則不移動）
-    if (!b.frozenByVampire && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting) {
+    // 移動（凍結則不移動；虎天帝超新星蓄力視為被束縛定身，完全不動）
+    if (!b.frozenByVampire && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging) {
       const speedMul = b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0;
 
       // 最低速度保證（排除技能主動停止的情況）
@@ -4517,7 +4601,7 @@ waypoints.push({
       if (pd < RADIUS+10) {
         // 末代武士招架反彈
         if (b.char.type === 'samurai' && b.samuraiParrying &&
-            (p.type === 'knife' || p.type === 'bottle' || p.type === 'bullet' || p.type === 'dove' || p.type === 'amaterasu' || p.type === 'curseword'|| p.type === 'turret_bullet')) {
+            (p.type === 'knife' || p.type === 'bottle' || p.type === 'bullet' || p.type === 'dove' || p.type === 'amaterasu' || p.type === 'turret_bullet')) {
           // 反彈：方向反轉，用 reflected flag 標記；保留 owner 讓廚師仍可回收
           const reflectDmg = (p.damage || (p.type === 'amaterasu' ? ITACHI_AMATERASU_DAMAGE : 80)) * SAMURAI_PARRY_REFLECT_MUL;
           p.reflected = true;          // 標記為已反彈（傷害判斷改用此 flag）
@@ -4649,6 +4733,25 @@ waypoints.push({
               state.hitFlashes.push({ x: mageShooter.x, y: mageShooter.y, r: 40, alpha: 1.0, color: '#f0c84a', t: 0.6 });
             }
           }
+          state.projectiles.splice(i, 1);
+          removed = true; break;
+        } else if (p.type === 'bloodshot') {
+          dealDamage(b, p.damage);
+          // 在命中位置留下血球
+          if (!state.tigerBloodOrbs) state.tigerBloodOrbs = [];
+          state.tigerBloodOrbs.push({
+            x: b.x, y: b.y, r: TIGER_BLOOD_ORB_RADIUS,
+            owner: p.owner, life: TIGER_BLOOD_ORB_LIFETIME,
+            pulse: 0
+          });
+          // 命中藍色咒力特效
+          if (!state.tigerCurseFX) state.tigerCurseFX = [];
+          for (let ci = 0; ci < 8; ci++) {
+            const ca = Math.random() * Math.PI * 2;
+            state.tigerCurseFX.push({ x: b.x, y: b.y, vx: Math.cos(ca)*80, vy: Math.sin(ca)*80, life: 0.4, maxLife: 0.4, r: 4, color: '#4488ff', isBleed: false });
+          }
+          state.hitFlashes.push({ x:b.x, y:b.y, r:28, alpha:1.1, color:'#dd0022', t:0.3 });
+          playHitSound('knife');
           state.projectiles.splice(i, 1);
           removed = true; break;
         } else if (p.type === 'shimetsu') {
@@ -5209,6 +5312,290 @@ waypoints.push({
     for (let i = state.yutaSlashFX.length - 1; i >= 0; i--) {
       state.yutaSlashFX[i].life -= dt;
       if (state.yutaSlashFX[i].life <= 0) state.yutaSlashFX.splice(i, 1);
+    }
+  }
+
+  // ── 虎天帝邏輯 ──
+  for (const b of state.balls) {
+    if (b.char.type !== 'tiger') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+
+    // 被動一：流血池持續扣血（對所有角色）
+  }
+  // 流血池對所有角色生效
+  for (const b of state.balls) {
+    if ((b.tigerBleedPool || 0) > 0) {
+      const bleedTick = Math.min(b.tigerBleedPool, TIGER_BLEED_DPS * dt);
+      b.hp = Math.max(0, b.hp - bleedTick);
+      b.tigerBleedPool -= bleedTick;
+      if (b.tigerBleedPool < 0) b.tigerBleedPool = 0;
+      // 流血特效：紅色粒子
+      if (Math.random() < 0.3) {
+        const ang = Math.random() * Math.PI * 2;
+        if (!state.tigerCurseFX) state.tigerCurseFX = [];
+        state.tigerCurseFX.push({
+          x: b.x + Math.cos(ang) * (RADIUS * 0.6),
+          y: b.y + Math.sin(ang) * (RADIUS * 0.6),
+          vx: Math.cos(ang) * 30 + (Math.random()-0.5)*20,
+          vy: -20 - Math.random() * 40,
+          life: 0.5, maxLife: 0.5, r: 3, color: '#cc0000', isBleed: true
+        });
+      }
+    }
+  }
+
+  for (const b of state.balls) {
+    if (b.char.type !== 'tiger') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+
+    // 技能一：徑庭拳 蓄力→出拳（僅在周圍有單位/敵人進入範圍時才會觸發）
+    if (b.tigerPunchTimer > 0) b.tigerPunchTimer -= dt;
+
+    const distToEnemy = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+    if (!b.tigerCharging && b.tigerPunchTimer <= 0 && distToEnemy < TIGER_PUNCH_RANGE) {
+      // 開始蓄力：停下來
+      b.tigerCharging = true;
+      b.tigerChargeTimer = 0;
+      b.tigerBlackFlash = Math.random() < TIGER_BLACK_FLASH_CHANCE;
+      // 蓄力視覺特效
+      if (!state.tigerPunchFX) state.tigerPunchFX = [];
+      state.tigerPunchFX.push({ x: b.x, y: b.y, type: 'charge', life: TIGER_PUNCH_CHARGE_TIME, maxLife: TIGER_PUNCH_CHARGE_TIME, owner: b.player });
+    }
+
+    if (b.tigerCharging) {
+      b.tigerChargeTimer += dt;
+      // 蓄力中輕微縮減移動（視覺蓄力感）
+      b.vx *= 0.85; b.vy *= 0.85;
+
+      if (b.tigerChargeTimer >= TIGER_PUNCH_CHARGE_TIME) {
+        b.tigerCharging = false;
+        b.tigerPunchTimer = TIGER_PUNCH_INTERVAL;
+
+        // 是否黑閃
+        const isBlack = b.tigerBlackFlash;
+        const dmg1 = isBlack ? TIGER_PUNCH_DMG1 * TIGER_BLACK_FLASH_MUL1 : TIGER_PUNCH_DMG1;
+        const dmg2 = isBlack ? TIGER_PUNCH_DMG2 * TIGER_BLACK_FLASH_MUL2 : TIGER_PUNCH_DMG2;
+
+        // 範圍判定
+        const dist = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+        if (dist < TIGER_PUNCH_RANGE) {
+          dealDamage(enemy, dmg1);
+          // 擊退
+          const kx = (enemy.x - b.x) / (dist || 1), ky = (enemy.y - b.y) / (dist || 1);
+          enemy.vx += kx * TIGER_PUNCH_KNOCKBACK;
+          enemy.vy += ky * TIGER_PUNCH_KNOCKBACK;
+
+          // 藍色咒力特效（敵方受傷）
+          if (!state.tigerCurseFX) state.tigerCurseFX = [];
+          for (let ci = 0; ci < 8; ci++) {
+            const ca = Math.random() * Math.PI * 2;
+            const cspd = 60 + Math.random() * 100;
+            state.tigerCurseFX.push({ x: enemy.x, y: enemy.y, vx: Math.cos(ca)*cspd, vy: Math.sin(ca)*cspd, life: 0.5, maxLife: 0.5, r: 5, color: '#4488ff', isBleed: false });
+          }
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 35, alpha: 1.1, color: '#ff4400', t: 0.25 });
+
+          // 二段傷害（延遲）
+          b.tigerPendingSecond = true;
+          b.tigerPendingTimer = TIGER_PUNCH_DELAY2;
+          b.tigerPendingDmg = dmg2;
+          b.tigerPendingTarget = enemy;
+          b.tigerPendingKx = kx; b.tigerPendingKy = ky;
+
+          // 黑閃特效（觸發瞬間立即清除自己的流血池並轉化為回血）
+          if (isBlack) {
+            if (!state.tigerBlackFlashFX) state.tigerBlackFlashFX = [];
+            for (let bi = 0; bi < 12; bi++) {
+              const ba = Math.random() * Math.PI * 2;
+              state.tigerBlackFlashFX.push({ x: b.x, y: b.y, angle: ba, len: 20 + Math.random()*30, life: 0.4, maxLife: 0.4, owner: b.player });
+            }
+            state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 55, alpha: 1.3, color: '#000000', t: 0.35 });
+            state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 30, alpha: 1.0, color: '#8800ff', t: 0.25 });
+            playHitSound('opm');
+
+            // 黑閃：出拳瞬間清除自己的流血池，轉化為直接回復血量
+            const clearAmt = Math.min(b.tigerBleedPool || 0, (dmg1 + dmg2) * 1.5);
+            if (clearAmt > 0) {
+              b.tigerBleedPool -= clearAmt;
+              b.hp = Math.min(MAX_HP, b.hp + clearAmt);
+              state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1.0, color: '#22cc66', t: 0.3 });
+            }
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 18, alpha: 0.8, color: '#330066', t: 0.2 });
+          } else {
+            playHitSound('curse_slash');
+          }
+
+          // 出拳特效：記錄起點(虎天帝位置)，讓拳影從本體打出
+          if (!state.tigerPunchFX) state.tigerPunchFX = [];
+          state.tigerPunchFX.push({ sx: b.x, sy: b.y, x: enemy.x, y: enemy.y, type: 'hit', life: 0.3, maxLife: 0.3, isBlack, owner: b.player });
+        } else {
+          // 打空：出拳特效（往前延伸）
+          const pAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+          if (!state.tigerPunchFX) state.tigerPunchFX = [];
+          state.tigerPunchFX.push({ sx: b.x, sy: b.y, x: b.x + Math.cos(pAngle)*RADIUS*1.5, y: b.y + Math.sin(pAngle)*RADIUS*1.5, type: 'miss', life: 0.2, maxLife: 0.2, angle: pAngle, isBlack: false, owner: b.player });
+          playHitSound('curse_slash');
+        }
+      }
+    }
+
+    // 二段傷害倒數
+    if (b.tigerPendingSecond) {
+      b.tigerPendingTimer -= dt;
+      if (b.tigerPendingTimer <= 0) {
+        b.tigerPendingSecond = false;
+        const tgt = b.tigerPendingTarget;
+        if (tgt && tgt.hp > 0) {
+          dealDamage(tgt, b.tigerPendingDmg);
+          tgt.vx += (b.tigerPendingKx || 0) * TIGER_PUNCH_KNOCKBACK * 0.6;
+          tgt.vy += (b.tigerPendingKy || 0) * TIGER_PUNCH_KNOCKBACK * 0.6;
+          // 藍色咒力追加特效
+          if (!state.tigerCurseFX) state.tigerCurseFX = [];
+          for (let ci = 0; ci < 6; ci++) {
+            const ca = Math.random() * Math.PI * 2;
+            state.tigerCurseFX.push({ x: tgt.x, y: tgt.y, vx: Math.cos(ca)*80, vy: Math.sin(ca)*80, life: 0.4, maxLife: 0.4, r: 4, color: '#4488ff', isBleed: false });
+          }
+          state.hitFlashes.push({ x: tgt.x, y: tgt.y, r: 22, alpha: 0.9, color: '#aa2200', t: 0.2 });
+          playHitSound('knife');
+        }
+      }
+    }
+
+    // 技能二：穿血（倒數自動射出）
+    if (b.tigerBloodCooldown > 0) b.tigerBloodCooldown -= dt;
+
+    if (b.tigerBloodCooldown <= 0 && !b.tigerCharging) {
+      b.tigerBloodCooldown = TIGER_BLOODSHOT_COOLDOWN;
+      const bsCost = Math.min(b.hp * 0.9, TIGER_BLOODSHOT_COST); // 不致命
+      if (b.hp > bsCost + 10) {
+        // 扣自身血：與一般受傷一樣，部分轉入流血池慢扣，不直接整段扣空
+        const selfBleedAmt = Math.min(bsCost * TIGER_BLEED_RATIO, TIGER_BLEED_MAX_POOL - (b.tigerBleedPool || 0));
+        if (selfBleedAmt > 0) {
+          b.tigerBleedPool = (b.tigerBleedPool || 0) + selfBleedAmt;
+        }
+        b.hp = Math.max(0, b.hp - (bsCost - selfBleedAmt));
+        if (state.stats) state.stats[b.player === 1 ? 2 : 1].totalDmg += 0; // 自傷不計對手傷害
+
+        const angle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+        state.projectiles.push({
+          x: b.x + Math.cos(angle)*(RADIUS+5),
+          y: b.y + Math.sin(angle)*(RADIUS+5),
+          vx: Math.cos(angle)*TIGER_BLOODSHOT_SPEED,
+          vy: Math.sin(angle)*TIGER_BLOODSHOT_SPEED,
+          type: 'bloodshot', owner: b.player, color: '#dd0022',
+          damage: TIGER_BLOODSHOT_DMG, r: 6, active: true, angle
+        });
+        playHitSound('knife');
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 18, alpha: 0.7, color: '#aa0000', t: 0.2 });
+      }
+    }
+
+    // 技能三：超新星（達成條件後先在原地蓄力，蓄滿才引爆）
+    if (b.tigerNovaCooldown > 0) b.tigerNovaCooldown -= dt;
+
+    if (!b.tigerNovaActive && !b.tigerNovaCharging && b.tigerNovaCooldown <= 0) {
+      const myOrbs = (state.tigerBloodOrbs || []).filter(o => o.owner === b.player);
+      if (myOrbs.length >= TIGER_NOVA_THRESHOLD) {
+        // 開始原地蓄力：立即定身（歸零速度），如同被束縛
+        b.tigerNovaCharging = true;
+        b.tigerNovaChargeTimer = 0;
+        b.vx = 0; b.vy = 0;
+        playHitSound('curse_slash');
+      }
+    }
+
+    if (b.tigerNovaCharging) {
+      b.tigerNovaChargeTimer += dt;
+      // 蓄力中完全定身不動，如同被束縛
+      b.vx = 0; b.vy = 0;
+
+      if (b.tigerNovaChargeTimer >= TIGER_NOVA_CHARGE_TIME) {
+        b.tigerNovaCharging = false;
+        // 蓄力結束時重新取得當前血球（蓄力期間血球可能變化）
+        const myOrbs = (state.tigerBloodOrbs || []).filter(o => o.owner === b.player);
+        if (myOrbs.length > 0) {
+          b.tigerNovaActive = true;
+          b.tigerNovaCooldown = TIGER_NOVA_COOLDOWN;
+          // 引爆所有血球，從每顆血球噴出血流針
+          for (const orb of myOrbs) {
+            for (let ni = 0; ni < TIGER_NOVA_NEEDLE_COUNT; ni++) {
+              const na = (Math.PI * 2 / TIGER_NOVA_NEEDLE_COUNT) * ni;
+              if (!state.tigerNovaNeedles) state.tigerNovaNeedles = [];
+              state.tigerNovaNeedles.push({
+                x: orb.x, y: orb.y,
+                vx: Math.cos(na) * TIGER_NOVA_NEEDLE_SPEED,
+                vy: Math.sin(na) * TIGER_NOVA_NEEDLE_SPEED,
+                owner: b.player, damage: TIGER_NOVA_NEEDLE_DMG,
+                life: TIGER_NOVA_NEEDLE_RANGE / TIGER_NOVA_NEEDLE_SPEED,
+                color: '#ff0044', r: 4, active: true, angle: na
+              });
+            }
+            state.hitFlashes.push({ x: orb.x, y: orb.y, r: 40, alpha: 1.2, color: '#ff0044', t: 0.5 });
+          }
+          // 清空該玩家血球
+          state.tigerBloodOrbs = (state.tigerBloodOrbs || []).filter(o => o.owner !== b.player);
+          playHitSound('vampire_dash');
+          setTimeout(() => { b.tigerNovaActive = false; }, 200);
+        } else {
+          // 蓄力期間血球被清空，視為冷卻浪費一半時間，避免無限重試
+          b.tigerNovaCooldown = TIGER_NOVA_COOLDOWN * 0.5;
+        }
+      }
+    }
+  }
+
+  // 虎天帝：血球壽命更新
+  if (state.tigerBloodOrbs) {
+    for (let i = state.tigerBloodOrbs.length - 1; i >= 0; i--) {
+      state.tigerBloodOrbs[i].life -= dt;
+      if (state.tigerBloodOrbs[i].life <= 0) state.tigerBloodOrbs.splice(i, 1);
+    }
+  }
+
+  // 虎天帝：超新星血流針移動
+  if (state.tigerNovaNeedles) {
+    for (let i = state.tigerNovaNeedles.length - 1; i >= 0; i--) {
+      const needle = state.tigerNovaNeedles[i];
+      needle.x += needle.vx * dt; needle.y += needle.vy * dt;
+      needle.life -= dt;
+      if (!needle.active || needle.life <= 0) { state.tigerNovaNeedles.splice(i, 1); continue; }
+      // 命中判定
+      const needleEnemy = state.balls.find(x => x.player !== needle.owner);
+      if (needleEnemy && Math.hypot(needleEnemy.x - needle.x, needleEnemy.y - needle.y) < RADIUS + needle.r) {
+        dealDamage(needleEnemy, needle.damage);
+        if (!state.tigerCurseFX) state.tigerCurseFX = [];
+        for (let ci = 0; ci < 4; ci++) {
+          const ca = Math.random() * Math.PI * 2;
+          state.tigerCurseFX.push({ x: needleEnemy.x, y: needleEnemy.y, vx: Math.cos(ca)*60, vy: Math.sin(ca)*60, life: 0.3, maxLife: 0.3, r: 3, color: '#4488ff', isBleed: false });
+        }
+        state.hitFlashes.push({ x: needleEnemy.x, y: needleEnemy.y, r: 16, alpha: 0.9, color: '#ff0044', t: 0.18 });
+        state.tigerNovaNeedles.splice(i, 1);
+      }
+    }
+  }
+
+  // 虎天帝：咒力/流血粒子更新
+  if (state.tigerCurseFX) {
+    for (let i = state.tigerCurseFX.length - 1; i >= 0; i--) {
+      const p = state.tigerCurseFX[i];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.vy += 80 * dt;
+      p.life -= dt;
+      if (p.life <= 0) state.tigerCurseFX.splice(i, 1);
+    }
+  }
+  if (state.tigerPunchFX) {
+    for (let i = state.tigerPunchFX.length - 1; i >= 0; i--) {
+      state.tigerPunchFX[i].life -= dt;
+      if (state.tigerPunchFX[i].life <= 0) state.tigerPunchFX.splice(i, 1);
+    }
+  }
+  if (state.tigerBlackFlashFX) {
+    for (let i = state.tigerBlackFlashFX.length - 1; i >= 0; i--) {
+      state.tigerBlackFlashFX[i].life -= dt;
+      if (state.tigerBlackFlashFX[i].life <= 0) state.tigerBlackFlashFX.splice(i, 1);
     }
   }
 
@@ -5978,6 +6365,43 @@ function render() {
         ctx.filter = `drop-shadow(0 0 6px ${col}) drop-shadow(0 0 3px #ffffff)`;
       }
       ctx.fillText('🕊️', 0, 0);
+    } else if (p.type === 'bloodshot') {
+      ctx.filter = 'none';
+      const beamLen = (p.r || 6) * 5.5;
+      const beamW = (p.r || 6) * 0.85;
+      // 拖尾錐形：由細到粗，模擬「血流」而非單純光束
+      const trailGrad = ctx.createLinearGradient(-beamLen, 0, beamW * 0.4, 0);
+      trailGrad.addColorStop(0, 'rgba(160,0,0,0)');
+      trailGrad.addColorStop(0.45, 'rgba(200,0,30,0.45)');
+      trailGrad.addColorStop(1, 'rgba(255,90,90,0.95)');
+      ctx.beginPath();
+      ctx.moveTo(-beamLen, -beamW * 0.25);
+      ctx.lineTo(beamW * 0.4, -beamW);
+      ctx.lineTo(beamW * 0.4, beamW);
+      ctx.lineTo(-beamLen, beamW * 0.25);
+      ctx.closePath();
+      ctx.fillStyle = trailGrad;
+      ctx.shadowColor = '#ff0033'; ctx.shadowBlur = 16;
+      ctx.fill();
+      // 彈頭核心：發亮血球，仍是實體拋射物而非瞬發光束
+      const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, beamW);
+      coreGrad.addColorStop(0, 'rgba(255,220,220,0.98)');
+      coreGrad.addColorStop(0.5, 'rgba(255,60,60,0.9)');
+      coreGrad.addColorStop(1, 'rgba(160,0,0,0.5)');
+      ctx.beginPath(); ctx.arc(beamW * 0.3, 0, beamW, 0, Math.PI*2);
+      ctx.fillStyle = coreGrad; ctx.fill();
+      // 周圍細小血滴飛散
+      if (!p._dripT || elapsed - p._dripT > 0.04) {
+        p._dripT = elapsed;
+        if (!state.tigerCurseFX) state.tigerCurseFX = [];
+        state.tigerCurseFX.push({
+          x: p.x - Math.cos(p.angle) * beamLen * 0.5,
+          y: p.y - Math.sin(p.angle) * beamLen * 0.5,
+          vx: -Math.cos(p.angle) * 20 + (Math.random()-0.5)*30,
+          vy: -Math.sin(p.angle) * 20 + (Math.random()-0.5)*30,
+          life: 0.3, maxLife: 0.3, r: 2, color: '#cc0022', isBleed: true
+        });
+      }
     } else if (p.type === 'shimetsu') {
       // 識滅斬斬波：金橙發光條
       ctx.filter = 'none';
@@ -6791,6 +7215,56 @@ function render() {
       ctx.lineWidth = 2.5; ctx.stroke();
     }
 
+    // 虎天帝流血中：深紅滴血邊框
+    if ((b.tigerBleedPool || 0) > 0) {
+      const bleedRatio = Math.min(1, b.tigerBleedPool / TIGER_BLEED_MAX_POOL);
+      const bPulse = 0.6 + 0.4 * Math.abs(Math.sin(elapsed * 6));
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS+5, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(160,0,0,${bPulse * bleedRatio})`;
+      ctx.lineWidth = 3; ctx.shadowColor = '#880000'; ctx.shadowBlur = 8; ctx.stroke(); ctx.shadowBlur = 0;
+    }
+
+    // 虎天帝超新星：原地蓄力深紅脈動光暈
+    if (b.char.type === 'tiger' && b.tigerNovaCharging) {
+      const novaFrac = Math.min(1, (b.tigerNovaChargeTimer||0) / TIGER_NOVA_CHARGE_TIME);
+      const novaPulse = 0.5 + 0.5 * Math.sin(elapsed * 25);
+      const nGlow = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,RADIUS*3.5);
+      nGlow.addColorStop(0, `rgba(255,0,60,${0.5*novaPulse})`);
+      nGlow.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS*3.5, 0, Math.PI*2);
+      ctx.fillStyle = nGlow; ctx.fill();
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS+10, -Math.PI/2, -Math.PI/2 + Math.PI*2*novaFrac);
+      ctx.strokeStyle = '#ff0044';
+      ctx.lineWidth = 5; ctx.shadowColor = '#ff0044'; ctx.shadowBlur = 20;
+      ctx.lineCap = 'round'; ctx.stroke(); ctx.lineCap = 'butt'; ctx.shadowBlur = 0;
+      ctx.save(); ctx.translate(b.x, b.y);
+      ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = `rgba(255,40,80,${0.8+0.2*novaPulse})`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('☄️超新星', 0, -RADIUS-14); ctx.restore();
+    }
+
+    // 虎天帝蓄力：橘紅光暈
+    if (b.char.type === 'tiger' && b.tigerCharging) {
+      const chargeFrac = Math.min(1, (b.tigerChargeTimer||0) / TIGER_PUNCH_CHARGE_TIME);
+      const chargePulse = 0.5 + 0.5 * Math.sin(elapsed * 20);
+      const cGlow = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,RADIUS*3);
+      const gColor = b.tigerBlackFlash ? '#220066' : '#ff4400';
+      cGlow.addColorStop(0, gColor + Math.floor(chargeFrac*100).toString(16).padStart(2,'0'));
+      cGlow.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS*3, 0, Math.PI*2);
+      ctx.fillStyle = cGlow; ctx.fill();
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS+6, -Math.PI/2, -Math.PI/2 + Math.PI*2*chargeFrac);
+      ctx.strokeStyle = b.tigerBlackFlash ? '#8800ff' : '#ff6600';
+      ctx.lineWidth = 4; ctx.shadowColor = b.tigerBlackFlash ? '#660099' : '#ff4400'; ctx.shadowBlur = 16;
+      ctx.lineCap = 'round'; ctx.stroke(); ctx.lineCap = 'butt'; ctx.shadowBlur = 0;
+      if (b.tigerBlackFlash) {
+        ctx.save(); ctx.translate(b.x, b.y);
+        ctx.font = 'bold 10px sans-serif'; ctx.fillStyle = `rgba(180,0,255,${0.8+0.2*chargePulse})`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('黑閃', 0, -RADIUS-12); ctx.restore();
+      }
+    }
+
     // 被尖刺中毒：綠色虛線邊框
     if (b.trapDotTimer > 0) {
       ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 6, 0, Math.PI * 2);
@@ -7581,6 +8055,148 @@ function render() {
     }
   }
 
+  // 虎天帝：血球繪製
+  if (state.tigerBloodOrbs) {
+    for (const orb of state.tigerBloodOrbs) {
+      orb.pulse = (orb.pulse || 0) + 0.08;
+      const puls = 0.7 + 0.3 * Math.sin(orb.pulse * 4);
+      const lifeFrac = Math.min(1, orb.life / TIGER_BLOOD_ORB_LIFETIME);
+      ctx.save();
+      ctx.globalAlpha = puls * lifeFrac;
+      const og = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r * 1.8);
+      og.addColorStop(0, 'rgba(255,80,80,0.9)');
+      og.addColorStop(0.5, 'rgba(180,0,30,0.7)');
+      og.addColorStop(1, 'rgba(80,0,0,0)');
+      ctx.beginPath(); ctx.arc(orb.x, orb.y, orb.r * 1.8, 0, Math.PI*2);
+      ctx.fillStyle = og; ctx.fill();
+      ctx.beginPath(); ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI*2);
+      ctx.fillStyle = '#cc1122'; ctx.shadowColor = '#ff0033'; ctx.shadowBlur = 10; ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // 虎天帝：超新星針彈繪製
+  if (state.tigerNovaNeedles) {
+    for (const needle of state.tigerNovaNeedles) {
+      ctx.save();
+      ctx.translate(needle.x, needle.y);
+      ctx.rotate(needle.angle);
+      ctx.shadowColor = '#ff0044'; ctx.shadowBlur = 10;
+      ctx.fillStyle = '#ee1133';
+      ctx.fillRect(-10, -2, 20, 4);
+      ctx.fillStyle = 'rgba(255,180,200,0.8)';
+      ctx.fillRect(-6, -1, 12, 2);
+      ctx.restore();
+    }
+  }
+
+  // 虎天帝：出拳特效 & 蓄力特效
+  if (state.tigerPunchFX) {
+    for (const fx of state.tigerPunchFX) {
+      const prog = 1 - fx.life / fx.maxLife;
+      ctx.save();
+      ctx.globalAlpha = 1 - prog;
+      if (fx.type === 'hit') {
+        // 拳影軌跡：從虎天帝本體位置(sx,sy)打向命中點(x,y)
+        if (fx.sx !== undefined) {
+          const strikeProg = Math.min(1, prog * 4); // 拳影本身收得比衝擊環快
+          ctx.save();
+          ctx.globalAlpha = (1 - strikeProg) * 0.9;
+          const dx = fx.x - fx.sx, dy = fx.y - fx.sy;
+          const ang = Math.atan2(dy, dx);
+          const len = Math.hypot(dx, dy);
+          ctx.translate(fx.sx, fx.sy);
+          ctx.rotate(ang);
+          const grad = ctx.createLinearGradient(0, 0, len, 0);
+          const tipCol = fx.isBlack ? '#cc88ff' : '#ffcc88';
+          grad.addColorStop(0, 'rgba(255,255,255,0)');
+          grad.addColorStop(0.6, fx.isBlack ? 'rgba(136,0,255,0.5)' : 'rgba(255,90,0,0.5)');
+          grad.addColorStop(1, tipCol);
+          ctx.fillStyle = grad;
+          ctx.shadowColor = fx.isBlack ? '#8800ff' : '#ff6600'; ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.moveTo(0, -3);
+          ctx.lineTo(len * 0.85, -9);
+          ctx.lineTo(len, 0);
+          ctx.lineTo(len * 0.85, 9);
+          ctx.lineTo(0, 3);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        const r = 20 + prog * 30;
+        const col = fx.isBlack ? '#330055' : '#ff4400';
+        ctx.beginPath(); ctx.arc(fx.x, fx.y, r, 0, Math.PI*2);
+        ctx.strokeStyle = col; ctx.lineWidth = 4 - prog * 3;
+        ctx.shadowColor = fx.isBlack ? '#8800ff' : '#ff6600'; ctx.shadowBlur = 18;
+        ctx.stroke();
+      } else if (fx.type === 'miss') {
+        if (fx.sx !== undefined) {
+          ctx.save();
+          ctx.globalAlpha = (1 - prog) * 0.7;
+          const dx = fx.x - fx.sx, dy = fx.y - fx.sy;
+          const ang = Math.atan2(dy, dx);
+          const len = Math.hypot(dx, dy);
+          ctx.translate(fx.sx, fx.sy);
+          ctx.rotate(ang);
+          ctx.strokeStyle = '#aa5500'; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(len, 0); ctx.stroke();
+          ctx.restore();
+        }
+        const r = 12 + prog * 18;
+        ctx.translate(fx.x, fx.y);
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2);
+        ctx.strokeStyle = '#884400'; ctx.lineWidth = 2; ctx.stroke();
+      } else if (fx.type === 'charge') {
+        // 蓄力環（已在球上方顯示，此處略）
+      }
+      ctx.restore();
+    }
+  }
+
+  // 虎天帝：黑閃閃電特效
+  if (state.tigerBlackFlashFX) {
+    for (const fx of state.tigerBlackFlashFX) {
+      const prog = 1 - fx.life / fx.maxLife;
+      ctx.save();
+      ctx.globalAlpha = (1 - prog) * 0.9;
+      ctx.translate(fx.x, fx.y);
+      ctx.rotate(fx.angle);
+      const bfLen = fx.len * (1 - prog * 0.4);
+      ctx.shadowColor = '#9900ff'; ctx.shadowBlur = 18;
+      ctx.strokeStyle = '#4400aa';
+      ctx.lineWidth = 3 - prog * 2;
+      ctx.beginPath();
+      // 鋸齒閃電
+      ctx.moveTo(0, 0);
+      const segs = 5;
+      for (let si = 1; si <= segs; si++) {
+        const lx = (bfLen / segs) * si;
+        const ly = (si % 2 === 0 ? 1 : -1) * (5 - prog * 4);
+        ctx.lineTo(lx, ly);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = '#cc66ff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // 虎天帝：咒力粒子 & 流血粒子特效
+  if (state.tigerCurseFX) {
+    for (const p of state.tigerCurseFX) {
+      const lifeFrac = p.life / p.maxLife;
+      ctx.save();
+      ctx.globalAlpha = lifeFrac * 0.9;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * lifeFrac, 0, Math.PI*2);
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color; ctx.shadowBlur = p.isBleed ? 6 : 10;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
   // DIO 世界：時停灰色濾鏡覆蓋全畫面
   if (state.dioWorldGlobalActive) {
     ctx.save();
@@ -7597,8 +8213,18 @@ function updateHUD() {
   if (!state.balls) return;
   const [b0,b1] = state.balls;
   const hp0 = Math.max(0,b0.hp), hp1 = Math.max(0,b1.hp);
+  const bleed0 = Math.min(b0.tigerBleedPool||0, MAX_HP - hp0);
+  const bleed1 = Math.min(b1.tigerBleedPool||0, MAX_HP - hp1);
+  // 主血條
   document.getElementById('p1-bar').style.width = (hp0/MAX_HP*100)+'%';
   document.getElementById('p2-bar').style.width = (hp1/MAX_HP*100)+'%';
+  // 流血池（在主血條後方用不同顏色顯示，用 box-shadow 模擬）
+  const p1BleedWidth = (bleed0/MAX_HP*100).toFixed(1)+'%';
+  const p2BleedWidth = (bleed1/MAX_HP*100).toFixed(1)+'%';
+  const p1BleedEl = document.getElementById('p1-bleed-bar');
+  const p2BleedEl = document.getElementById('p2-bleed-bar');
+  if (p1BleedEl) { p1BleedEl.style.width = p1BleedWidth; p1BleedEl.style.left = (hp0/MAX_HP*100).toFixed(1)+'%'; }
+  if (p2BleedEl) { p2BleedEl.style.width = p2BleedWidth; p2BleedEl.style.right = (hp1/MAX_HP*100).toFixed(1)+'%'; }
   document.getElementById('p1-hp-num').textContent = `${Math.ceil(hp0)} / ${MAX_HP}`;
   document.getElementById('p2-hp-num').textContent = `${Math.ceil(hp1)} / ${MAX_HP}`;
   document.getElementById('timer-display').textContent =
@@ -7715,6 +8341,15 @@ function updateHUD() {
       if (b.cannonBlastFiring) return `🚬 光砲連射 ${b.cannonBlastShotsLeft}`;
       const cdLeft = Math.max(0, (b.cannonSkillCooldown||0) - (b.cannonSkillTimer||0)).toFixed(1);
       return `🚬 CD:${cdLeft}s`;
+    } else if (b.char.type === 'tiger') {
+      const orbCount = state.tigerBloodOrbs ? state.tigerBloodOrbs.filter(o => o.owner === b.player).length : 0;
+      const bleedPool = Math.ceil(b.tigerBleedPool || 0);
+      const punchLeft = Math.max(0, b.tigerPunchTimer || 0).toFixed(1);
+      if (b.tigerCharging) return `🐯 蓄力中⚡ 血球${orbCount}/${TIGER_NOVA_THRESHOLD}`;
+      if (b.tigerNovaCharging) return `🐯 ☄️超新星蓄力中！`;
+      if (orbCount >= TIGER_NOVA_THRESHOLD && (b.tigerNovaCooldown || 0) <= 0) return `🐯 ☄️超新星就緒！血條${bleedPool}`;
+      if (orbCount >= TIGER_NOVA_THRESHOLD) return `🐯 ☄️冷卻中${Math.ceil(b.tigerNovaCooldown)}s 球${orbCount}/${TIGER_NOVA_THRESHOLD}`;
+      return `🐯 徑庭拳:${punchLeft}s 球${orbCount}/${TIGER_NOVA_THRESHOLD}${bleedPool>0?' 💉'+bleedPool:''}`;
     } else {
       return '';
     }
@@ -7736,8 +8371,13 @@ function showResult(deadBalls) {
     titleEl.textContent = `${winner.char.emoji} 勝利！`;
     titleEl.style.color = winner.char.color;
     // 特定對手專屬勝利台詞：若 winner.char.vsQuotes[loser角色id] 有設定，優先使用；否則用一般 winQuote
-    const specialQuote = winner.char.vsQuotes && loser.char && winner.char.vsQuotes[loser.char.id];
-    const quote = specialQuote || winner.char.winQuote;
+   function pickQuote(q) {
+  if (Array.isArray(q)) return q[Math.floor(Math.random() * q.length)];
+  return q;
+}
+
+const specialQuote = winner.char.vsQuotes && loser.char && winner.char.vsQuotes[loser.char.id];
+const quote = pickQuote(specialQuote || winner.char.winQuote);
     subEl.innerHTML = `${winner.char.displayName} 剩餘 ${Math.ceil(winner.hp)} 血` +
       (quote ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.85">「${quote}」</div>` : '');
   }
