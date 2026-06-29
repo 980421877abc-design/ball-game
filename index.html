@@ -274,6 +274,20 @@
 
   .start-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(240,200,74,0.5); }
   .start-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .random-btn {
+    margin-top: 6px;
+    padding: 5px 18px;
+    background: rgba(255,200,60,0.12);
+    border: 1px solid rgba(255,200,60,0.35);
+    border-radius: 20px;
+    color: #f0c84a;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: background 0.15s;
+  }
+  .random-btn:hover { background: rgba(255,200,60,0.25); }
 
   .arena-select {
     display: flex; gap: 12px; justify-content: center; margin: 16px 0 8px;
@@ -642,6 +656,7 @@
         </div>
       </div>
       <div class="selected-label" id="p1-selected-label">請選擇角色</div>
+      <button class="random-btn" onclick="randomChar('p1')">🎲 隨機</button>
     </div>
 
     <div class="vs-divider">VS</div>
@@ -659,6 +674,7 @@
         </div>
       </div>
       <div class="selected-label" id="p2-selected-label">請選擇角色</div>
+      <button class="random-btn" onclick="randomChar('p2')">🎲 隨機</button>
     </div>
   </div>
 
@@ -674,6 +690,7 @@
   </div>
 
   <button class="start-btn" id="start-btn" disabled>開始對決</button>
+  <button class="start-btn" id="endless-btn" style="margin-top:10px;background:linear-gradient(135deg,rgba(255,140,0,0.18),rgba(200,60,60,0.18));border-color:rgba(255,140,0,0.5);color:#ffaa44;">🔥 模擬手札</button>
 </div>
 
 <!-- ══ ROSTER MODAL ══ -->
@@ -686,6 +703,23 @@
 </div>
 
 <!-- ══ GAME SCREEN ══ -->
+<div id="endless-pick-screen" style="display:none;position:fixed;inset:0;background:#0a0008;z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:0;font-family:sans-serif;color:#eee;">
+  <div id="ep-stage" style="font-size:1.5rem;font-weight:900;letter-spacing:.15em;color:#ffaa44;text-shadow:0 0 18px #ff6600;margin-bottom:4px">第 1 關</div>
+  <div id="ep-next-label" style="font-size:0.75rem;color:#888;letter-spacing:.12em;margin-bottom:2px">下一位對手</div>
+  <div id="ep-next-enemy" style="font-size:1.6rem;font-weight:700;margin-bottom:18px">─</div>
+  <div style="font-size:0.75rem;color:#aaa;letter-spacing:.1em;margin-bottom:10px">選擇你的角色（三選一）</div>
+  <div id="ep-cards" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;"></div>
+  <div id="ep-best" style="margin-top:22px;font-size:0.78rem;color:#666;letter-spacing:.1em"></div>
+</div>
+
+<div id="endless-result-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:201;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-family:sans-serif;color:#eee;">
+  <div id="er-title" style="font-size:2rem;font-weight:900;color:#ff4444;text-shadow:0 0 24px #ff2200">💀 挑戰失敗</div>
+  <div id="er-stage" style="font-size:1.1rem;color:#ffaa44;font-weight:700"></div>
+  <div id="er-best" style="font-size:0.9rem;color:#888"></div>
+  <button onclick="startEndless()" style="margin-top:16px;padding:12px 36px;background:rgba(255,140,0,0.2);border:1px solid rgba(255,140,0,0.5);border-radius:24px;color:#ffaa44;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.1em">🔥 再次挑戰</button>
+  <button onclick="backToSelect()" style="padding:8px 28px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:20px;color:#aaa;font-size:0.85rem;cursor:pointer">回到選角</button>
+</div>
+
 <div id="game-screen">
   <div class="speed-control" id="speed-control">
     <button class="speed-btn" data-speed="0.5">0.5x</button>
@@ -699,7 +733,10 @@
       <div class="hp-bar-wrap" style="position:relative"><div class="hp-bar p1" id="p1-bar" style="width:100%"></div><div id="p1-bleed-bar" style="position:absolute;top:0;height:100%;background:linear-gradient(90deg,#880000,#cc2200);opacity:0.7;border-radius:5px;width:0;left:100%"></div></div>
       <div class="hp-num" id="p1-hp-num">1000 / 1000</div>
     </div>
-    <div class="hud-center"><div class="round-num" id="timer-display">0s</div></div>
+    <div class="hud-center">
+      <div class="round-num" id="timer-display">0s</div>
+      <button id="endless-stop-btn" onclick="endlessQuit()" style="display:none;margin-top:4px;padding:2px 10px;background:rgba(255,60,60,0.15);border:1px solid rgba(255,80,80,0.4);border-radius:12px;color:#ff7070;font-size:0.65rem;cursor:pointer;letter-spacing:.08em;">✕ 放棄闖關</button>
+    </div>
     <div class="hp-block right">
       <div class="hp-name" id="p2-hud-name" style="flex-direction:row-reverse">─</div>
       <div class="hp-bar-wrap" style="position:relative"><div class="hp-bar p2" id="p2-bar" style="width:100%"></div><div id="p2-bleed-bar" style="position:absolute;top:0;height:100%;background:linear-gradient(90deg,#cc2200,#880000);opacity:0.7;border-radius:5px;width:0;right:100%"></div></div>
@@ -1172,9 +1209,14 @@ cursed:'我不會憎恨你，但我會殺了你。如果你願意回到我體內
   stats: ['大星星', '星散', '小星星', '星隕'],
   color: '#ffe066', glowColor: 'rgba(255,224,102,0.6)', type: 'stargirl',
   winQuote: '一閃一閃亮晶晶。'
+  },
+  {
+  id: 'obito', emoji: '🌀', weapon: '🔥', name: '宇智波帶土',
+  desc: '擁有萬花筒寫輪眼。使用「火球」向敵人噴出火焰，並將敵人或投射物抓入「神威空間」。也可主動進入神威空間，！【被動】開啟虛化躲避敵人的攻擊！',
+  stats: ['火球 60/10s', '神威', '神威空間 進出20傷', '虛化'],
+  color: '#ff6600', glowColor: 'rgba(255,102,0,0.6)', type: 'obito',
+  winQuote: ['我已不是任何人，我是誰都不是。','我要創造一個有琳的世界','不能守護該守護的人，這份力量又有什麼意義？']
   }
-  
- 
    
 ];
 
@@ -1281,6 +1323,13 @@ function goToSlide(player, index) {
   if (pageNum) pageNum.textContent = `${cs.index + 1} / ${total}`;
   const currentChar = CHARACTERS[cs.index];
   if (currentChar) selectChar(player, currentChar.id);
+}
+
+function randomChar(player) {
+  const idx = Math.floor(Math.random() * CHARACTERS.length);
+  const ch = CHARACTERS[idx];
+  goToSlide(player, idx);
+  selectChar(player, ch.id);
 }
 
 function selectChar(player, charId) {
@@ -1633,17 +1682,44 @@ const STAR_BIG_LIFETIME         = 12.0;  // 大星星存活時間（秒）
 const STAR_SCATTER_RANGE        = 80;    // 星散感應範圍（px，比碰撞半徑大很多）
 const STAR_SMALL_COUNT          = 5;     // 星散爆出小星星數
 const STAR_SMALL_SPEED          = 300;   // 小星星速度（px/s）
-const STAR_SMALL_DAMAGE         = 30;    // 小星星碰敵人傷害
+const STAR_SMALL_DAMAGE         = 25;    // 小星星碰敵人傷害
 const STAR_SMALL_RADIUS         = 8;     // 小星星半徑（px）
 const STAR_SMALL_LIFETIME       = 10.0;  // 小星星存活時間（秒）
 const STAR_EXPLODE_DAMAGE       = 80;    // 小星星接觸爆炸傷害（碰小星星/大星星/女孩）
 const STAR_METEOR_DURATION      = 3.0;   // 星隕持續時間（秒）
 const STAR_METEOR_COOLDOWN      = 12.0;  // 星隕冷卻時間（秒）
-const STAR_METEOR_INTERVAL      = 0.20;  // 星隕每次生成間隔（秒）
+const STAR_METEOR_INTERVAL      = 0.25;  // 星隕每次生成間隔（秒）
 const STAR_METEOR_DAMAGE        = 40;    // 星隕每顆傷害
 const STAR_METEOR_RADIUS        = 10;    // 星隕彈半徑（px）
 const STAR_METEOR_SPEED         = 420;   // 星隕飛行速度（px/s）
 const STAR_METEOR_WARNING_TIME  = 0.4;   // 落點預警時間（秒）
+
+// 帶土（宇智波帶土）常數
+const OBITO_FIREBALL_COOLDOWN    = 10.0;  // 火球冷卻（秒）
+const OBITO_FIREBALL_SPEED       = 300;   // 火球速度（px/s）
+const OBITO_FIREBALL_DAMAGE      = 60;    // 火球傷害
+const OBITO_FIREBALL_RADIUS      = 14;    // 火球半徑
+const OBITO_DASH_SPEED           = 700;   // 衝刺速度（px/s）
+const OBITO_DASH_DURATION        = 0.5;   // 衝刺持續時間（秒）
+const OBITO_DASH_DELAY           = 0.6;   // 丟火球後延遲多久才衝刺（秒）
+const OBITO_SPACE_ENTRY_DAMAGE   = 60;    // 進出神威空間傷害
+const OBITO_KAMUI_COOLDOWN       = 7.0;   // 神威冷卻（秒）
+const OBITO_KAMUI_GHOST_TIME     = 1.2;   // 虛影存在時間（秒，等待攻擊判定）
+const OBITO_KAMUI_TELEPORT_DELAY = 1.0;   // 從虛影消失到轉移完成的延遲（秒）
+const OBITO_KAMUI_CHAIN_DAMAGE   = 4;    // 鐵鏈揮舞每幀傷害（主場轉移版）
+const OBITO_KAMUI_CHAIN_RADIUS   = 60;    // 鐵鏈範圍半徑
+const OBITO_KAMUI_BOMB_DAMAGE    = 40;    // 起爆符傷害
+const OBITO_KAMUI_BOMB_RADIUS    = 80;    // 起爆符爆炸半徑
+const OBITO_KAMUI_CHAIN_DURATION = 0.5;   // 鐵鏈揮舞持續時間（秒）
+const OBITO_SPACE_W              = 160;   // 神威空間寬度（px，顯示用）
+const OBITO_SPACE_H              = 160;   // 神威空間高度（px，顯示用）
+const OBITO_KAMUI_GRAB_SPEED     = 600;   // 空間內衝刺速度
+const OBITO_KAMUI_GRAB_DURATION  = 0.5;   // 空間內衝刺持續時間
+const OBITO_KAMUI_THROW_DAMAGE   = 40;    // 抓敵人甩飛傷害
+const OBITO_ABSORB_MAX_STORED    = 6;    // 最多儲存幾顆投射物（虛化態吸收上限）
+const OBITO_PHASE_INTERVAL       = 3.0;  // 虛化態間隔（秒）
+const OBITO_PHASE_DURATION       = 0.5;  // 虛化態持續時間（秒）
+const OBITO_PHANTOM_DAMAGE       = 40;   // 假想子彈碰到對手傷害
 
 // 虎天帝常數
 const TIGER_PUNCH_INTERVAL      = 2.6;   // 徑庭拳冷卻（秒）
@@ -1656,7 +1732,7 @@ const TIGER_PUNCH_KNOCKBACK     = 280;   // 徑庭拳擊退力道
 const TIGER_BLACK_FLASH_CHANCE  = 0.20;  // 黑閃機率
 const TIGER_BLACK_FLASH_MUL1    = 1.5;   // 黑閃第一段倍率
 const TIGER_BLACK_FLASH_MUL2    = 1.5;   // 黑閃第二段倍率
-const TIGER_BLOODSHOT_COST      = 60;    // 穿血自耗血量
+const TIGER_BLOODSHOT_COST      = 50;    // 穿血自耗血量
 const TIGER_BLOODSHOT_DMG       = 60;    // 穿血傷害
 const TIGER_BLOODSHOT_SPEED     = 600;   // 穿血速度
 const TIGER_BLOODSHOT_COOLDOWN  = 2.2;   // 穿血冷卻（秒）
@@ -1669,7 +1745,7 @@ const TIGER_NOVA_NEEDLE_COUNT   = 14;    // 超新星血流針數量
 const TIGER_NOVA_NEEDLE_SPEED   = 400;   // 血流針飛行速度
 const TIGER_NOVA_NEEDLE_DMG     = 30;    // 每根血流針傷害
 const TIGER_NOVA_NEEDLE_RANGE   = 140;   // 血流針有效射程
-const TIGER_BLEED_RATIO         = 0.7;  // 受傷有多少比例轉為流血
+const TIGER_BLEED_RATIO         = 0.65;  // 受傷有多少比例轉為流血
 const TIGER_BLEED_DPS           = 18;    // 流血每秒傷害
 const TIGER_BLEED_MAX_POOL      = 600;   // 流血最大累積量（血條未扣部分上限）
 
@@ -1783,8 +1859,8 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
-const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa' };
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44' };
 
 const PROGRESS_HANDLERS = {
   opm(b) {
@@ -1908,6 +1984,14 @@ const PROGRESS_HANDLERS = {
     }
     const sfrac = Math.max(0, Math.min(1, 1 - (b.starBigTimer || 0) / STAR_BIG_COOLDOWN));
     return { atFrac: sfrac, barColor: '#ffe566' };
+  },
+  obito(b) {
+    if (b.obitoKamuiPhase === 'ghost') return { atFrac: 1 - (b.obitoGhostTimer||0)/OBITO_KAMUI_GHOST_TIME, barColor: '#cc44ff' };
+    if (b.obitoKamuiPhase === 'teleporting') return { atFrac: 1, barColor: '#cc44ff' };
+    if (b.obitoKamuiPhase === 'in_space') return { atFrac: 1, barColor: '#ff44ff' };
+    if (b.obitoKamuiCooldown > 0) return { atFrac: 1 - b.obitoKamuiCooldown/OBITO_KAMUI_COOLDOWN, barColor: b.char.color };
+    const fCd = 1 - Math.max(0,(b.obitoFireballTimer||0)/OBITO_FIREBALL_COOLDOWN);
+    return { atFrac: fCd, barColor: '#ff6600' };
   },
   tiger(b) {
     if (b.tigerCharging) return { atFrac: Math.min(1, (b.tigerChargeTimer || 0) / TIGER_PUNCH_CHARGE_TIME), barColor: '#ff6600' };
@@ -2160,6 +2244,31 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       starMeteorTimer: ch.type === 'stargirl' ? 0 : null,             // 星隕剩餘時間
       starMeteorSpawnTimer: ch.type === 'stargirl' ? 0 : null,        // 下次生成流星倒數
       starMeteorCooldown: ch.type === 'stargirl' ? 0 : null,          // 星隕冷卻（0=可發動）
+      // 宇智波帶土專屬狀態
+      obitoFireballTimer: ch.type === 'obito' ? 0 : null,          // 火球冷卻倒數
+      obitoFireballDashing: ch.type === 'obito' ? false : null,     // 火球後衝刺中
+      obitoFireballDashDelay: ch.type === 'obito' ? 0 : null,       // 火球後延遲衝刺倒數
+      obitoFireballDashTimer: ch.type === 'obito' ? 0 : null,       // 衝刺計時
+      obitoFireballDashAngle: ch.type === 'obito' ? 0 : null,       // 衝刺方向
+      obitoKamuiPhase: ch.type === 'obito' ? 'idle' : null,         // 'idle'|'ghost'|'teleporting'|'in_space'|'grabbing'|'returning'
+      obitoKamuiCooldown: ch.type === 'obito' ? 0 : null,           // 神威冷卻倒數
+      obitoGhostTimer: ch.type === 'obito' ? 0 : null,              // 虛影存在倒數
+      obitoGhostX: ch.type === 'obito' ? 0 : null,                  // 虛影位置X（神威空間座標）
+      obitoGhostY: ch.type === 'obito' ? 0 : null,                  // 虛影位置Y（神威空間座標）
+      obitoGhostHit: ch.type === 'obito' ? false : null,            // 虛影是否被打到
+      obitoTeleportTimer: ch.type === 'obito' ? 0 : null,           // 轉移計時
+      obitoSpaceX: ch.type === 'obito' ? 0 : null,                  // 在神威空間中的位置X
+      obitoSpaceY: ch.type === 'obito' ? 0 : null,                  // 在神威空間中的位置Y
+      obitoSpaceVx: ch.type === 'obito' ? 0 : null,                 // 空間中速度X
+      obitoSpaceVy: ch.type === 'obito' ? 0 : null,                 // 空間中速度Y
+      obitoGrabTarget: ch.type === 'obito' ? false : null,          // 是否抓住敵人
+      obitoGrabTimer: ch.type === 'obito' ? 0 : null,               // 空間衝刺計時
+      obitoChainTimer: ch.type === 'obito' ? 0 : null,              // 鐵鏈揮舞計時
+      obitoChainPhase: ch.type === 'obito' ? false : null,          // 是否在鐵鏈/爆炸階段
+      obitoEnemyCaptured: ch.type === 'obito' ? false : null,       // 是否在神威空間抓住了敵人
+      obitoPhaseTimer: ch.type === 'obito' ? OBITO_PHASE_INTERVAL : null,  // 下次虛化倒數
+      obitoPhasing: ch.type === 'obito' ? false : null,             // 是否正在虛化態
+      obitoAbsorbStored: ch.type === 'obito' ? [] : null,           // 儲存的投射物（虛化態吸收，神威時釋放）
     };
   }
 
@@ -2208,6 +2317,9 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     starMeteors: [],          // 星星女孩：星隕落石列表
     starMeteorWarnings: [],   // 星星女孩：星隕落點預警列表
     starMeteorQueue: [],      // 星星女孩：待生成流星佇列
+    obitoFireballs: [],       // 帶土：場上火球列表
+    obitoSpaceCaptures: [],   // 帶土：被抓入神威空間的子彈列表
+    obitoKamuiFX: [],         // 帶土：神威特效列表
   };
 
   updateHUD();
@@ -2226,6 +2338,13 @@ function randBetween(min, max) { return min + Math.random() * (max - min); }
 function dealDamage(target, dmg, options = {}) {
   // 無敵狀態（擊殺動畫播放中）不受傷
   if (target.invincible) return;
+  // 帶土虛影/轉移階段：本體無敵（虛影取代本體承受攻擊，但不扣血）
+  if (target.char && target.char.type === 'obito' &&
+      ['ghost','teleporting','in_space','grabbing','returning'].includes(target.obitoKamuiPhase)) return;
+  // 帶土虛化態：不受傷
+  if (target.char && target.char.type === 'obito' && target.obitoPhasing) return;
+  // 被帶土抓進神威空間的敵人：在空間裡免疫主場地攻擊
+  if (target.obitoInSpace && !options.bypassParry) return;
   // 一拳超人必殺拳穿透招架減傷（bypassParry flag）
   const isParrying = target.char && target.char.type === 'samurai' && target.samuraiParrying;
   let mul = (isParrying && !options.bypassParry) ? SAMURAI_PARRY_DMG_REDUCE : 1;
@@ -2529,6 +2648,8 @@ function update(dt) {
   }
 
   for (const b of state.balls) {
+    // 被帶土抓進神威空間：完全時停（不能攻擊、冷卻不流動、不移動、不受牆壁判定）
+    if (b.obitoInSpace) continue;
     b.trail.push({ x: b.x, y: b.y });
     if (b.trail.length > 18) b.trail.shift();
 
@@ -2544,8 +2665,8 @@ function update(dt) {
       }
     }
 
-    // 隨機加速（非凍結且非咬擊中）
-    if (!b.frozenByVampire) {
+    // 隨機加速（非凍結且非咬擊中，且不在神威空間中）
+    if (!b.frozenByVampire && !b.obitoInSpace) {
       b.boostTimer -= dt;
       if (b.boostTimer <= 0) {
         let bvx = randBetween(-BOOST_MAGNITUDE, BOOST_MAGNITUDE);
@@ -2698,8 +2819,8 @@ function update(dt) {
       b.vx = 0; b.vy = 0;
     }
 
-    // 移動（凍結則不移動；虎天帝超新星蓄力視為被束縛定身，完全不動）
-    if (!b.frozenByVampire && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0)) {
+    // 移動（凍結則不移動；虎天帝超新星蓄力視為被束縛定身，完全不動；被帶土抓進神威空間者完全凍結）
+    if (!b.frozenByVampire && !b.obitoInSpace && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0)) {
       const speedMul = b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0;
 
       // 最低速度保證（排除技能主動停止的情況）
@@ -2800,6 +2921,10 @@ function update(dt) {
   if (state.dioWorldGlobalActive) continue; // 時停中：碰球傷害不觸發
   const b0 = state.balls[_ci], b1 = state.balls[_cj];
   if (b0.player === b1.player) continue;
+  // 帶土虛影/轉移/空間/虛化階段：不觸發球球碰撞；被抓入空間的敵人也不參與；火球衝刺中也排除（避免抓人前被物理碰撞彈開）
+  if ((b0.char.type === 'obito' && (['ghost','teleporting','in_space','grabbing','returning'].includes(b0.obitoKamuiPhase) || b0.obitoFireballDashing || b0.obitoPhasing)) ||
+      (b1.char.type === 'obito' && (['ghost','teleporting','in_space','grabbing','returning'].includes(b1.obitoKamuiPhase) || b1.obitoFireballDashing || b1.obitoPhasing)) ||
+      b0.obitoInSpace || b1.obitoInSpace) continue;
   const dx = b1.x - b0.x, dy = b1.y - b0.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   if (dist < RADIUS*2 && dist > 0) {
@@ -2926,12 +3051,21 @@ function update(dt) {
 for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi], enemy = state.balls.find(x => x.player !== b.player);
     // 時停中：敵方（非DIO）攻擊計時器凍結，避免時停結束後瞬間觸發堆積的攻擊
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) {
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) {
       // 不累積 attackTimer；各技能計時器也凍結
       continue;
     }
     b.attackTimer += dt;
     if (b.char.type === 'opm' && b.opmCollisionCooldown > 0) b.opmCollisionCooldown -= dt;
+    // 帶土被假想子彈彈出後硬直
+    if (b.obitoEjectStun > 0) {
+      b.obitoEjectStun -= dt;
+      b.attackTimer = 0;
+      if (b.char.type === 'obito') {
+        b.obitoKamuiCooldown = Math.max(b.obitoKamuiCooldown || 0, b.obitoEjectStun);
+        b.obitoFireballDashDelay = Math.max(b.obitoFireballDashDelay || 0, b.obitoEjectStun);
+      }
+    }
     // 閃光暈眩：凍結攻擊計時 + 各角色術式計時器
     if (b.gunnerStunTimer > 0) {
       b.gunnerStunTimer -= dt;
@@ -3177,7 +3311,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (b.char.type !== 'gojo') continue;
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) {
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) {
       // 時停中：術式球仍可移動（已在投射物迴圈凍結），但不觸發新技能
       continue;
     }
@@ -3325,7 +3459,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'yi') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 落黑棋計時
     b.yiBlackTimer -= dt;
@@ -3456,7 +3590,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'gunner') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 連射邏輯
     if (b.gunnerFiring) {
@@ -3524,7 +3658,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'trapper') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 鎖鏈冷卻計時
     if (!b.trapChainActive) {
@@ -3630,7 +3764,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'engineer') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 機甲模式倒數
     if (b.engMechActive) {
@@ -3734,7 +3868,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (b.char.type !== 'cannondad') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 近戰拳頭：貼近敵人時揮拳
     if (b.cannonMeleeCooldown > 0) b.cannonMeleeCooldown -= dt;
@@ -3988,7 +4122,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'thunder') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) {
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) {
       // 時停中只更新閃電柱壽命（已在上方處理），不觸發新閃電
       for (let i = state.thunderPillars.length - 1; i >= 0; i--) {
         const p = state.thunderPillars[i];
@@ -4097,7 +4231,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'blacksmith') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 揮劍動畫計時
     if (b.smithSwordSwinging) {
@@ -4239,7 +4373,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     if (b.char.type !== 'naobito') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 凶星軌跡冷卻倒數
     if (b.naoKyouseiTimer > 0) b.naoKyouseiTimer -= dt;
@@ -4452,7 +4586,7 @@ waypoints.push({
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'mage') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 鴿子冷卻
     if (b.mageDoveTimer > 0) b.mageDoveTimer -= dt;
@@ -4535,7 +4669,7 @@ waypoints.push({
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
     if (b.char.type !== 'samurai') continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 居合衝刺中（穿透）
     if (b.samuraiIaidoing) {
@@ -4769,6 +4903,36 @@ waypoints.push({
       const skipPlayer = p.reflected ? p.reflectedBy : p.owner;
       if (state.balls[bi].player === skipPlayer) continue;
       const b = state.balls[bi];
+      // 帶土虛影/轉移/空間階段：投射物穿透；被抓進空間的敵人也穿透
+      if ((b.char && b.char.type === 'obito' &&
+          ['ghost','teleporting','in_space','grabbing','returning'].includes(b.obitoKamuiPhase)) ||
+          b.obitoInSpace) continue;
+      // 帶土虛化態：吸收命中自己的投射物到口袋
+      if (b.char && b.char.type === 'obito' && b.obitoPhasing) {
+        const pd2 = Math.sqrt((p.x-b.x)**2 + (p.y-b.y)**2);
+        if (pd2 < RADIUS + 10) {
+          if (!b.obitoAbsorbStored) b.obitoAbsorbStored = [];
+          if (b.obitoAbsorbStored.length < OBITO_ABSORB_MAX_STORED) {
+            b.obitoAbsorbStored.push({ origType: p.type, origColor: p.color || '#ffffff', damage: p.damage || 30 });
+            state.hitFlashes.push({ x: p.x, y: p.y, r: 22, alpha: 1, color: '#cc44ff', t: 0.25 });
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 18, alpha: 0.9, color: '#9900ff', t: 0.2 });
+            playHitSound('vampire_bite');
+          }
+          // 若被吸收的是刀，歸還廚師的刀數
+          if (p.type === 'knife') {
+            const chefBall = state.balls.find(x => x.player === p.owner && x.char.type === 'chef');
+            if (chefBall) {
+              chefBall.knives = Math.min(chefBall.knives + 1, KNIFE_MAX_COUNT);
+              const wallLeft = state.wallKnives.filter(k => k.owner === chefBall.player).length;
+              if (chefBall.knives >= KNIFE_MAX_COUNT && wallLeft === 0) {
+                chefBall.knifeRecalling = false;
+                chefBall.attackTimer = chefBall.attackInterval;
+              }
+            }
+          }
+          state.projectiles.splice(i, 1); removed = true; break;
+        }
+      }
       const pd = Math.sqrt((p.x-b.x)**2 + (p.y-b.y)**2);
       if (pd < RADIUS+10) {
         // 末代武士招架反彈
@@ -4974,7 +5138,7 @@ waypoints.push({
     if (b.char.type !== 'itachi') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 烏鴉替身：瀕死觸發（每場一次），優先判定
     if (!b.itachiCrowUsed && !b.opmExecuted && b.hp <= 0) {
@@ -5114,7 +5278,7 @@ waypoints.push({
     if (b.char.type !== 'yuta') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 禁錮自身冷卻倒數
     if (b.yutaBindCooldown > 0) {
@@ -5205,7 +5369,7 @@ waypoints.push({
     }
 
     // ── 里香：跟隨、揮爪、純愛大砲 ──
-    if (b.yutaRikaActive) {
+    if (b.yutaRikaActive && !b.obitoInSpace) {
       // 跟隨：以乙骨為中心繞圈飛行
       b.yutaRikaAngle = (b.yutaRikaAngle || 0) + dt * 2.2; // 繞圈角速度
       const rikaX = b.x + Math.cos(b.yutaRikaAngle) * YUTA_RIKA_FOLLOW_RADIUS;
@@ -5297,6 +5461,7 @@ waypoints.push({
     if (!enemy) continue;
 
     // 替身：環繞跟隨本體
+    if (!b.obitoInSpace) {
     b.dioStandAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);    const standX = b.x + Math.cos(b.dioStandAngle) * DIO_STAND_RADIUS;
     const standY = b.y + Math.sin(b.dioStandAngle) * DIO_STAND_RADIUS;
     b.dioStandX = standX;
@@ -5333,6 +5498,7 @@ waypoints.push({
       }
       playHitSound('knife');
     }
+    } // end !obitoInSpace (替身)
 
     // 世界：冷卻倒數（時停中不倒數）
     if (!b.dioWorldActive && b.dioWorldCooldownTimer > 0) {
@@ -5514,7 +5680,7 @@ waypoints.push({
     if (b.char.type !== 'stargirl') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 技能一：大星星冷卻倒數，冷卻完自動發射（場上不超過3顆）
     if (b.starBigTimer > 0) b.starBigTimer -= dt;
@@ -5659,6 +5825,17 @@ waypoints.push({
       if (b.player === s.owner) continue;
       const dx = b.x - s.x, dy = b.y - s.y;
       if (Math.sqrt(dx*dx+dy*dy) < RADIUS + STAR_SMALL_RADIUS) {
+        // 帶土虛化態：吸收小星星
+        if (b.char && b.char.type === 'obito' && b.obitoPhasing) {
+          if (!b.obitoAbsorbStored) b.obitoAbsorbStored = [];
+          if (b.obitoAbsorbStored.length < OBITO_ABSORB_MAX_STORED) {
+            b.obitoAbsorbStored.push({ origType: 'star', origColor: s.color || '#ffe066', damage: STAR_SMALL_DAMAGE });
+            state.hitFlashes.push({ x: s.x, y: s.y, r: 18, alpha: 1, color: '#cc44ff', t: 0.2 });
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 14, alpha: 0.8, color: '#9900ff', t: 0.15 });
+            playHitSound('vampire_bite');
+          }
+          starSmallToRemove.add(i); hit = true; break;
+        }
         dealDamage(b, STAR_SMALL_DAMAGE);
         state.hitFlashes.push({ x: s.x, y: s.y, r: 16, alpha: 1, color: s.color, t: 0.2, maxT: 0.2 });
         starSmallToRemove.add(i); hit = true; break;
@@ -5729,6 +5906,595 @@ waypoints.push({
   }
   } // end !dioWorldGlobalActive (流星)
 
+  // ── 宇智波帶土邏輯 ──
+  for (const b of state.balls) {
+    if (b.char.type !== 'obito') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
+
+    const phase = b.obitoKamuiPhase;
+
+    // 火球冷卻計時（虛化期間暫停）
+    if (b.obitoFireballTimer > 0 && !b.obitoPhasing) b.obitoFireballTimer -= dt;
+
+    // ── 被動技：虛化態 ──
+    // 每隔一段時間自動進入虛化態，此期間受到的投射物全部被吸收進口袋
+    if (!b.obitoAbsorbStored) b.obitoAbsorbStored = [];
+    if (b.obitoPhasing) {
+      b.obitoPhaseTimer -= dt;
+      if (b.obitoPhaseTimer <= 0) {
+        // 虛化結束
+        b.obitoPhasing = false;
+        b.obitoPhaseTimer = OBITO_PHASE_INTERVAL;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 28, alpha: 0.8, color: '#cc44ff', t: 0.3 });
+      }
+    } else {
+      b.obitoPhaseTimer -= dt;
+      if (b.obitoPhaseTimer <= 0 && phase === 'idle' && !b.obitoFireballDashing && !b.obitoFireballDashDelay) {
+        // 進入虛化態
+        b.obitoPhasing = true;
+        b.obitoPhaseTimer = OBITO_PHASE_DURATION;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 32, alpha: 1, color: '#cc44ff', t: 0.4 });
+        playHitSound('vampire_bite');
+      }
+    }
+
+    // 火球後：延遲倒數，結束後才衝刺（給敵人反應時間，也讓衝刺瞄準當下位置）
+    if (b.obitoFireballDashDelay > 0) {
+      b.obitoFireballDashDelay -= dt;
+      b.vx = 0; b.vy = 0; // 蓄力停滯，預告即將衝刺
+      if (b.obitoFireballDashDelay <= 0) {
+        b.obitoFireballDashDelay = 0;
+        b.obitoFireballDashing = true;
+        b.obitoFireballDashTimer = OBITO_DASH_DURATION;
+        const dx0 = enemy.x - b.x, dy0 = enemy.y - b.y;
+        b.obitoFireballDashAngle = Math.atan2(dy0, dx0);
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 24, alpha: 1, color: '#ff8800', t: 0.2 });
+        playHitSound('vampire_dash');
+      }
+    }
+
+    // 火球後衝刺處理（衝刺中持續追蹤敵人方向）
+    if (b.obitoFireballDashing) {
+      b.obitoFireballDashTimer -= dt;
+      const dxh = enemy.x - b.x, dyh = enemy.y - b.y;
+      const dh = Math.hypot(dxh, dyh) || 1;
+      // 追蹤角度緩慢修正朝向敵人，模擬鎖定但非瞬間轉向
+      const targetAngle = Math.atan2(dyh, dxh);
+      let angleDiff = targetAngle - b.obitoFireballDashAngle;
+      while (angleDiff > Math.PI) angleDiff -= Math.PI*2;
+      while (angleDiff < -Math.PI) angleDiff += Math.PI*2;
+      b.obitoFireballDashAngle += Math.max(-1, Math.min(1, angleDiff)) * Math.min(Math.abs(angleDiff), dt * 6);
+      b.vx = Math.cos(b.obitoFireballDashAngle) * OBITO_DASH_SPEED;
+      b.vy = Math.sin(b.obitoFireballDashAngle) * OBITO_DASH_SPEED;
+      // 每幀檢查是否已貼近敵人，貼近就立刻成功抓取，不用等衝刺計時結束
+      const dNow = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+      const dashCaughtEnemy = dNow < RADIUS * 2 + 40;
+      if (b.obitoFireballDashTimer <= 0 || dashCaughtEnemy) {
+        b.obitoFireballDashing = false;
+        // 衝刺結束：檢查是否抓到敵人或子彈
+        if (dashCaughtEnemy) {
+          // 抓到敵人：送入神威空間
+          const spaceX = OBITO_SPACE_W * 0.2 + Math.random() * OBITO_SPACE_W * 0.6;
+          const spaceY = OBITO_SPACE_H * 0.2 + Math.random() * OBITO_SPACE_H * 0.6;
+          if (!state.obitoSpaceCaptures) state.obitoSpaceCaptures = [];
+          state.obitoSpaceCaptures.push({
+            owner: b.player,
+            type: 'enemy',
+            enemyPlayer: enemy.player,
+            x: spaceX, y: spaceY,
+            vx: (Math.random()-0.5)*160, vy: (Math.random()-0.5)*160,
+            life: 6.0,
+          });
+          dealDamage(enemy, OBITO_SPACE_ENTRY_DAMAGE);
+          // 敵人暫時定身在神威空間（凍結位置）
+          enemy.obitoInSpace = true;
+          enemy.obitoInSpaceTimer = 5.0;
+          enemy.vx = 0; enemy.vy = 0;
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 40, alpha: 1.2, color: '#cc44ff', t: 0.5 });
+          playHitSound('vampire_bite');
+        } else {
+          // 掃過路徑：抓子彈
+          const toRemove = [];
+          if (state.projectiles) {
+            for (let pi = state.projectiles.length - 1; pi >= 0; pi--) {
+              const p = state.projectiles[pi];
+              if (p.owner === b.player) continue;
+              const pdx = p.x - b.x, pdy = p.y - b.y;
+              if (Math.hypot(pdx, pdy) < 60) {
+                if (!state.obitoSpaceCaptures) state.obitoSpaceCaptures = [];
+                state.obitoSpaceCaptures.push({
+                  owner: b.player, type: 'projectile',
+                  origType: p.type, origColor: p.color,
+                  x: OBITO_SPACE_W * 0.3 + Math.random() * OBITO_SPACE_W * 0.4,
+                  y: OBITO_SPACE_H * 0.3 + Math.random() * OBITO_SPACE_H * 0.4,
+                  vx: (Math.random()-0.5)*40, vy: (Math.random()-0.5)*40, life: 8.0,
+                  damage: p.damage || 30,
+                });
+                toRemove.push(pi);
+                // 主場地吸入特效：明確讓玩家看到投射物被吸走消失
+                state.hitFlashes.push({ x: p.x, y: p.y, r: 28, alpha: 1, color: '#cc44ff', t: 0.3 });
+                state.hitFlashes.push({ x: p.x, y: p.y, r: 12, alpha: 1.2, color: p.color || '#ffffff', t: 0.2 });
+              }
+            }
+          }
+          for (const pi of toRemove) state.projectiles.splice(pi, 1);
+        }
+        const ang2 = Math.random() * Math.PI * 2;
+        b.vx = Math.cos(ang2) * BASE_SPEED;
+        b.vy = Math.sin(ang2) * BASE_SPEED;
+      }
+    }
+
+    // 技能一：火球發射
+    if (!b.obitoPhasing && !b.obitoFireballDashing && !b.obitoFireballDashDelay && b.obitoFireballTimer <= 0 &&
+        phase === 'idle' && !b.frozenByVampire && b.gunnerStunTimer <= 0 && b.thunderParalyzed <= 0) {
+      if (b.thunderParalyzed > 0) {
+        b.thunderParalyzed = 0; b.thunderStunTimer = 0.5; b.vx = 0; b.vy = 0;
+        state.thunderStunFX = state.thunderStunFX || [];
+        state.thunderStunFX.push({ x: b.x, y: b.y, life: 0.5, maxLife: 0.5 });
+        b.obitoFireballTimer = OBITO_FIREBALL_COOLDOWN;
+      } else {
+        b.obitoFireballTimer = OBITO_FIREBALL_COOLDOWN;
+        const dx = enemy.x - b.x, dy = enemy.y - b.y;
+        const d = Math.hypot(dx, dy) || 1;
+        if (!state.obitoFireballs) state.obitoFireballs = [];
+        state.obitoFireballs.push({
+          x: b.x, y: b.y,
+          vx: (dx/d) * OBITO_FIREBALL_SPEED,
+          vy: (dy/d) * OBITO_FIREBALL_SPEED,
+          owner: b.player, color: b.char.color,
+          r: OBITO_FIREBALL_RADIUS,
+          life: 4.0, angle: Math.atan2(dy, dx),
+        });
+        playHitSound('knife');
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 20, alpha: 0.8, color: '#ff4400', t: 0.2 });
+
+        // 丟完火球後延遲一段時間再衝刺抓人/抓投射物
+        b.obitoFireballDashDelay = OBITO_DASH_DELAY;
+      }
+    }
+
+    // 神威冷卻計時
+    if (b.obitoKamuiCooldown > 0 && !b.obitoPhasing) b.obitoKamuiCooldown -= dt;
+
+    // 技能二：神威 - 發動（idle且冷卻完成；火球延遲蓄力/衝刺中不可同時觸發）
+    if (!b.obitoPhasing && phase === 'idle' && b.obitoKamuiCooldown <= 0 && !b.obitoFireballDashing && !b.obitoFireballDashDelay &&
+        b.gunnerStunTimer <= 0 && b.thunderParalyzed <= 0) {
+      if (b.thunderParalyzed > 0) {
+        b.thunderParalyzed = 0; b.thunderStunTimer = 0.5; b.vx = 0; b.vy = 0;
+        state.thunderStunFX = state.thunderStunFX || [];
+        state.thunderStunFX.push({ x: b.x, y: b.y, life: 0.5, maxLife: 0.5 });
+        b.obitoKamuiCooldown = OBITO_KAMUI_COOLDOWN;
+      } else {
+        // 在神威空間隨機位置生成虛影
+        b.obitoKamuiPhase = 'ghost';
+        b.obitoGhostTimer = OBITO_KAMUI_GHOST_TIME;
+        b.obitoGhostX = OBITO_SPACE_W * 0.15 + Math.random() * OBITO_SPACE_W * 0.7;
+        b.obitoGhostY = OBITO_SPACE_H * 0.15 + Math.random() * OBITO_SPACE_H * 0.7;
+        b.obitoGhostHit = false;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 0.8, color: '#cc44ff', t: 0.4 });
+        playHitSound('vampire_bite');
+        // ── 釋放口袋中儲存的投射物到神威空間 ──
+        if (b.obitoAbsorbStored && b.obitoAbsorbStored.length > 0) {
+          if (!state.obitoSpaceCaptures) state.obitoSpaceCaptures = [];
+          for (const stored of b.obitoAbsorbStored) {
+            const ang = Math.random() * Math.PI * 2;
+            state.obitoSpaceCaptures.push({
+              owner: b.player, type: 'projectile',
+              origType: stored.origType, origColor: stored.origColor,
+              x: OBITO_SPACE_W * 0.1 + Math.random() * OBITO_SPACE_W * 0.8,
+              y: OBITO_SPACE_H * 0.1 + Math.random() * OBITO_SPACE_H * 0.8,
+              vx: Math.cos(ang) * (40 + Math.random() * 40),
+              vy: Math.sin(ang) * (40 + Math.random() * 40),
+              life: 10.0,
+              damage: stored.damage,
+            });
+          }
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 45, alpha: 1.2, color: '#cc44ff', t: 0.5 });
+          b.obitoAbsorbStored = [];
+        }
+      }
+    }
+
+    // 神威 - 虛影階段
+    if (phase === 'ghost') {
+      b.vx = 0; b.vy = 0; // 虛影期間本體靜止
+      b.obitoGhostTimer -= dt;
+      // 虛影被攻擊判定：看看有沒有從神威空間方向來的攻擊（模擬：被敵方子彈命中時標記失敗）
+      // 簡化：判斷神威空間中有無被敵方子彈（用 obitoSpaceCaptures 中的子彈判定無法用）
+      // 改用：神威空間中若有敵方的捕獲物接近虛影，則認為虛影被打到
+      if (state.obitoSpaceCaptures) {
+        for (const cap of state.obitoSpaceCaptures) {
+          if (cap.type === 'projectile' && cap.owner !== b.player) {
+            const gd = Math.hypot(cap.x - b.obitoGhostX, cap.y - b.obitoGhostY);
+            if (gd < 20) { b.obitoGhostHit = true; }
+          }
+        }
+      }
+      if (b.obitoGhostTimer <= 0 || b.obitoGhostHit) {
+        if (b.obitoGhostHit) {
+          // 虛影被擊中：取消轉移，不受傷
+          b.obitoKamuiPhase = 'idle';
+          b.obitoKamuiCooldown = OBITO_KAMUI_COOLDOWN;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 25, alpha: 0.6, color: '#888888', t: 0.4 });
+        } else {
+          // 虛影存活：開始轉移
+          b.obitoKamuiPhase = 'teleporting';
+          b.obitoTeleportTimer = 0.4;
+          b.vx = 0; b.vy = 0; // 轉移中停止移動
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 35, alpha: 1, color: '#cc44ff', t: 0.4 });
+          // 判定敵人是否在神威空間
+          const enemyCaptured = state.obitoSpaceCaptures &&
+            state.obitoSpaceCaptures.some(c => c.type === 'enemy' && c.owner === b.player);
+          b.obitoEnemyCaptured = enemyCaptured;
+          b.obitoKamuiCooldown = OBITO_KAMUI_COOLDOWN;
+        }
+      }
+    }
+
+    // 神威 - 轉移倒數
+    if (phase === 'teleporting') {
+      b.obitoTeleportTimer -= dt;
+      b.vx = 0; b.vy = 0;
+      if (b.obitoTeleportTimer <= 0) {
+        // 帶土進入神威空間（消耗體力）
+        dealDamage(b, OBITO_SPACE_ENTRY_DAMAGE);
+        b.obitoKamuiPhase = 'in_space';
+        b.obitoInSpaceCounter = 0; // 重置停留計時器，防止殘留值導致秒出
+        b.obitoSpaceX = OBITO_SPACE_W * 0.1 + Math.random() * OBITO_SPACE_W * 0.2;
+        b.obitoSpaceY = OBITO_SPACE_H * 0.4;
+        const enemyCap = state.obitoSpaceCaptures &&
+          state.obitoSpaceCaptures.find(c => c.type === 'enemy' && c.owner === b.player);
+        if (enemyCap) {
+          // 空間中有敵人：從敵人正上方出現，垂直衝刺向下抓人
+          b.obitoKamuiPhase = 'grabbing';
+          b.obitoGrabTimer = OBITO_KAMUI_GRAB_DURATION;
+          b.obitoSpaceX = Math.max(14, Math.min(OBITO_SPACE_W - 14, enemyCap.x));
+          b.obitoSpaceY = 8; // 從頂端衝下
+          const tx = enemyCap.x, ty = enemyCap.y;
+          const dd = Math.hypot(tx - b.obitoSpaceX, ty - b.obitoSpaceY) || 1;
+          b.obitoSpaceVx = ((tx - b.obitoSpaceX)/dd) * OBITO_KAMUI_GRAB_SPEED;
+          b.obitoSpaceVy = ((ty - b.obitoSpaceY)/dd) * OBITO_KAMUI_GRAB_SPEED;
+          b.obitoGrabTarget = null;
+          playHitSound('vampire_dash');
+        } else {
+          // 空間中無敵人：在空間隨機位置移動
+          const sva = Math.random() * Math.PI * 2;
+          b.obitoSpaceVx = Math.cos(sva) * 80;
+          b.obitoSpaceVy = Math.sin(sva) * 80;
+          b.obitoGrabTarget = null;
+        }
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1, color: '#cc44ff', t: 0.3 });
+      }
+    }
+
+    // 神威 - 在神威空間中（無敵人）
+    if (phase === 'in_space') {
+      b.obitoSpaceX += b.obitoSpaceVx * dt;
+      b.obitoSpaceY += b.obitoSpaceVy * dt;
+      if (b.obitoSpaceX < 10) { b.obitoSpaceX = 10; b.obitoSpaceVx *= -1; }
+      if (b.obitoSpaceX > OBITO_SPACE_W - 10) { b.obitoSpaceX = OBITO_SPACE_W - 10; b.obitoSpaceVx *= -1; }
+      if (b.obitoSpaceY < 10) { b.obitoSpaceY = 10; b.obitoSpaceVy *= -1; }
+      if (b.obitoSpaceY > OBITO_SPACE_H - 10) { b.obitoSpaceY = OBITO_SPACE_H - 10; b.obitoSpaceVy *= -1; }
+      b.vx = 0; b.vy = 0;
+      // 在空間裡待1.5秒後回來（主場地：從敵人旁邊冒出）
+      b.obitoInSpaceCounter = (b.obitoInSpaceCounter || 0) + dt;
+      if (b.obitoInSpaceCounter >= 1.5) {
+        b.obitoInSpaceCounter = 0;
+        b.obitoKamuiPhase = 'returning';
+        b.obitoTeleportTimer = 0.3;
+        // 預警點：出現在敵人旁
+        const eRef = state.balls.find(x => x.player !== b.player);
+        if (eRef) {
+          const ang0 = Math.random() * Math.PI * 2;
+          b.obitoExitX = Math.max(RADIUS+5, Math.min(W-RADIUS-5, eRef.x + Math.cos(ang0)*45));
+          b.obitoExitY = Math.max(RADIUS+5, Math.min(H-RADIUS-5, eRef.y + Math.sin(ang0)*45));
+        }
+      }
+    }
+
+    // 神威 - 空間中衝刺抓敵人
+    if (phase === 'grabbing') {
+      b.obitoGrabTimer -= dt;
+      b.obitoSpaceX += b.obitoSpaceVx * dt;
+      b.obitoSpaceY += b.obitoSpaceVy * dt;
+      b.vx = 0; b.vy = 0;
+      // 找到神威空間中的敵人
+      const enemyCap = state.obitoSpaceCaptures &&
+        state.obitoSpaceCaptures.find(c => c.type === 'enemy' && c.owner === b.player);
+      if (enemyCap) {
+        const gd = Math.hypot(enemyCap.x - b.obitoSpaceX, enemyCap.y - b.obitoSpaceY);
+        if (gd < 20 || b.obitoGrabTimer <= 0) {
+          // 碰到了：抓住並回場地
+          b.obitoGrabTarget = enemyCap;
+          b.obitoKamuiPhase = 'returning';
+          b.obitoTeleportTimer = 0.4;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 35, alpha: 1, color: '#cc44ff', t: 0.4 });
+          // 預警點：帶人出現在帶土原位置旁
+          b.obitoExitX = b.x; b.obitoExitY = b.y;
+        }
+      } else {
+        if (b.obitoGrabTimer <= 0) {
+          b.obitoKamuiPhase = 'returning';
+          b.obitoTeleportTimer = 0.3;
+          const eRef2 = state.balls.find(x => x.player !== b.player);
+          if (eRef2) {
+            const ang2 = Math.random() * Math.PI * 2;
+            b.obitoExitX = Math.max(RADIUS+5, Math.min(W-RADIUS-5, eRef2.x + Math.cos(ang2)*45));
+            b.obitoExitY = Math.max(RADIUS+5, Math.min(H-RADIUS-5, eRef2.y + Math.sin(ang2)*45));
+          }
+        }
+      }
+    }
+
+    // 神威 - 帶回主場地（或帶人回來）
+    if (phase === 'returning') {
+      b.obitoTeleportTimer -= dt;
+      b.vx = 0; b.vy = 0;
+      if (b.obitoTeleportTimer <= 0) {
+        b.obitoKamuiPhase = 'idle';
+        b.obitoInSpaceCounter = 0;
+        if (b.obitoGrabTarget) {
+          // 帶著敵人回來：在帶土旁邊位置
+          const exitAng = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+          // 找敵人ball
+          const enemyBall = state.balls.find(x => x.player !== b.player);
+          if (enemyBall) {
+            enemyBall.x = b.x + Math.cos(exitAng) * (RADIUS * 2 + 10);
+            enemyBall.y = b.y + Math.sin(exitAng) * (RADIUS * 2 + 10);
+            enemyBall.vx = 0; enemyBall.vy = 0;
+            enemyBall.obitoInSpace = false;
+            dealDamage(enemyBall, OBITO_SPACE_ENTRY_DAMAGE);
+          }
+          // 移除空間中所有屬於此帶土的敵人捕獲（避免殘留）
+          if (state.obitoSpaceCaptures) {
+            for (let ci = state.obitoSpaceCaptures.length - 1; ci >= 0; ci--) {
+              const c = state.obitoSpaceCaptures[ci];
+              if (c.owner === b.player && c.type === 'enemy') {
+                const eb2 = state.balls.find(x => x.player === c.enemyPlayer);
+                if (eb2) { eb2.obitoInSpace = false; eb2.obitoInSpaceTimer = 0; }
+                state.obitoSpaceCaptures.splice(ci, 1);
+              }
+            }
+          }
+          b.obitoGrabTarget = null;
+          // 開始鎖鏈甩飛
+          b.obitoKamuiPhase = 'chaining';
+          b.obitoChainTimer = OBITO_KAMUI_CHAIN_DURATION;
+          b.obitoChainPhase = false;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.2, color: '#cc44ff', t: 0.5 });
+          playHitSound('trap_chain');
+        } else {
+          // 沒抓到人：從預警點出現，揮鐵鏈+起爆符
+          b.x = b.obitoExitX != null ? b.obitoExitX : Math.max(RADIUS+5, Math.min(W-RADIUS-5, enemy.x + (Math.random()-0.5)*60));
+          b.y = b.obitoExitY != null ? b.obitoExitY : Math.max(RADIUS+5, Math.min(H-RADIUS-5, enemy.y + (Math.random()-0.5)*60));
+          b.obitoExitX = null; b.obitoExitY = null;
+          b.obitoKamuiPhase = 'chaining';
+          b.obitoChainTimer = OBITO_KAMUI_CHAIN_DURATION;
+          b.obitoChainPhase = false;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 1, color: '#cc44ff', t: 0.4 });
+          playHitSound('trap_chain');
+        }
+        // 清除所有敵方在神威空間的狀態（含殘留 cap）
+        if (state.obitoSpaceCaptures) {
+          for (let ci = state.obitoSpaceCaptures.length - 1; ci >= 0; ci--) {
+            const c = state.obitoSpaceCaptures[ci];
+            if (c.owner === b.player && c.type === 'enemy') {
+              const eb2 = state.balls.find(x => x.player === c.enemyPlayer);
+              if (eb2) { eb2.obitoInSpace = false; eb2.obitoInSpaceTimer = 0; }
+              state.obitoSpaceCaptures.splice(ci, 1);
+            }
+          }
+        }
+        const enemyBall = state.balls.find(x => x.player !== b.player);
+        if (enemyBall && enemyBall.obitoInSpace) {
+          enemyBall.obitoInSpace = false;
+          enemyBall.obitoInSpaceTimer = 0;
+        }
+      }
+    }
+
+    // 神威 - 鎖鏈揮舞 + 起爆符
+    if (phase === 'chaining') {
+      b.obitoChainTimer -= dt;
+      b.vx = 0; b.vy = 0;
+      if (!b.obitoChainPhase) {
+        // 鐵鏈傷害（範圍持續）
+        const chainD = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+        if (chainD < OBITO_KAMUI_CHAIN_RADIUS + RADIUS) {
+          dealDamage(enemy, OBITO_KAMUI_CHAIN_DAMAGE * dt * 60);
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 18, alpha: 0.7, color: '#cc44ff', t: 0.1 });
+        }
+        if (b.obitoChainTimer <= 0) {
+          b.obitoChainPhase = true; // 進入起爆符階段
+          b.obitoChainTimer = 0.5;
+          // 起爆符：大範圍爆炸
+          if (Math.hypot(enemy.x - b.x, enemy.y - b.y) < OBITO_KAMUI_BOMB_RADIUS + RADIUS) {
+            dealDamage(enemy, OBITO_KAMUI_BOMB_DAMAGE);
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 70, alpha: 1.5, color: '#ff4400', t: 0.5 });
+            playHitSound('vampire_dash');
+          }
+        }
+      } else {
+        // 甩飛（如果抓了敵人）
+        if (b.obitoGrabTarget !== null || true) {
+          // 甩飛傷害
+          if (b.obitoChainTimer <= 0.3 && !b.obitoThrowDealt) {
+            b.obitoThrowDealt = true;
+            dealDamage(enemy, OBITO_KAMUI_THROW_DAMAGE);
+            const throwAng = Math.random() * Math.PI * 2;
+            enemy.vx = Math.cos(throwAng) * 400;
+            enemy.vy = Math.sin(throwAng) * 400;
+            state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 40, alpha: 1.2, color: '#ff6600', t: 0.4 });
+            playHitSound('opm');
+          }
+        }
+        if (b.obitoChainTimer <= 0) {
+          b.obitoKamuiPhase = 'idle';
+          b.obitoThrowDealt = false;
+          const ang3 = Math.random() * Math.PI * 2;
+          b.vx = Math.cos(ang3) * BASE_SPEED;
+          b.vy = Math.sin(ang3) * BASE_SPEED;
+        }
+      }
+    }
+  }
+
+  // 帶土：被抓入神威空間的敵人定身計時
+  for (const b of state.balls) {
+    if (b.obitoInSpace) {
+      b.obitoInSpaceTimer -= dt;
+      if (b.obitoInSpaceTimer <= 0) {
+        b.obitoInSpace = false;
+        b.obitoInSpaceTimer = 0;
+        // 同步清除空間中對應的 enemy cap，防止帶土仍可「抓到」已返回主場地的敵人
+        if (state.obitoSpaceCaptures) {
+          for (let ci = state.obitoSpaceCaptures.length - 1; ci >= 0; ci--) {
+            const c = state.obitoSpaceCaptures[ci];
+            if (c.type === 'enemy' && c.enemyPlayer === b.player) {
+              state.obitoSpaceCaptures.splice(ci, 1);
+            }
+          }
+        }
+      } else {
+        b.vx = 0; b.vy = 0;
+      }
+    }
+  }
+
+  // 帶土：火球更新
+  if (!state.dioWorldGlobalActive && state.obitoFireballs) {
+    for (let i = state.obitoFireballs.length - 1; i >= 0; i--) {
+      const fb = state.obitoFireballs[i];
+      fb.x += fb.vx * dt;
+      fb.y += fb.vy * dt;
+      fb.life -= dt;
+      fb.angle += dt * 6;
+      if (fb.life <= 0) { state.obitoFireballs.splice(i, 1); continue; }
+      // 碰牆消失
+      let hit = false;
+      if (fb.x - fb.r < WALL || fb.x + fb.r > W - WALL ||
+          fb.y - fb.r < WALL || fb.y + fb.r > H - WALL) {
+        state.obitoFireballs.splice(i, 1); continue;
+      }
+      // 碰敵人
+      for (const b of state.balls) {
+        if (b.player === fb.owner) continue;
+        const dx = b.x - fb.x, dy = b.y - fb.y;
+        if (Math.hypot(dx, dy) < RADIUS + fb.r) {
+          dealDamage(b, OBITO_FIREBALL_DAMAGE);
+          state.hitFlashes.push({ x: fb.x, y: fb.y, r: 30, alpha: 1, color: '#ff4400', t: 0.3 });
+          playHitSound('knife');
+          state.obitoFireballs.splice(i, 1); hit = true; break;
+        }
+      }
+    }
+  }
+
+  // 帶土：神威空間捕獲物計時衰減 + 漂浮移動 + 假想子彈碰撞判定
+  if (state.obitoSpaceCaptures) {
+    for (let i = state.obitoSpaceCaptures.length - 1; i >= 0; i--) {
+      const cap = state.obitoSpaceCaptures[i];
+      cap.life -= dt;
+      // 在空間視窗內漂浮移動，碰到邊界反彈，讓被抓的東西看起來真的飄在空間裡
+      const margin = cap.type === 'enemy' ? 16 : 10;
+      cap.x += cap.vx * dt;
+      cap.y += cap.vy * dt;
+      if (cap.x < margin) { cap.x = margin; cap.vx = Math.abs(cap.vx); }
+      if (cap.x > OBITO_SPACE_W - margin) { cap.x = OBITO_SPACE_W - margin; cap.vx = -Math.abs(cap.vx); }
+      if (cap.y < margin) { cap.y = margin; cap.vy = Math.abs(cap.vy); }
+      if (cap.y > OBITO_SPACE_H - margin) { cap.y = OBITO_SPACE_H - margin; cap.vy = -Math.abs(cap.vy); }
+      // 敵人如果血量0了或者不在空間中了就移除
+      if (cap.life <= 0) {
+        if (cap.type === 'enemy') {
+          const enemyBall = state.balls.find(x => x.player === cap.enemyPlayer);
+          if (enemyBall) { enemyBall.obitoInSpace = false; enemyBall.obitoInSpaceTimer = 0; }
+        }
+        state.obitoSpaceCaptures.splice(i, 1);
+        continue;
+      }
+      // 假想子彈：碰撞判定（只有 projectile 類型）
+      if (cap.type === 'projectile') {
+        // 找對應的帶土（空間擁有者）
+        const obitoB = state.balls.find(x => x.player === cap.owner && x.char.type === 'obito');
+        if (!obitoB) continue;
+        const HIT_R = 14; // 假想子彈碰撞半徑（空間座標）
+        // 1. 碰到敵人（在神威空間中的敵人 cap）
+        // 若帶土仍在 ghost 階段，假想子彈不應造成傷害，直接移除即可
+        if (obitoB.obitoKamuiPhase === 'ghost') {
+          // ghost 期間：假想子彈碰到虛影附近 → 無損，消除子彈
+          const ghostDist = Math.hypot(cap.x - obitoB.obitoGhostX, cap.y - obitoB.obitoGhostY);
+          if (ghostDist < HIT_R + 18) {
+            state.hitFlashes.push({ x: obitoB.x, y: obitoB.y, r: 18, alpha: 0.5, color: '#888888', t: 0.25 });
+            state.obitoSpaceCaptures.splice(i, 1);
+            continue;
+          }
+          continue; // ghost 期間不觸發其他假想子彈邏輯
+        }
+        for (let j = state.obitoSpaceCaptures.length - 1; j >= 0; j--) {
+          if (i === j) continue;
+          const other = state.obitoSpaceCaptures[j];
+          if (other.type !== 'enemy' || other.owner !== cap.owner) continue;
+          const gd = Math.hypot(cap.x - other.x, cap.y - other.y);
+          if (gd < HIT_R + 12) {
+            const enemyBall = state.balls.find(x => x.player === other.enemyPlayer);
+            if (enemyBall) {
+              dealDamage(enemyBall, OBITO_PHANTOM_DAMAGE);
+              state.hitFlashes.push({ x: enemyBall.x, y: enemyBall.y, r: 22, alpha: 1, color: '#cc44ff', t: 0.3 });
+              playHitSound('knife');
+            }
+            state.obitoSpaceCaptures.splice(i, 1);
+            break;
+          }
+        }
+        if (i >= state.obitoSpaceCaptures.length) continue; // 已被移除
+        // 2. 碰到帶土本人（in_space 或 grabbing 階段）→ 彈出空間
+        if (['in_space','grabbing'].includes(obitoB.obitoKamuiPhase)) {
+          const gd = Math.hypot(cap.x - obitoB.obitoSpaceX, cap.y - obitoB.obitoSpaceY);
+          if (gd < HIT_R + RADIUS * 0.8) {
+            // 帶土被彈出，施加硬直懲罰
+            obitoB.obitoKamuiPhase = 'returning';
+            obitoB.obitoTeleportTimer = 0.3;
+            obitoB.obitoGrabTarget = null;
+            obitoB.obitoInSpaceCounter = 0;
+            obitoB.obitoEjectStun = 1.2; // 1.2秒無法攻擊
+            state.hitFlashes.push({ x: obitoB.x, y: obitoB.y, r: 35, alpha: 1.2, color: '#ff4400', t: 0.4 });
+            playHitSound('opm');
+            state.obitoSpaceCaptures.splice(i, 1);
+            continue;
+          }
+          // 3. 帶土衝刺抓人路線上：判斷假想子彈是否在帶土與目標之間
+          if (obitoB.obitoKamuiPhase === 'grabbing') {
+            const targetCap = state.obitoSpaceCaptures.find(c => c.type === 'enemy' && c.owner === cap.owner);
+            if (targetCap) {
+              // 計算點到線段的距離（帶土位置 → 目標位置的路線）
+              const ax = obitoB.obitoSpaceX, ay = obitoB.obitoSpaceY;
+              const bx2 = targetCap.x, by2 = targetCap.y;
+              const cx2 = cap.x, cy2 = cap.y;
+              const ab = Math.hypot(bx2-ax, by2-ay) || 1;
+              const t2 = Math.max(0, Math.min(1, ((cx2-ax)*(bx2-ax) + (cy2-ay)*(by2-ay)) / (ab*ab)));
+              const nearX = ax + t2*(bx2-ax), nearY = ay + t2*(by2-ay);
+              const distToLine = Math.hypot(cx2-nearX, cy2-nearY);
+              if (distToLine < HIT_R + 10 && t2 > 0.05 && t2 < 0.95) {
+                obitoB.obitoKamuiPhase = 'returning';
+                obitoB.obitoTeleportTimer = 0.3;
+                obitoB.obitoGrabTarget = null;
+                obitoB.obitoInSpaceCounter = 0;
+                obitoB.obitoEjectStun = 1.2;
+                state.hitFlashes.push({ x: obitoB.x, y: obitoB.y, r: 35, alpha: 1.2, color: '#ff4400', t: 0.4 });
+                playHitSound('opm');
+                state.obitoSpaceCaptures.splice(i, 1);
+                continue;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // 麻痺定身特效更新
   if (state.thunderStunFX) {
     for (let i = state.thunderStunFX.length - 1; i >= 0; i--) {
@@ -5765,7 +6531,7 @@ waypoints.push({
     if (b.char.type !== 'tiger') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 被動一：流血池持續扣血（對所有角色）
   }
@@ -5795,7 +6561,7 @@ waypoints.push({
     if (b.char.type !== 'tiger') continue;
     const enemy = state.balls.find(x => x.player !== b.player);
     if (!enemy) continue;
-    if (state.dioWorldGlobalActive && b !== state.dioWorldCaster) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
 
     // 技能一：徑庭拳 蓄力→出拳（僅在周圍有單位/敵人進入範圍時才會觸發）
     if (b.tigerPunchTimer > 0) b.tigerPunchTimer -= dt;
@@ -7434,6 +8200,7 @@ function render() {
   // 乙骨憂太：里香本體渲染（跟隨、揮爪、純愛大砲）
   for (const b of state.balls) {
     if (b.char.type !== 'yuta' || !b.yutaRikaActive) continue;
+    if (b.obitoInSpace) continue; // 進入神威空間時里香消失
     const rx = b.yutaRikaX != null ? b.yutaRikaX : b.x;
     const ry = b.yutaRikaY != null ? b.yutaRikaY : b.y;
 
@@ -7533,6 +8300,7 @@ function render() {
   // DIO：替身（跟隨環繞 + 拳擊特效）
   for (const b of state.balls) {
     if (b.char.type !== 'dio') continue;
+    if (b.obitoInSpace) continue; // 進入神威空間時替身消失
     const sx = b.dioStandX != null ? b.dioStandX : b.x;
     const sy = b.dioStandY != null ? b.dioStandY : b.y;
     ctx.save();
@@ -7644,10 +8412,238 @@ function render() {
     }
   }
 
+  // ── 帶土：火球渲染 ──
+  if (state.obitoFireballs) {
+    for (const fb of state.obitoFireballs) {
+      ctx.save();
+      ctx.translate(fb.x, fb.y);
+      const fg = ctx.createRadialGradient(0,0,0,0,0,fb.r*2.5);
+      fg.addColorStop(0,'rgba(255,200,80,0.9)');
+      fg.addColorStop(0.5,'rgba(255,80,0,0.6)');
+      fg.addColorStop(1,'rgba(255,40,0,0)');
+      ctx.beginPath(); ctx.arc(0,0,fb.r*2.5,0,Math.PI*2);
+      ctx.fillStyle = fg; ctx.fill();
+      const fg2 = ctx.createRadialGradient(0,0,0,0,0,fb.r);
+      fg2.addColorStop(0,'rgba(255,255,200,1)');
+      fg2.addColorStop(0.6,'rgba(255,120,0,0.95)');
+      fg2.addColorStop(1,'rgba(200,40,0,0.8)');
+      ctx.beginPath(); ctx.arc(0,0,fb.r,0,Math.PI*2);
+      ctx.fillStyle = fg2; ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 18; ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // ── 帶土：神威空間（左上角半透明視窗）──
+  const obitoB = state.balls.find(b => b.char.type === 'obito');
+  const spaceHasContent = state.obitoSpaceCaptures && state.obitoSpaceCaptures.length > 0;
+  const spaceActive = obitoB && (
+    spaceHasContent ||
+    ['ghost','teleporting','in_space','grabbing','returning','chaining'].includes(obitoB.obitoKamuiPhase)
+  );
+  if (spaceActive) {
+    const SX = 8, SY = 8, SW = OBITO_SPACE_W, SH = OBITO_SPACE_H;
+    ctx.save();
+    ctx.translate(SX, SY);
+    ctx.fillStyle = 'rgba(8,0,18,0.88)';
+    ctx.fillRect(0, 0, SW, SH);
+    const pulse = 0.6 + 0.4 * Math.sin(elapsed * 6);
+    ctx.strokeStyle = `rgba(180,60,255,${pulse})`;
+    ctx.lineWidth = 2; ctx.shadowColor = '#cc44ff'; ctx.shadowBlur = 12;
+    ctx.strokeRect(0, 0, SW, SH); ctx.shadowBlur = 0;
+    ctx.font = 'bold 9px sans-serif';
+    ctx.fillStyle = `rgba(200,120,255,${pulse})`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText('🌀 神 威 空 間', SW/2, 3);
+    // 顯示口袋儲存數（右上角）
+    if (obitoB && obitoB.obitoAbsorbStored && obitoB.obitoAbsorbStored.length > 0) {
+      ctx.font = 'bold 8px sans-serif';
+      ctx.fillStyle = `rgba(255,200,100,${pulse})`;
+      ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+      ctx.fillText(`📦×${obitoB.obitoAbsorbStored.length}`, SW - 3, 3);
+      ctx.textAlign = 'center';
+    }
+    ctx.strokeStyle = 'rgba(100,40,160,0.22)'; ctx.lineWidth = 0.5;
+    for (let gx = 20; gx < SW; gx += 20) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,SH); ctx.stroke(); }
+    for (let gy = 20; gy < SH; gy += 20) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(SW,gy); ctx.stroke(); }
+
+    if (state.obitoSpaceCaptures) {
+      for (const cap of state.obitoSpaceCaptures) {
+        if (cap.type === 'enemy') {
+          const eB = state.balls.find(x => x.player === cap.enemyPlayer);
+          if (!eB) continue;
+          ctx.save();
+          ctx.font = `${RADIUS}px serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.shadowColor = eB.char.color; ctx.shadowBlur = 8;
+          ctx.fillText(eB.char.emoji, cap.x, cap.y);
+          for (let ki = 0; ki < 6; ki++) {
+            const ka = elapsed * 3 + ki / 6 * Math.PI * 2;
+            ctx.fillStyle = `rgba(180,60,255,${0.5+0.3*Math.sin(elapsed*8+ki)})`;
+            ctx.beginPath(); ctx.arc(cap.x + Math.cos(ka)*18, cap.y + Math.sin(ka)*18, 3, 0, Math.PI*2); ctx.fill();
+          }
+          ctx.restore();
+        } else {
+          ctx.save();
+          const bob = Math.sin(elapsed * 4 + cap.x) * 3;
+          const py = cap.y + bob;
+          const flicker = cap.life < 1.5 ? (0.4 + 0.6 * Math.abs(Math.sin(elapsed * 12))) : 1;
+          // 外圈光暈
+          ctx.globalAlpha = flicker;
+          ctx.beginPath(); ctx.arc(cap.x, py, 11, 0, Math.PI*2);
+          ctx.fillStyle = `${cap.origColor || '#ff8800'}33`;
+          ctx.fill();
+          // 本體
+          ctx.beginPath(); ctx.arc(cap.x, py, 7, 0, Math.PI*2);
+          ctx.fillStyle = cap.origColor || '#ff8800';
+          ctx.shadowColor = cap.origColor || '#ff8800'; ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.shadowBlur = 0; ctx.stroke();
+          // 環繞旋轉小光點，標示「被封印中」
+          for (let ki = 0; ki < 4; ki++) {
+            const ka = elapsed * 4 + ki / 4 * Math.PI * 2;
+            ctx.fillStyle = `rgba(200,160,255,${0.6+0.3*Math.sin(elapsed*8+ki)})`;
+            ctx.beginPath(); ctx.arc(cap.x + Math.cos(ka)*13, py + Math.sin(ka)*13, 2, 0, Math.PI*2); ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+    }
+    if (obitoB && ['in_space','grabbing'].includes(obitoB.obitoKamuiPhase)) {
+      ctx.save();
+      ctx.font = `${RADIUS}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = obitoB.char.color; ctx.shadowBlur = 10;
+      ctx.fillText(obitoB.char.emoji, obitoB.obitoSpaceX, obitoB.obitoSpaceY);
+      ctx.restore();
+    }
+    if (obitoB && obitoB.obitoKamuiPhase === 'ghost') {
+      const gP = 0.4 + 0.4*Math.abs(Math.sin(elapsed*10));
+      ctx.save(); ctx.globalAlpha = gP;
+      ctx.font = `${RADIUS}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = '#cc44ff'; ctx.shadowBlur = 12;
+      ctx.fillText('👻', obitoB.obitoGhostX, obitoB.obitoGhostY);
+      ctx.restore();
+      ctx.save(); ctx.strokeStyle = `rgba(180,80,255,${gP})`; ctx.lineWidth = 1.5; ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.arc(obitoB.obitoGhostX, obitoB.obitoGhostY, 18, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]); ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // 帶土 returning 出現預警點
+  if (obitoB && obitoB.obitoKamuiPhase === 'returning' && obitoB.obitoExitX != null) {
+    const warnProg = 1 - Math.max(0, obitoB.obitoTeleportTimer) / 0.4;
+    const warnA = 0.4 + 0.5 * Math.abs(Math.sin(elapsed * 12));
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(obitoB.obitoExitX, obitoB.obitoExitY, RADIUS + 16, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(200,60,255,${warnA})`;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([5, 4]);
+    ctx.shadowColor = '#cc44ff'; ctx.shadowBlur = 10;
+    ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
+    // 填色漸進
+    ctx.beginPath();
+    ctx.arc(obitoB.obitoExitX, obitoB.obitoExitY, RADIUS + 16, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(150,0,255,${0.08 + 0.1 * warnProg})`;
+    ctx.fill();
+    // 旋轉光點
+    for (let wi = 0; wi < 6; wi++) {
+      const wa = elapsed * 8 + wi / 6 * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(obitoB.obitoExitX + Math.cos(wa) * (RADIUS + 16), obitoB.obitoExitY + Math.sin(wa) * (RADIUS + 16), 3, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220,120,255,${warnA})`;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // 帶土主場地旋渦特效
+  if (obitoB && ['ghost','teleporting','in_space','grabbing','returning','chaining'].includes(obitoB.obitoKamuiPhase)) {
+    ctx.save();
+    const spins = 8;
+    for (let si = 0; si < spins; si++) {
+      const sa = elapsed * 4 + (si / spins) * Math.PI * 2;
+      ctx.beginPath(); ctx.arc(obitoB.x + Math.cos(sa)*(RADIUS+12), obitoB.y + Math.sin(sa)*(RADIUS+12), 3, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(180,60,255,${0.4+0.4*Math.sin(sa*2)})`;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  // 帶土被動：虛化態等待圓圈（閒置時顯示虛化冷卻進度）
+  if (obitoB && obitoB.obitoKamuiPhase === 'idle' && !obitoB.obitoFireballDashing && !obitoB.obitoFireballDashDelay && !obitoB.obitoPhasing) {
+    ctx.save();
+    const stored = (obitoB.obitoAbsorbStored && obitoB.obitoAbsorbStored.length) || 0;
+    const cdFrac = Math.max(0, Math.min(1, 1 - obitoB.obitoPhaseTimer / OBITO_PHASE_INTERVAL));
+    const cdPulse = 0.3 + 0.15 * Math.sin(elapsed * 2);
+    ctx.beginPath(); ctx.arc(obitoB.x, obitoB.y, RADIUS + 10, -Math.PI/2, -Math.PI/2 + Math.PI*2*cdFrac);
+    ctx.strokeStyle = `rgba(180,60,255,${cdPulse + (stored > 0 ? 0.2 : 0)})`;
+    ctx.lineWidth = 2; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+    if (stored > 0) {
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillStyle = `rgba(200,120,255,0.9)`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = '#9900ff'; ctx.shadowBlur = 6;
+      ctx.fillText(`📦${stored}`, obitoB.x, obitoB.y - RADIUS - 14);
+      ctx.shadowBlur = 0;
+    }
+    ctx.restore();
+  }
+  // 帶土鎖鏈範圍（改為旋風斬特效，更明顯）
+  if (obitoB && obitoB.obitoKamuiPhase === 'chaining') {
+    const pCh = 0.4 + 0.4 * Math.sin(elapsed * 14);
+    ctx.save();
+    if (!obitoB.obitoChainPhase) {
+      ctx.beginPath(); ctx.arc(obitoB.x, obitoB.y, OBITO_KAMUI_CHAIN_RADIUS, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(180,60,255,${pCh})`; ctx.lineWidth = 2;
+      ctx.shadowColor = '#cc44ff'; ctx.shadowBlur = 10; ctx.stroke();
+      ctx.fillStyle = `rgba(140,40,200,${0.08})`; ctx.fill();
+
+      // 旋風斬：多道高速旋轉的弧形刀光環繞帶土
+      const spinSpeed = 22; // rad/s
+      const bladeCount = 3;
+      const r1 = RADIUS + 14, r2 = OBITO_KAMUI_CHAIN_RADIUS;
+      for (let bi = 0; bi < bladeCount; bi++) {
+        const baseAng = elapsed * spinSpeed + bi * (Math.PI * 2 / bladeCount);
+        const arcSpan = 1.4; // 弧形刀光張角
+        ctx.beginPath();
+        ctx.arc(obitoB.x, obitoB.y, r2, baseAng, baseAng + arcSpan);
+        ctx.lineWidth = 7;
+        ctx.strokeStyle = `rgba(200,80,255,${0.55 + 0.3*Math.sin(elapsed*20+bi)})`;
+        ctx.shadowColor = '#cc44ff'; ctx.shadowBlur = 18;
+        ctx.stroke();
+        // 內層較亮的刀刃
+        ctx.beginPath();
+        ctx.arc(obitoB.x, obitoB.y, r1 + (r2-r1)*0.5, baseAng, baseAng + arcSpan*0.7);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = `rgba(255,255,255,0.8)`;
+        ctx.shadowBlur = 0;
+        ctx.stroke();
+      }
+      // 風壓粒子環
+      if (Math.random() < 0.6) {
+        const pa = Math.random() * Math.PI * 2;
+        const pr = r1 + Math.random() * (r2 - r1);
+        state.hitFlashes.push({ x: obitoB.x + Math.cos(pa)*pr, y: obitoB.y + Math.sin(pa)*pr, r: 6, alpha: 0.6, color: '#cc44ff', t: 0.15 });
+      }
+    } else {
+      ctx.beginPath(); ctx.arc(obitoB.x, obitoB.y, OBITO_KAMUI_BOMB_RADIUS, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(255,100,0,${pCh})`; ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 16; ctx.stroke();
+      ctx.fillStyle = `rgba(255,60,0,0.10)`; ctx.fill();
+    }
+    ctx.restore();
+  }
+
   // 繪製球
   for (const b of state.balls) {
     // 詛咒橫切動畫中：隱藏被擊殺角色本體（由特效自己畫兩半）
     if (state.curseSliceKillFX && b.player === state.curseSliceKillFX.targetPlayer) continue;
+    // 帶土在神威空間中：在主場地隱形
+    if (b.char.type === 'obito' && ['in_space','grabbing'].includes(b.obitoKamuiPhase)) continue;
+    // 被帶土抓進神威空間的敵人：在主場地隱形（只在空間視窗中顯示）
+    if (b.obitoInSpace) continue;
     // 軌跡
     for (let i = 0; i < b.trail.length; i++) {
       const t = b.trail[i], prog = i/b.trail.length;
@@ -8137,6 +9133,13 @@ function render() {
       ctx.restore();
     }
 
+    // 帶土虛化態：降低透明度 + 紫色輪廓
+    const isPhasing = b.char.type === 'obito' && b.obitoPhasing;
+    if (isPhasing) {
+      ctx.save();
+      ctx.globalAlpha = 0.35 + 0.1 * Math.sin(elapsed * 10);
+    }
+
     // 一般光暈
     const glow = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,RADIUS*2.5);
     glow.addColorStop(0, b.char.color+'40'); glow.addColorStop(1,'transparent');
@@ -8198,6 +9201,26 @@ function render() {
         ctx.fillText(`🦇${dashLeft}s`, 0, 0);
         ctx.restore();
       }
+    }
+    // 帶土虛化態結束：還原 alpha + 畫虛化外圈提示
+    if (isPhasing) {
+      ctx.restore();
+      // 虛化外圈（讓對手看出帶土現在在虛化）
+      const phPulse = 0.5 + 0.5 * Math.abs(Math.sin(elapsed * 8));
+      ctx.save();
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 6, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(180,60,255,${0.6 + 0.3 * phPulse})`;
+      ctx.lineWidth = 2.5; ctx.shadowColor = '#cc44ff'; ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.restore();
+      // 虛化計時條（顯示剩餘虛化時間）
+      const phFrac = Math.max(0, b.obitoPhaseTimer / OBITO_PHASE_DURATION);
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(b.x - RADIUS, b.y + RADIUS + 12, RADIUS * 2, 3);
+      ctx.fillStyle = '#cc44ff';
+      ctx.fillRect(b.x - RADIUS, b.y + RADIUS + 12, RADIUS * 2 * phFrac, 3);
+      ctx.restore();
     }
   }
 
@@ -8936,6 +9959,18 @@ function updateHUD() {
       const starCdLeft = Math.max(0, b.starBigTimer || 0).toFixed(1);
       const meteorCd = b.starMeteorCooldown > 0 ? `☄️CD:${Math.ceil(b.starMeteorCooldown)}s` : '☄️就緒！';
       return `⭐×${bigCount}/${STAR_BIG_MAX} ★×${smallCount} ${meteorCd} 大星:${starCdLeft}s`;
+    } else if (b.char.type === 'obito') {
+      const phase = b.obitoKamuiPhase;
+      const kamuiCd = Math.max(0, b.obitoKamuiCooldown || 0).toFixed(1);
+      const fireCd = Math.max(0, b.obitoFireballTimer || 0).toFixed(1);
+      const spaceCount = state.obitoSpaceCaptures ? state.obitoSpaceCaptures.filter(c => c.owner === b.player).length : 0;
+      if (phase === 'ghost') return `🌀 虛影判定中... ⏱${(b.obitoGhostTimer||0).toFixed(1)}s`;
+      if (phase === 'teleporting') return `🌀 轉移中...`;
+      if (phase === 'in_space') return `🔮 神威空間中 ${spaceCount > 0 ? '📦'+spaceCount : ''}`;
+      if (phase === 'grabbing') return `🔮 空間衝刺中！`;
+      if (phase === 'returning') return `🌀 帶回主場地！`;
+      if (phase === 'chaining') return `⛓️ 鎖鏈甩飛！`;
+      return `🔥 火球:${fireCd}s 🌀 神威:${kamuiCd > 0 ? kamuiCd+'s' : '就緒！'} 📦${spaceCount}`;
     } else {
       return '';
     }
@@ -8987,8 +10022,210 @@ const quote = pickQuote(specialQuote || winner.char.winQuote);
     `;
   }
 
+  if (endlessMode) {
+    // 無盡模式：判斷 P1 是否獲勝（player 是數字 1/2）
+    const p1Won = deadBalls.length === 2 ? false : !deadBalls.find(b => b.player === 1);
+    const sid = endlessSessionId;
+    setTimeout(() => { if (endlessSessionId === sid) handleEndlessResult(p1Won); }, 800);
+    return; // 不顯示一般 overlay
+  }
   overlay.classList.add('show');
 }
+
+// ══════════════ 無盡闖關模式 ══════════════
+let endlessMode = false;
+let endlessStage = 1;
+let endlessSessionId = 0; // 用來作廢舊的 setTimeout
+let endlessBest = parseInt(localStorage.getItem('endlessBest') || '0');
+let endlessEnemyId = null;
+let endlessPlayerCharId = null;
+
+function startEndless() {
+  endlessMode = true;
+  endlessStage = 1;
+  showEndlessPick();
+}
+
+function showEndlessPick() {
+  // 隱藏其他畫面
+  document.getElementById('select-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('endless-result-screen').style.display = 'none';
+  document.getElementById('endless-pick-screen').style.display = 'flex';
+
+  // 關卡資訊
+  document.getElementById('ep-stage').textContent = `第 ${endlessStage} 關`;
+  document.getElementById('ep-best').textContent = endlessBest > 0 ? `🏆 最高紀錄：第 ${endlessBest} 關` : '';
+
+  // 隨機選一個對手（跟上次不同）
+  let enemyChar;
+  do { enemyChar = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)]; }
+  while (enemyChar.id === endlessEnemyId && CHARACTERS.length > 1);
+  endlessEnemyId = enemyChar.id;
+  document.getElementById('ep-next-enemy').textContent = `${enemyChar.emoji} ${enemyChar.name}`;
+
+  // 三個隨機玩家角色選項（不重複）
+  const pool = [...CHARACTERS].sort(() => Math.random() - 0.5).slice(0, 3);
+  const cardsEl = document.getElementById('ep-cards');
+  cardsEl.innerHTML = '';
+
+  pool.forEach((ch, idx) => {
+    // 外層：做翻轉容器
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `
+      width:140px;height:220px;perspective:700px;cursor:pointer;flex-shrink:0;
+      opacity:0;transform:translateY(-60px);
+      transition:opacity 0.35s ease ${idx*0.18}s, transform 0.35s ease ${idx*0.18}s;
+    `;
+
+    const inner = document.createElement('div');
+    inner.style.cssText = `
+      width:100%;height:100%;position:relative;
+      transform-style:preserve-3d;
+      transition:transform 0.55s cubic-bezier(0.4,0,0.2,1);
+    `;
+
+    // 牌背
+    const back = document.createElement('div');
+    back.style.cssText = `
+      position:absolute;inset:0;backface-visibility:hidden;
+      background:linear-gradient(135deg,#1a0030,#2d0060);
+      border:2px solid rgba(180,80,255,0.5);border-radius:14px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    `;
+    back.innerHTML = `
+      <div style="font-size:2.5rem;filter:drop-shadow(0 0 10px #aa44ff)">🌀</div>
+      <div style="font-size:0.7rem;color:rgba(180,80,255,0.8);letter-spacing:.15em">點擊翻牌</div>
+    `;
+
+    // 牌面（預先建好但先藏起來，rotateY(180deg) 反面朝前）
+    const front = document.createElement('div');
+    front.style.cssText = `
+      position:absolute;inset:0;backface-visibility:hidden;
+      transform:rotateY(180deg);
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.15);border-radius:14px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+      padding:12px 8px;text-align:center;
+    `;
+    front.innerHTML = `
+      <div style="font-size:2.4rem">${ch.emoji}</div>
+      <div style="font-size:0.92rem;font-weight:700;color:#eee">${ch.name}</div>
+      <div style="font-size:0.64rem;color:#888;line-height:1.45">${ch.desc}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:2px">
+        ${ch.stats.map(s=>`<span style="font-size:0.58rem;padding:2px 6px;background:rgba(255,255,255,0.08);border-radius:8px;color:#aaa">${s}</span>`).join('')}
+      </div>
+    `;
+
+    inner.appendChild(back);
+    inner.appendChild(front);
+    wrapper.appendChild(inner);
+    cardsEl.appendChild(wrapper);
+
+    let flipped = false;
+
+    wrapper.onclick = () => {
+      if (!flipped) {
+        // 翻面
+        flipped = true;
+        inner.style.transform = 'rotateY(180deg)';
+        // 翻面後牌邊發光
+        setTimeout(() => {
+          front.style.borderColor = 'rgba(255,160,60,0.6)';
+          front.style.boxShadow = '0 0 18px rgba(255,140,0,0.3)';
+          wrapper.onmouseover = () => front.style.background = 'rgba(255,160,60,0.1)';
+          wrapper.onmouseout  = () => front.style.background = 'rgba(255,255,255,0.04)';
+        }, 280);
+      } else {
+        // 已翻面，第二次點擊才出戰
+        endlessPlayerCharId = ch.id;
+        launchEndlessBattle(ch.id, endlessEnemyId);
+      }
+    };
+
+    // 發牌入場動畫
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        wrapper.style.opacity = '1';
+        wrapper.style.transform = 'translateY(0)';
+      }, 50 + idx * 180);
+    });
+  });
+}
+
+function launchEndlessBattle(p1Id, p2Id) {
+  p1Choice = p1Id;
+  p2Choice = p2Id;
+  document.getElementById('endless-pick-screen').style.display = 'none';
+  startGame();
+  document.getElementById('endless-stop-btn').style.display = 'block';
+}
+
+function endlessQuit() {
+  // 用內嵌確認，避免 confirm() 被瀏覽器封鎖
+  const btn = document.getElementById('endless-stop-btn');
+  if (btn.dataset.confirming === '1') {
+    btn.dataset.confirming = '0';
+    btn.textContent = '✕ 放棄闖關';
+    btn.style.background = 'rgba(255,60,60,0.15)';
+    endlessMode = false;
+    endlessSessionId++;
+    if (gameLoop) { cancelAnimationFrame(gameLoop); gameLoop = null; }
+    document.getElementById('endless-stop-btn').style.display = 'none';
+    backToSelect();
+  } else {
+    btn.dataset.confirming = '1';
+    btn.textContent = '確定放棄？再按一次';
+    btn.style.background = 'rgba(255,60,60,0.4)';
+    setTimeout(() => {
+      if (btn.dataset.confirming === '1') {
+        btn.dataset.confirming = '0';
+        btn.textContent = '✕ 放棄闖關';
+        btn.style.background = 'rgba(255,60,60,0.15)';
+      }
+    }, 2500);
+  }
+}
+
+function handleEndlessResult(p1Won) {
+  if (p1Won) {
+    endlessStage++;
+    showEndlessPick();
+  } else {
+    // 更新最高紀錄
+    const reached = endlessStage;
+    if (reached > endlessBest) {
+      endlessBest = reached;
+      localStorage.setItem('endlessBest', endlessBest);
+    }
+    document.getElementById('endless-pick-screen').style.display = 'none';
+    document.getElementById('endless-result-screen').style.display = 'flex';
+    document.getElementById('er-stage').textContent = `抵達第 ${reached} 關`;
+    document.getElementById('er-best').textContent = `🏆 最高紀錄：第 ${endlessBest} 關`;
+    document.getElementById('overlay').classList.remove('show');
+  }
+}
+
+function backToSelect() {
+  endlessMode = false;
+  p1Choice = null; p2Choice = null;
+  document.getElementById('endless-stop-btn').style.display = 'none';
+  document.getElementById('endless-result-screen').style.display = 'none';
+  document.getElementById('endless-pick-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('select-screen').style.display = 'flex';
+  // 清除選角畫面的選中狀態
+  document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected','p1','p2'));
+  const lbl1 = document.getElementById('p1-selected-label');
+  const lbl2 = document.getElementById('p2-selected-label');
+  if (lbl1) lbl1.textContent = '請選擇角色';
+  if (lbl2) lbl2.textContent = '請選擇角色';
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn) startBtn.disabled = true;
+}
+
+document.getElementById('endless-btn').addEventListener('click', startEndless);
 </script>
 </body>
 </html>
