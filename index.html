@@ -678,10 +678,12 @@
     </div>
   </div>
 
-  <div class="arena-select">
+  <div class="arena-select" style="flex-direction:column;align-items:center;gap:6px">
     <div style="width:100%;text-align:center;font-size:0.75rem;color:#888;letter-spacing:.1em;margin-bottom:4px">⚔️ 選擇場地</div>
-    <button class="arena-btn active" data-arena="normal">🏟️ 標準場地</button>
-    <button class="arena-btn lava" data-arena="lava">🌋 熔岩場地<span style="font-size:0.7rem;opacity:0.7;display:block">每秒灼燒 20 血</span></button>
+    <button id="arena-pick-btn" type="button" style="padding:10px 26px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.18);border-radius:20px;color:#eee;font-size:0.9rem;cursor:pointer;letter-spacing:.06em;display:flex;align-items:center;gap:8px">
+      <span id="arena-pick-emoji">🏟️</span>
+      <span id="arena-pick-name">標準場地</span>
+    </button>
   </div>
 
   <div class="bg-color-select" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px">
@@ -700,6 +702,15 @@
     <button class="roster-close" id="roster-close">✕</button>
   </div>
   <div class="roster-grid" id="roster-grid"></div>
+</div>
+
+<!-- ══ ARENA MODAL ══ -->
+<div id="arena-modal" style="display:none;position:fixed;inset:0;background:rgba(5,3,2,0.95);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:sans-serif;">
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="font-size:1.1rem;font-weight:800;color:#eee;letter-spacing:.12em">🗺️ 選擇場地</div>
+    <button id="arena-modal-close" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#ccc;cursor:pointer;font-size:0.9rem">✕</button>
+  </div>
+  <div id="arena-modal-grid" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:700px;padding:0 16px"></div>
 </div>
 
 <!-- ══ GAME SCREEN ══ -->
@@ -1205,7 +1216,7 @@ cursed:'我不會憎恨你，但我會殺了你。如果你願意回到我體內
   },
   {
   id: 'stargirl', emoji: '⭐', weapon: '🌟', name: '星星女孩',
-  desc: '使用「星造數」，大星星碰牆時向周圍爆散出5顆小星星。小星星傷害敵人。不定時時召喚星隕，大量流星從天而降。',
+  desc: '使用「星造術」，大星星碰牆時向周圍爆散出5顆小星星。小星星傷害敵人。不定時時召喚星隕，大量流星從天而降。',
   stats: ['大星星', '星散', '小星星', '星隕'],
   color: '#ffe066', glowColor: 'rgba(255,224,102,0.6)', type: 'stargirl',
   winQuote: '一閃一閃亮晶晶。'
@@ -1215,7 +1226,14 @@ cursed:'我不會憎恨你，但我會殺了你。如果你願意回到我體內
   desc: '擁有萬花筒寫輪眼。使用「火球」向敵人噴出火焰，並將敵人或投射物抓入「神威空間」。也可主動進入神威空間，！【被動】開啟虛化躲避敵人的攻擊！',
   stats: ['火球 60/10s', '神威', '神威空間 進出20傷', '虛化'],
   color: '#ff6600', glowColor: 'rgba(255,102,0,0.6)', type: 'obito',
-  winQuote: ['我已不是任何人，我是誰都不是。','我要創造一個有琳的世界','不能守護該守護的人，這份力量又有什麼意義？']
+  winQuote: ['我沒有名字，也不以任何身份而活。','我要創造一個有琳的世界','不能守護該守護的人，這份力量又有什麼意義？']
+  },
+  {
+  id: 'fisherman', emoji: '🎣', weapon: '🪝', name: '釣魚佬',
+  desc: '每隔一段時間向場地邊緣拋出魚鉤，願者上鉤！',
+  stats: ['釣魚', '魚', '鯊魚', '首領魚', '大海'],
+  color: '#4a90d9', glowColor: 'rgba(74,144,217,0.6)', type: 'fisherman',
+  winQuote: ['只要相信海，海就會幫你。','聽海哭的聲音。','他說風雨中這點痛算什麼。']
   }
    
 ];
@@ -1419,8 +1437,66 @@ const RADIUS             = 25;
 
 // 場地常數
 const ARENA_LAVA_DMG_PER_SEC = 20;  // 熔岩場每秒傷害
+const ARENA_SNOW_INTERVAL = 7;      // 冰雪場：暴風雪間隔
+const ARENA_SNOW_FREEZE_CHANCE = 0.5; // 冰雪場：被凍結機率
+const ARENA_SNOW_FREEZE_DURATION = 2.0; // 冰雪場：凍結持續秒數
+const ARENA_GRASS_INTERVAL = 7;     // 青草場：回血間隔
+const ARENA_GRASS_HEAL = 150;       // 青草場：每次回血量
+const ARENA_SAND_SPAWN_INTERVAL = 6; // 流沙場：流沙圈生成間隔
+const ARENA_SAND_RADIUS = 55;       // 流沙圈半徑
+const ARENA_SAND_DURATION = 8;      // 流沙圈存活秒數
+const ARENA_SAND_SLOW_FACTOR = 0.45; // 流沙緩速倍率
 
-let selectedArena = 'normal'; // 'normal' | 'lava'
+// 海灘場地常數
+const ARENA_BEACH_MID_X          = 175;   // 開局：水/沙交界（各半）
+const ARENA_BEACH_LOW_X          = 55;    // 退潮：僅剩一點水
+const ARENA_BEACH_HIGH_X         = 349;   // 漲潮：完全淹沒沙灘
+const ARENA_BEACH_START_HOLD     = 4;     // 開局半水半沙持續時間
+const ARENA_BEACH_RISE_TIME      = 3.5;   // 漲潮過渡時間
+const ARENA_BEACH_FLOOD_HOLD     = 7;     // 淹沒沙灘持續時間
+const ARENA_BEACH_FALL_TIME      = 3.5;   // 退潮過渡時間
+const ARENA_BEACH_LOW_HOLD       = 5;     // 低潮持續時間
+const ARENA_BEACH_PUDDLE_CHANCE  = 0.35;  // 退潮後原淹沒處留下水漬機率
+
+const ARENA_BEACH_CURRENT_R      = 18;    // 暗流判定半徑
+const ARENA_BEACH_CURRENT_SUCK   = 1.0;   // 吸入停留時間（秒）
+const ARENA_BEACH_CURRENT_DMG    = 10;    // 拋出時傷害
+const ARENA_BEACH_CURRENT_CD     = 1.4;   // 拋出後短暫免疫
+
+const ARENA_BEACH_CRAB_DMG       = 5;     // 螃蟹碰撞傷害
+const ARENA_BEACH_CRAB_SPEED     = 55;
+const ARENA_BEACH_CRAB_R         = 12;
+const ARENA_BEACH_CRAB_HIT_CD    = 1.0;
+const ARENA_BEACH_CRAB_COUNT     = 2;
+
+const ARENA_BEACH_URCHIN_R          = 14;
+const ARENA_BEACH_URCHIN_DOT_DUR    = 6;  // 海膽：持續6秒
+const ARENA_BEACH_URCHIN_DPS        = 1;  // 海膽：每秒1傷害
+const ARENA_BEACH_URCHIN_SPAWN_GAP  = 8;
+const ARENA_BEACH_URCHIN_MAX        = 3;
+
+const ARENA_BEACH_CHEST_R        = 16;
+const ARENA_BEACH_CHEST_HEAL     = 20;    // 寶箱：恢復20血
+const ARENA_BEACH_CHEST_CHANCE   = 0.16;  // 低機率
+const ARENA_BEACH_CHEST_CHECK_GAP= 5;
+
+const ARENA_BEACH_ELECTRIFY_TICK = 0.9;   // 雷電法王在水裡：電擊間隔
+const ARENA_BEACH_ELECTRIFY_DMG  = 12;    // 電擊額外傷害
+
+const ARENA_BEACH_SHARKFIN_MAX   = 3;     // 空軍幾次後清空並丟出鯊魚咬
+const ARENA_BEACH_SHARKBITE_DMG  = 110;
+const ARENA_BEACH_SHARKBITE_SPD  = 620;
+
+let selectedArena = 'normal'; // 'normal' | 'lava' | 'snow' | 'grass' | 'sand' | 'beach'
+
+const ARENAS = [
+  { id: 'normal', emoji: '🏟️', name: '標準場地', desc: '純粹的對決。' },
+  { id: 'lava',   emoji: '🌋', name: '熔岩場地', desc: '雙方每秒持續灼燒 20 血，考驗續戰能力。' },
+  { id: 'snow',   emoji: '❄️', name: '冰雪場地', desc: '每隔 7 秒吹一次暴風雪，雙方各有 50% 機率被凍結，凍結中無法移動，技能冷卻也會停止計算。' },
+  { id: 'grass',  emoji: '🌿', name: '青草場地', desc: '每隔 7 秒，雙方同時回復 150 滴血，考驗爆發輸出能力。' },
+  { id: 'sand',   emoji: '🏜️', name: '流沙場地', desc: '場上會不定時出現流沙圈，站在裡面的角色會被大幅緩速。' },
+  { id: 'beach',  emoji: '🏖️', name: '海灘場地', desc: '水域與沙灘各半。潮汐漲退間有暗流、螃蟹、海膽與寶箱出沒，雷電法王與釣魚佬在此另有特殊互動。' }
+];
 let selectedBgColor = '#000000'; // 玩家自訂背景顏色
 const WALL               = 1;
 const MAX_HP             = 1200;
@@ -1805,6 +1881,39 @@ const GOJO_FORCE_RANGE     = 100;   // 引力/斥力作用範圍
 const GOJO_HP_THRESHOLD    = 850;   // 觸發虛式的血量門檻
 const GOJO_PURPLE_CHANCE   = 0.10;  // 解鎖後紫出現機率
 
+// 釣魚佬
+const FISHER_CAST_COOLDOWN   = 1.2;   // 釣魚冷卻
+const FISHER_CAST_TIME       = 0.3;   // 拋竿到邊緣耗時
+const FISHER_BITE_TIME       = 0.2;  // 咬鉤停頓
+const FISHER_REEL_TIME       = 0.2;   // 收線耗時
+const FISHER_RESULT_WEIGHTS  = { fish: 30, shark: 8, airforce: 6, bossfish:4 , ocean: 2 };
+// 魚
+const FISHER_FISH_DMG        = 30;
+const FISHER_FISH_SPEED      = 440;
+const FISHER_FISH_RED_DELAY  = 1.0;
+const FISHER_FISH_RED_DMG    = 40;
+// 鯊魚
+const FISHER_SHARK_DMG       = 70;
+const FISHER_SHARK_SPEED     = 600;
+const FISHER_SHARK_BLEED_DUR = 3.0;
+const FISHER_SHARK_BLEED_DPS = 60;    // 每0.1秒6傷害 = 60/s
+// 首領魚
+const FISHER_BOSSFISH_COUNT  = 10;
+const FISHER_BOSSFISH_TOTAL  = 240;
+const FISHER_BOSSFISH_DMG    = FISHER_BOSSFISH_TOTAL / FISHER_BOSSFISH_COUNT;
+const FISHER_BOSSFISH_GAP    = 0.05;  // 每尾魚間隔
+const FISHER_BOSSFISH_SPEED  = 460;
+// 大海
+const FISHER_OCEAN_WAVE_COUNT   = 8;
+const FISHER_OCEAN_WAVE_DMG     = 70;
+const FISHER_OCEAN_WAVE_GAP     = 0.25;
+const FISHER_OCEAN_WAVE_SPEED   = 900;
+const FISHER_OCEAN_WAVE_WIDTH   = 46;
+const FISHER_OCEAN_HOOK_DMG     = 10;
+const FISHER_OCEAN_SLAM_DMG     = 130;
+const FISHER_OCEAN_DASH_SPEED   = 780;
+const FISHER_OCEAN_GRAB_HOLD    = 0.3;  // 勾住後揮甩停頓時間
+
 let gameLoop = null;
 let lastTime = 0;
 let elapsed  = 0;
@@ -1815,13 +1924,42 @@ let state    = {};
 document.getElementById('start-btn').addEventListener('click', startGame);
 document.getElementById('replay-btn').addEventListener('click', startGame);
 
-// 場地選擇
-document.querySelectorAll('.arena-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.arena-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedArena = btn.dataset.arena;
+// 場地選擇（彈窗）
+function renderArenaModal() {
+  const grid = document.getElementById('arena-modal-grid');
+  grid.innerHTML = '';
+  ARENAS.forEach(ar => {
+    const card = document.createElement('div');
+    const isActive = selectedArena === ar.id;
+    card.style.cssText = `
+      width:170px;padding:16px 12px;border-radius:14px;cursor:pointer;
+      background:${isActive ? 'rgba(255,160,60,0.14)' : 'rgba(255,255,255,0.04)'};
+      border:1px solid ${isActive ? 'rgba(255,160,60,0.6)' : 'rgba(255,255,255,0.12)'};
+      text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;
+      transition:all 0.15s;
+    `;
+    card.innerHTML = `
+      <div style="font-size:2.2rem">${ar.emoji}</div>
+      <div style="font-size:0.92rem;font-weight:700;color:#eee">${ar.name}</div>
+      <div style="font-size:0.65rem;color:#999;line-height:1.5">${ar.desc}</div>
+    `;
+    card.onmouseover = () => { if (!isActive) card.style.background = 'rgba(255,255,255,0.08)'; };
+    card.onmouseout  = () => { if (!isActive) card.style.background = 'rgba(255,255,255,0.04)'; };
+    card.onclick = () => {
+      selectedArena = ar.id;
+      document.getElementById('arena-pick-emoji').textContent = ar.emoji;
+      document.getElementById('arena-pick-name').textContent = ar.name;
+      document.getElementById('arena-modal').style.display = 'none';
+    };
+    grid.appendChild(card);
   });
+}
+document.getElementById('arena-pick-btn').addEventListener('click', () => {
+  renderArenaModal();
+  document.getElementById('arena-modal').style.display = 'flex';
+});
+document.getElementById('arena-modal-close').addEventListener('click', () => {
+  document.getElementById('arena-modal').style.display = 'none';
 });
 
 // 背景顏色選擇
@@ -1859,8 +1997,8 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
-const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44' };
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff' };
 
 const PROGRESS_HANDLERS = {
   opm(b) {
@@ -2002,6 +2140,14 @@ const PROGRESS_HANDLERS = {
     return {
       atFrac: Math.max(0, Math.min(1, b.tigerPunchTimer != null ? 1 - (b.tigerPunchTimer / TIGER_PUNCH_INTERVAL) : 0)),
       barColor: b.tigerBleedPool > 50 ? '#aa0000' : b.char.color
+    };
+  },
+  fisherman(b) {
+    if (b.fisherOceanPhase) return { atFrac: 1, barColor: '#66ccff' };
+    if (b.fisherPhase && b.fisherPhase !== 'idle') return { atFrac: 1, barColor: '#aee0ff' };
+    return {
+      atFrac: Math.max(0, Math.min(1, (b.fisherTimer || 0) / FISHER_CAST_COOLDOWN)),
+      barColor: b.char.color
     };
   },
   __default(b) {
@@ -2269,6 +2415,26 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       obitoPhaseTimer: ch.type === 'obito' ? OBITO_PHASE_INTERVAL : null,  // 下次虛化倒數
       obitoPhasing: ch.type === 'obito' ? false : null,             // 是否正在虛化態
       obitoAbsorbStored: ch.type === 'obito' ? [] : null,           // 儲存的投射物（虛化態吸收，神威時釋放）
+      // 釣魚佬專屬狀態
+      fisherTimer:        ch.type === 'fisherman' ? 0 : null,          // 釣魚冷卻計時（累加至 FISHER_CAST_COOLDOWN）
+      fisherPhase:         ch.type === 'fisherman' ? 'idle' : null,     // 'idle'|'casting'|'waiting'|'reeling'
+      fisherPhaseTimer:    ch.type === 'fisherman' ? 0 : null,          // 當前階段剩餘時間
+      fisherHookX:         ch.type === 'fisherman' ? 0 : null,          // 魚鉤目前位置X
+      fisherHookY:         ch.type === 'fisherman' ? 0 : null,          // 魚鉤目前位置Y
+      fisherHookFromX:     ch.type === 'fisherman' ? 0 : null,
+      fisherHookFromY:     ch.type === 'fisherman' ? 0 : null,
+      fisherHookToX:       ch.type === 'fisherman' ? 0 : null,
+      fisherHookToY:       ch.type === 'fisherman' ? 0 : null,
+      fisherResult:        ch.type === 'fisherman' ? null : null,       // 本次釣魚結果
+      fisherRedTimer:      0,   // 「魚」紅溫延遲爆炸倒數（任何角色都可能被此狀態影響）
+      // 大海專屬（海浪 + 坐船勾甩）
+      fisherOceanPhase:    ch.type === 'fisherman' ? null : null,       // null|'waves'|'dashwait'|'dash'|'grab'|'slam'
+      fisherOceanTimer:    ch.type === 'fisherman' ? 0 : null,
+      fisherOceanWaveIdx:  ch.type === 'fisherman' ? 0 : null,
+      fisherOceanDashAngle:ch.type === 'fisherman' ? 0 : null,
+      fisherOceanTargetX:  ch.type === 'fisherman' ? 0 : null,
+      fisherOceanTargetY:  ch.type === 'fisherman' ? 0 : null,
+      fisherGrabbedBy:     null,   // 被大海勾住時鎖定，暫停自身行動（任何角色都可能被抓）
     };
   }
 
@@ -2320,6 +2486,9 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     obitoFireballs: [],       // 帶土：場上火球列表
     obitoSpaceCaptures: [],   // 帶土：被抓入神威空間的子彈列表
     obitoKamuiFX: [],         // 帶土：神威特效列表
+    fisherResultFX: [],       // 釣魚佬：釣魚結果飄字列表
+    fisherOceanWaves: [],     // 釣魚佬：大海海浪列表
+    fisherSchoolQueue: [],    // 釣魚佬：首領魚待發射的魚群佇列
   };
 
   updateHUD();
@@ -2332,9 +2501,227 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
   lastTime = performance.now();
   elapsed  = 0;
   gameLoop = requestAnimationFrame(tick);
+
 }
 
 function randBetween(min, max) { return min + Math.random() * (max - min); }
+
+// 釣魚佬：依權重隨機決定釣魚結果
+function fisherRollResult() {
+  const w = FISHER_RESULT_WEIGHTS;
+  const total = Object.values(w).reduce((a, c) => a + c, 0);
+  let r = Math.random() * total;
+  for (const k in w) {
+    if (r < w[k]) return k;
+    r -= w[k];
+  }
+  return 'fish';
+}
+
+// 釣魚佬：收線完成後，依結果觸發對應效果
+function fisherResolveResult(b, enemy) {
+  const labels = { fish: '🐟 魚…', shark: '🦈 鯊魚…', bossfish: '🐟🐟🐟 首領魚…', airforce: '✈️ 空軍…', ocean: '🌊 大海…' };
+  state.fisherResultFX.push({ x: b.x, y: b.y - RADIUS - 16, text: labels[b.fisherResult] || '…', life: 1.3, maxLife: 1.3 });
+  if (!enemy) return;
+  switch (b.fisherResult) {
+    case 'fish': {
+      const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+      state.projectiles.push({
+        x: b.x, y: b.y, vx: Math.cos(ang) * FISHER_FISH_SPEED, vy: Math.sin(ang) * FISHER_FISH_SPEED,
+        type: 'fisher_fish', owner: b.player, damage: FISHER_FISH_DMG, r: 10, active: true
+      });
+      break;
+    }
+    case 'shark': {
+      const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+      state.projectiles.push({
+        x: b.x, y: b.y, vx: Math.cos(ang) * FISHER_SHARK_SPEED, vy: Math.sin(ang) * FISHER_SHARK_SPEED,
+        type: 'fisher_shark', owner: b.player, damage: FISHER_SHARK_DMG, r: 14, active: true
+      });
+      break;
+    }
+    case 'bossfish': {
+      for (let i = 0; i < FISHER_BOSSFISH_COUNT; i++) {
+        state.fisherSchoolQueue.push({ owner: b.player, timer: i * FISHER_BOSSFISH_GAP });
+      }
+      break;
+    }
+    case 'airforce': {
+      // 什麼都沒釣到，僅顯示飄字
+      // 海灘場地：每次空軍，水裡多一個鯊魚鰭，集滿後清空並丟出鯊魚咬
+      if (state.arena === 'beach') {
+        if (!state.beachSharkFins) state.beachSharkFins = { 1: 0, 2: 0 };
+        state.beachSharkFins[b.player] = (state.beachSharkFins[b.player] || 0) + 1;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 16, alpha: 0.7, color: '#888888', t: 0.3 });
+        if (state.beachSharkFins[b.player] >= ARENA_BEACH_SHARKFIN_MAX) {
+          state.beachSharkFins[b.player] = 0;
+          const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+          state.projectiles.push({
+            x: b.x, y: b.y, vx: Math.cos(ang) * ARENA_BEACH_SHARKBITE_SPD, vy: Math.sin(ang) * ARENA_BEACH_SHARKBITE_SPD,
+            type: 'fisher_shark', owner: b.player, damage: ARENA_BEACH_SHARKBITE_DMG, r: 20, active: true
+          });
+          state.fisherResultFX.push({ x: b.x, y: b.y - RADIUS - 20, text: '🦈 鯊魚咬擊！', life: 1.3, maxLife: 1.3 });
+          playHitSound('vampire_bite');
+        }
+      }
+      break;
+    }
+    case 'ocean': {
+      b.fisherOceanPhase = 'waves';
+      b.fisherOceanTimer = 0;
+      b.fisherOceanWaveIdx = 0;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 50, alpha: 1.2, color: '#4a90d9', t: 0.5 });
+      break;
+    }
+  }
+}
+
+// 海灘場地：生成一隻螃蟹
+function beachSpawnCrab() {
+  const ang = Math.random() * Math.PI * 2;
+  return {
+    x: randBetween(W * 0.55, W - WALL - ARENA_BEACH_CRAB_R),
+    y: randBetween(WALL + ARENA_BEACH_CRAB_R, H - WALL - ARENA_BEACH_CRAB_R),
+    vx: Math.cos(ang) * ARENA_BEACH_CRAB_SPEED, vy: Math.sin(ang) * ARENA_BEACH_CRAB_SPEED,
+    dirTimer: randBetween(1.2, 2.6),
+    hitCooldown: { 1: 0, 2: 0 }
+  };
+}
+
+// 海灘場地：潮汐、暗流、螃蟹、海膽、寶箱、電化水域每幀更新
+function updateBeachArena(dt) {
+  if (!state.beachInit) {
+    state.beachInit = true;
+    state.beachBoundary = ARENA_BEACH_MID_X;
+    state.beachPhase = 'start';   // start -> rising -> flooded -> falling -> low -> rising...
+    state.beachPhaseTimer = ARENA_BEACH_START_HOLD;
+    state.beachCurrents = [
+      { x: WALL + 26, y: H * 0.26 },
+      { x: WALL + 26, y: H * 0.74 }
+    ];
+    state.beachCrabs = Array.from({ length: ARENA_BEACH_CRAB_COUNT }, beachSpawnCrab);
+    state.beachUrchins = [];
+    state.beachChest = null;
+    state.beachPuddles = [];
+    state.beachUrchinTimer = ARENA_BEACH_URCHIN_SPAWN_GAP;
+    state.beachChestTimer = ARENA_BEACH_CHEST_CHECK_GAP;
+    state.beachElectrifyTimer = ARENA_BEACH_ELECTRIFY_TICK;
+    state.beachSharkFins = { 1: 0, 2: 0 };
+  }
+
+  // ── 潮汐狀態機 ──
+  state.beachPhaseTimer -= dt;
+  switch (state.beachPhase) {
+    case 'start':
+      state.beachBoundary = ARENA_BEACH_MID_X;
+      if (state.beachPhaseTimer <= 0) { state.beachPhase = 'rising'; state.beachPhaseTimer = ARENA_BEACH_RISE_TIME; }
+      break;
+    case 'rising': {
+      const t = Math.min(1, 1 - Math.max(0, state.beachPhaseTimer) / ARENA_BEACH_RISE_TIME);
+      state.beachBoundary = ARENA_BEACH_MID_X + (ARENA_BEACH_HIGH_X - ARENA_BEACH_MID_X) * t;
+      if (state.beachPhaseTimer <= 0) {
+        state.beachBoundary = ARENA_BEACH_HIGH_X;
+        state.beachPhase = 'flooded'; state.beachPhaseTimer = ARENA_BEACH_FLOOD_HOLD;
+      }
+      break;
+    }
+    case 'flooded':
+      state.beachBoundary = ARENA_BEACH_HIGH_X;
+      if (state.beachPhaseTimer <= 0) { state.beachPhase = 'falling'; state.beachPhaseTimer = ARENA_BEACH_FALL_TIME; }
+      break;
+    case 'falling': {
+      const t = Math.min(1, 1 - Math.max(0, state.beachPhaseTimer) / ARENA_BEACH_FALL_TIME);
+      state.beachBoundary = ARENA_BEACH_HIGH_X - (ARENA_BEACH_HIGH_X - ARENA_BEACH_LOW_X) * t;
+      if (state.beachPhaseTimer <= 0) {
+        state.beachBoundary = ARENA_BEACH_LOW_X;
+        // 退潮完成：原先淹沒處機率留下少量水漬
+        state.beachPuddles = [];
+        for (let i = 0; i < 8; i++) {
+          if (Math.random() < ARENA_BEACH_PUDDLE_CHANCE) {
+            state.beachPuddles.push({
+              x: randBetween(ARENA_BEACH_LOW_X + 20, W - WALL - 16),
+              y: randBetween(WALL + 16, H - WALL - 16),
+              r: randBetween(10, 22)
+            });
+          }
+        }
+        state.beachPhase = 'low'; state.beachPhaseTimer = ARENA_BEACH_LOW_HOLD;
+      }
+      break;
+    }
+    case 'low':
+      state.beachBoundary = ARENA_BEACH_LOW_X;
+      if (state.beachPhaseTimer <= 0) {
+        state.beachPuddles = [];
+        state.beachPhase = 'rising'; state.beachPhaseTimer = ARENA_BEACH_RISE_TIME;
+      }
+      break;
+  }
+
+  // ── 螃蟹 AI（於沙灘一帶隨機遊走）──
+  for (const crab of state.beachCrabs) {
+    crab.dirTimer -= dt;
+    if (crab.dirTimer <= 0) {
+      const ang = Math.random() * Math.PI * 2;
+      crab.vx = Math.cos(ang) * ARENA_BEACH_CRAB_SPEED;
+      crab.vy = Math.sin(ang) * ARENA_BEACH_CRAB_SPEED;
+      crab.dirTimer = randBetween(1.2, 2.6);
+    }
+    crab.x += crab.vx * dt; crab.y += crab.vy * dt;
+    const crabMinX = Math.max(WALL + ARENA_BEACH_CRAB_R, state.beachBoundary - 40);
+    if (crab.x < crabMinX) { crab.x = crabMinX; crab.vx = Math.abs(crab.vx); }
+    if (crab.x > W - WALL - ARENA_BEACH_CRAB_R) { crab.x = W - WALL - ARENA_BEACH_CRAB_R; crab.vx = -Math.abs(crab.vx); }
+    if (crab.y < WALL + ARENA_BEACH_CRAB_R) { crab.y = WALL + ARENA_BEACH_CRAB_R; crab.vy = Math.abs(crab.vy); }
+    if (crab.y > H - WALL - ARENA_BEACH_CRAB_R) { crab.y = H - WALL - ARENA_BEACH_CRAB_R; crab.vy = -Math.abs(crab.vy); }
+    if (crab.hitCooldown[1] > 0) crab.hitCooldown[1] -= dt;
+    if (crab.hitCooldown[2] > 0) crab.hitCooldown[2] -= dt;
+  }
+
+  // ── 海膽生成 ──
+  state.beachUrchinTimer -= dt;
+  if (state.beachUrchinTimer <= 0) {
+    state.beachUrchinTimer = ARENA_BEACH_URCHIN_SPAWN_GAP + randBetween(-1.5, 1.5);
+    if (state.beachUrchins.length < ARENA_BEACH_URCHIN_MAX) {
+      state.beachUrchins.push({
+        x: randBetween(Math.max(state.beachBoundary + 10, ARENA_BEACH_LOW_X + 30), W - WALL - 20),
+        y: randBetween(WALL + 20, H - WALL - 20)
+      });
+    }
+  }
+
+  // ── 寶箱生成（低機率）──
+  state.beachChestTimer -= dt;
+  if (state.beachChestTimer <= 0) {
+    state.beachChestTimer = ARENA_BEACH_CHEST_CHECK_GAP;
+    if (!state.beachChest && Math.random() < ARENA_BEACH_CHEST_CHANCE) {
+      state.beachChest = {
+        x: randBetween(WALL + 24, W - WALL - 24),
+        y: randBetween(WALL + 24, H - WALL - 24)
+      };
+    }
+  }
+
+  // ── 雷電法王在水裡：電化水域，週期性電擊在水中的敵方 ──
+  const thunderInWater = state.balls.some(b => b.char.type === 'thunder' && b.x < state.beachBoundary);
+  state.beachElectrified = thunderInWater;
+  if (thunderInWater) {
+    state.beachElectrifyTimer -= dt;
+    if (state.beachElectrifyTimer <= 0) {
+      state.beachElectrifyTimer = ARENA_BEACH_ELECTRIFY_TICK;
+      for (const b of state.balls) {
+        if (b.char.type === 'thunder') continue; // 施法者自身免疫
+        if (b.x < state.beachBoundary) {
+          dealDamage(b, ARENA_BEACH_ELECTRIFY_DMG);
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1, color: '#fff066', t: 0.35 });
+          playHitSound('trap_place');
+        }
+      }
+    }
+  } else {
+    state.beachElectrifyTimer = ARENA_BEACH_ELECTRIFY_TICK;
+  }
+}
+
 function dealDamage(target, dmg, options = {}) {
   // 無敵狀態（擊殺動畫播放中）不受傷
   if (target.invincible) return;
@@ -2637,6 +3024,73 @@ function update(dt) {
     }
   }
 
+  // 冰雪場：每隔 N 秒吹暴風雪，雙方各 50% 機率被凍結
+  if (state.arena === 'snow') {
+    state.arenaSnowTimer = (state.arenaSnowTimer == null ? ARENA_SNOW_INTERVAL : state.arenaSnowTimer) - dt;
+    if (state.arenaSnowTimer <= 0) {
+      state.arenaSnowTimer = ARENA_SNOW_INTERVAL;
+      state.arenaBlizzardFX = { life: 1.4, maxLife: 1.4 };
+      for (const b of state.balls) {
+        if (Math.random() < ARENA_SNOW_FREEZE_CHANCE) {
+          b.arenaFrozen = ARENA_SNOW_FREEZE_DURATION;
+          b.vx = 0; b.vy = 0;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 28, alpha: 1, color: '#99ddff', t: 0.4 });
+        }
+      }
+    }
+  }
+  // 凍結倒數
+  if (state.arenaSnowFreezeTick == null) state.arenaSnowFreezeTick = true;
+  for (const b of state.balls) {
+    if (b.arenaFrozen > 0) {
+      b.arenaFrozen -= dt;
+      if (b.arenaFrozen < 0) b.arenaFrozen = 0;
+      b.vx = 0; b.vy = 0;
+    }
+  }
+
+  // 青草場：每隔 N 秒雙方回血
+  if (state.arena === 'grass') {
+    state.arenaGrassTimer = (state.arenaGrassTimer == null ? ARENA_GRASS_INTERVAL : state.arenaGrassTimer) - dt;
+    if (state.arenaGrassTimer <= 0) {
+      state.arenaGrassTimer = ARENA_GRASS_INTERVAL;
+      for (const b of state.balls) {
+        b.hp = Math.min(MAX_HP, b.hp + ARENA_GRASS_HEAL);
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1, color: '#66ff88', t: 0.5 });
+      }
+    }
+  }
+
+  // 流沙場：不定時生成流沙圈，圈內角色被緩速
+  if (state.arena === 'sand') {
+    if (!state.arenaSandZones) state.arenaSandZones = [];
+    state.arenaSandTimer = (state.arenaSandTimer == null ? 2.0 : state.arenaSandTimer) - dt;
+    if (state.arenaSandTimer <= 0) {
+      state.arenaSandTimer = ARENA_SAND_SPAWN_INTERVAL + (Math.random() * 3 - 1.5);
+      state.arenaSandZones.push({
+        x: WALL + ARENA_SAND_RADIUS + Math.random() * (W - WALL*2 - ARENA_SAND_RADIUS*2),
+        y: WALL + ARENA_SAND_RADIUS + Math.random() * (H - WALL*2 - ARENA_SAND_RADIUS*2),
+        life: ARENA_SAND_DURATION, maxLife: ARENA_SAND_DURATION
+      });
+    }
+    for (let si = state.arenaSandZones.length - 1; si >= 0; si--) {
+      const z = state.arenaSandZones[si];
+      z.life -= dt;
+      if (z.life <= 0) { state.arenaSandZones.splice(si, 1); continue; }
+    }
+    // 判斷角色是否在流沙圈內
+    for (const b of state.balls) {
+      b.inSandZone = state.arenaSandZones.some(z => Math.hypot(b.x - z.x, b.y - z.y) < z.radius || Math.hypot(b.x - z.x, b.y - z.y) < ARENA_SAND_RADIUS);
+    }
+  } else {
+    for (const b of state.balls) b.inSandZone = false;
+  }
+
+  // 海灘場地：潮汐、暗流、螃蟹、海膽、寶箱、電化水域
+  if (state.arena === 'beach') {
+    updateBeachArena(dt);
+  }
+
   // ── 蝙蝠粒子更新 ──
   for (let i = state.batParticles.length - 1; i >= 0; i--) {
     const bp = state.batParticles[i];
@@ -2796,6 +3250,17 @@ function update(dt) {
       if (Math.random() < 0.3) state.hitFlashes.push({ x: b.x+randBetween(-15,15), y: b.y+randBetween(-15,15), r: 8, alpha: 0.7, color: '#c0392b', t: 0.4 });
     }
 
+    // 釣魚佬「魚」紅溫延遲爆炸
+    if (b.fisherRedTimer > 0) {
+      b.fisherRedTimer -= dt;
+      if (b.fisherRedTimer <= 0) {
+        b.fisherRedTimer = 0;
+        dealDamage(b, FISHER_FISH_RED_DMG);
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 34, alpha: 1.1, color: '#ff3300', t: 0.35 });
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 16, alpha: 0.9, color: '#ffaa00', t: 0.25 });
+      }
+    }
+
     // 捌冷卻倒數
     if (b.hachiCooldown > 0) b.hachiCooldown -= dt;
 
@@ -2819,9 +3284,9 @@ function update(dt) {
       b.vx = 0; b.vy = 0;
     }
 
-    // 移動（凍結則不移動；虎天帝超新星蓄力視為被束縛定身，完全不動；被帶土抓進神威空間者完全凍結）
-    if (!b.frozenByVampire && !b.obitoInSpace && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0)) {
-      const speedMul = b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0;
+    // 移動（凍結則不移動；虎天帝超新星蓄力視為被束縛定身，完全不動；被帶土抓進神威空間者完全凍結；冰雪場地凍結同樣完全不動）
+    if (!b.frozenByVampire && !b.obitoInSpace && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0) && !(b.arenaFrozen > 0) && !(b.beachCurrentSuckTimer > 0)) {
+      const speedMul = (b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0) * (b.inSandZone ? ARENA_SAND_SLOW_FACTOR : 1.0);
 
       // 最低速度保證（排除技能主動停止的情況）
       const intentionalStop = (b.char.type === 'gunner' && b.gunnerFiring) ||
@@ -2911,6 +3376,83 @@ function update(dt) {
           playHitSound('trap_place');
           state.hitFlashes.push({ x: px, y: py, r: THUNDER_SPAWN_FX_R, alpha: 1.0, color: '#f1c40f', t: 0.4 });
         }
+      }
+    }
+  }
+
+  // 海灘場地：角色與暗流／螃蟹／海膽／寶箱碰撞判定（位置已於本幀移動完成後）
+  if (state.arena === 'beach') {
+    for (const b of state.balls) {
+      if (b.obitoInSpace) continue;
+
+      // 暗流：吸入中，固定在暗流位置，倒數結束後從另一個暗流拋出並造成傷害
+      if (b.beachCurrentSuckTimer > 0) {
+        b.x = b.beachCurrentHoldX; b.y = b.beachCurrentHoldY;
+        b.vx = 0; b.vy = 0;
+        b.beachCurrentSuckTimer -= dt;
+        if (b.beachCurrentSuckTimer <= 0) {
+          b.beachCurrentSuckTimer = 0;
+          const target = b.beachCurrentTarget;
+          if (target) {
+            b.x = target.x; b.y = target.y;
+            const ang = Math.random() * Math.PI * 2;
+            b.vx = Math.cos(ang) * BASE_SPEED * 1.4; b.vy = Math.sin(ang) * BASE_SPEED * 1.4;
+            dealDamage(b, ARENA_BEACH_CURRENT_DMG);
+            state.hitFlashes.push({ x: b.x, y: b.y, r: 34, alpha: 1.1, color: '#00e5ff', t: 0.4 });
+            playHitSound('bottle');
+          }
+          b.beachCurrentCooldown = ARENA_BEACH_CURRENT_CD;
+        }
+        continue;
+      }
+      if (b.beachCurrentCooldown > 0) b.beachCurrentCooldown -= dt;
+
+      // 暗流：觸發吸入
+      if (!(b.beachCurrentCooldown > 0) && b.x < state.beachBoundary && state.beachCurrents) {
+        for (let ci = 0; ci < state.beachCurrents.length; ci++) {
+          const cur = state.beachCurrents[ci];
+          if (Math.hypot(b.x - cur.x, b.y - cur.y) < ARENA_BEACH_CURRENT_R) {
+            b.beachCurrentSuckTimer = ARENA_BEACH_CURRENT_SUCK;
+            b.beachCurrentHoldX = cur.x; b.beachCurrentHoldY = cur.y;
+            b.beachCurrentTarget = state.beachCurrents[(ci + 1) % state.beachCurrents.length];
+            b.vx = 0; b.vy = 0;
+            state.hitFlashes.push({ x: cur.x, y: cur.y, r: 26, alpha: 1, color: '#0077aa', t: 0.5 });
+            break;
+          }
+        }
+      }
+      if (b.beachCurrentSuckTimer > 0) continue;
+
+      // 螃蟹：碰到造成5傷害
+      for (const crab of state.beachCrabs || []) {
+        if (crab.hitCooldown[b.player] > 0) continue;
+        if (Math.hypot(b.x - crab.x, b.y - crab.y) < RADIUS + ARENA_BEACH_CRAB_R) {
+          dealDamage(b, ARENA_BEACH_CRAB_DMG);
+          crab.hitCooldown[b.player] = ARENA_BEACH_CRAB_HIT_CD;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 18, alpha: 0.8, color: '#ff6644', t: 0.25 });
+        }
+      }
+
+      // 海膽：碰到後施加持續6秒、每秒1傷害的dot
+      for (let ui = (state.beachUrchins || []).length - 1; ui >= 0; ui--) {
+        const u = state.beachUrchins[ui];
+        if (Math.hypot(b.x - u.x, b.y - u.y) < RADIUS + ARENA_BEACH_URCHIN_R) {
+          b.beachUrchinDot = ARENA_BEACH_URCHIN_DOT_DUR;
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 16, alpha: 0.8, color: '#7a3fb0', t: 0.3 });
+          state.beachUrchins.splice(ui, 1);
+        }
+      }
+      if (b.beachUrchinDot > 0) {
+        dealDamage(b, ARENA_BEACH_URCHIN_DPS * dt);
+        b.beachUrchinDot -= dt;
+        if (b.beachUrchinDot < 0) b.beachUrchinDot = 0;
+      }
+
+      // 寶箱：碰到恢復20血
+      if (state.beachChest && Math.hypot(b.x - state.beachChest.x, b.y - state.beachChest.y) < RADIUS + ARENA_BEACH_CHEST_R) {
+        b.hp = Math.min(MAX_HP, b.hp + ARENA_BEACH_CHEST_HEAL);
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1, color: '#ffd700', t: 0.5 });
+        state.beachChest = null;
       }
     }
   }
@@ -3050,8 +3592,8 @@ function update(dt) {
   // 攻擊計時
 for (let bi = 0; bi < state.balls.length; bi++) {
     const b = state.balls[bi], enemy = state.balls.find(x => x.player !== b.player);
-    // 時停中：敵方（非DIO）攻擊計時器凍結，避免時停結束後瞬間觸發堆積的攻擊
-    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) {
+    // 時停中：敵方（非DIO）攻擊計時器凍結，避免時停結束後瞬間觸發堆積的攻擊；冰雪場地凍結期間技能冷卻也不會減少
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace || (b.arenaFrozen > 0)) {
       // 不累積 attackTimer；各技能計時器也凍結
       continue;
     }
@@ -5099,6 +5641,21 @@ waypoints.push({
             state.hitFlashes.push({ x: b.x, y: b.y, r: 32, alpha: 1.1, color: '#ffd700', t: 0.35 });
             playHitSound('knife');
           }
+        } else if (p.type === 'fisher_fish') {
+          dealDamage(b, p.damage);
+          b.fisherRedTimer = FISHER_FISH_RED_DELAY;
+          state.hitFlashes.push({ x:b.x, y:b.y, r:26, alpha:1, color:'#4a90d9', t:0.3 });
+          playHitSound('bottle');
+          state.projectiles.splice(i, 1);
+          removed = true; break;
+        } else if (p.type === 'fisher_shark') {
+          dealDamage(b, p.damage);
+          b.curseDotTimer = FISHER_SHARK_BLEED_DUR;
+          b.curseDotDmg = FISHER_SHARK_BLEED_DPS;
+          state.hitFlashes.push({ x:b.x, y:b.y, r:36, alpha:1.1, color:'#cc0022', t:0.35 });
+          playHitSound('vampire_bite');
+          state.projectiles.splice(i, 1);
+          removed = true; break;
         } else {
           dealDamage(b, p.damage);
           state.hitFlashes.push({ x:b.x, y:b.y, r:35, alpha:1, color:'#ffcc00', t:0.35 });
@@ -6820,6 +7377,172 @@ waypoints.push({
     }
   }
 
+  // ══════════════ 釣魚佬邏輯 ══════════════
+  for (const b of state.balls) {
+    if (b.char.type !== 'fisherman') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
+
+    // ── 大海：海浪 + 坐船勾甩（優先於一切，直到序列結束）──
+    if (b.fisherOceanPhase) {
+      if (b.fisherOceanPhase === 'waves') {
+        b.vx = 0; b.vy = 0;
+        b.fisherOceanTimer -= dt;
+        if (b.fisherOceanTimer <= 0 && b.fisherOceanWaveIdx < FISHER_OCEAN_WAVE_COUNT) {
+          b.fisherOceanWaveIdx++;
+          state.fisherOceanWaves.push({ x: -FISHER_OCEAN_WAVE_WIDTH, owner: b.player, hit: false });
+          b.fisherOceanTimer = FISHER_OCEAN_WAVE_GAP;
+          playHitSound('bottle');
+        } else if (b.fisherOceanWaveIdx >= FISHER_OCEAN_WAVE_COUNT && b.fisherOceanTimer <= 0) {
+          b.fisherOceanPhase = 'dashwait';
+          b.fisherOceanTimer = 0.35;
+        }
+      } else if (b.fisherOceanPhase === 'dashwait') {
+        b.vx = 0; b.vy = 0;
+        b.fisherOceanTimer -= dt;
+        if (b.fisherOceanTimer <= 0) {
+          b.fisherOceanDashAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+          b.fisherOceanPhase = 'dash';
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1.2, color: '#66ccff', t: 0.3 });
+        }
+      } else if (b.fisherOceanPhase === 'dash') {
+        b.vx = Math.cos(b.fisherOceanDashAngle) * FISHER_OCEAN_DASH_SPEED;
+        b.vy = Math.sin(b.fisherOceanDashAngle) * FISHER_OCEAN_DASH_SPEED;
+        const dd = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+        if (dd < RADIUS * 2 + 14) {
+          dealDamage(enemy, FISHER_OCEAN_HOOK_DMG);
+          b.vx = 0; b.vy = 0;
+          enemy.vx = 0; enemy.vy = 0;
+          enemy.fisherGrabbedBy = b.player;
+          const dirx = Math.cos(b.fisherOceanDashAngle), diry = Math.sin(b.fisherOceanDashAngle);
+          b.fisherOceanTargetX = Math.max(RADIUS + 10, Math.min(W - RADIUS - 10, enemy.x + dirx * 600));
+          b.fisherOceanTargetY = Math.max(RADIUS + 10, Math.min(H - RADIUS - 10, enemy.y + diry * 600));
+          b.fisherOceanPhase = 'grab';
+          b.fisherOceanTimer = FISHER_OCEAN_GRAB_HOLD;
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 24, alpha: 1, color: '#4a90d9', t: 0.3 });
+          playHitSound('knife');
+        }
+      } else if (b.fisherOceanPhase === 'grab') {
+        b.vx = 0; b.vy = 0;
+        enemy.vx = 0; enemy.vy = 0;
+        enemy.x = b.x; enemy.y = b.y;
+        b.fisherOceanTimer -= dt;
+        if (b.fisherOceanTimer <= 0) {
+          b.fisherOceanPhase = 'slam';
+          b.fisherOceanTimer = 0.2;
+          b._fisherSlamDur = 0.2;
+        }
+      } else if (b.fisherOceanPhase === 'slam') {
+        b.vx = 0; b.vy = 0;
+        enemy.vx = 0; enemy.vy = 0;
+        const dur = b._fisherSlamDur || 0.2;
+        const t2 = Math.max(0, Math.min(1, 1 - b.fisherOceanTimer / dur));
+        enemy.x = b.x + (b.fisherOceanTargetX - b.x) * t2;
+        enemy.y = b.y + (b.fisherOceanTargetY - b.y) * t2;
+        b.fisherOceanTimer -= dt;
+        if (b.fisherOceanTimer <= 0) {
+          dealDamage(enemy, FISHER_OCEAN_SLAM_DMG);
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 46, alpha: 1.3, color: '#4a90d9', t: 0.4 });
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 20, alpha: 1, color: '#ffffff', t: 0.25 });
+          playHitSound('opm');
+          const kAng = Math.atan2(enemy.y - b.y, enemy.x - b.x) || Math.random() * Math.PI * 2;
+          enemy.vx = Math.cos(kAng) * BASE_SPEED * 1.5;
+          enemy.vy = Math.sin(kAng) * BASE_SPEED * 1.5;
+          enemy.fisherGrabbedBy = null;
+          b.fisherOceanPhase = null;
+          b.fisherTimer = 0;
+        }
+      }
+      continue; // 大海序列進行中，跳過一般釣魚流程
+    }
+
+    // ── 一般釣魚流程：拋竿 → 咬鉤 → 收線 → 結算 ──
+    if (b.fisherPhase === 'idle') {
+      b.fisherTimer += dt;
+      if (b.fisherTimer >= FISHER_CAST_COOLDOWN) {
+        const distLeft = b.x - RADIUS, distRight = (W - RADIUS) - b.x, distTop = b.y - RADIUS, distBottom = (H - RADIUS) - b.y;
+        const minD = Math.min(distLeft, distRight, distTop, distBottom);
+        let tx = b.x, ty = b.y;
+        if (minD === distLeft) tx = RADIUS;
+        else if (minD === distRight) tx = W - RADIUS;
+        else if (minD === distTop) ty = RADIUS;
+        else ty = H - RADIUS;
+        b.fisherHookFromX = b.x; b.fisherHookFromY = b.y;
+        b.fisherHookToX = tx; b.fisherHookToY = ty;
+        b.fisherHookX = b.x; b.fisherHookY = b.y;
+        b.fisherPhase = 'casting';
+        b.fisherPhaseTimer = FISHER_CAST_TIME;
+      }
+    } else if (b.fisherPhase === 'casting') {
+      b.fisherPhaseTimer -= dt;
+      const prog = Math.max(0, Math.min(1, 1 - b.fisherPhaseTimer / FISHER_CAST_TIME));
+      b.fisherHookX = b.fisherHookFromX + (b.fisherHookToX - b.fisherHookFromX) * prog;
+      b.fisherHookY = b.fisherHookFromY + (b.fisherHookToY - b.fisherHookFromY) * prog;
+      if (b.fisherPhaseTimer <= 0) {
+        b.fisherResult = fisherRollResult();
+        b.fisherPhase = 'waiting';
+        b.fisherPhaseTimer = FISHER_BITE_TIME;
+        state.hitFlashes.push({ x: b.fisherHookX, y: b.fisherHookY, r: 12, alpha: 1, color: '#ffffff', t: 0.2 });
+      }
+    } else if (b.fisherPhase === 'waiting') {
+      b.fisherPhaseTimer -= dt;
+      if (b.fisherPhaseTimer <= 0) {
+        b.fisherPhase = 'reeling';
+        b.fisherPhaseTimer = FISHER_REEL_TIME;
+      }
+    } else if (b.fisherPhase === 'reeling') {
+      b.fisherPhaseTimer -= dt;
+      const prog = Math.max(0, Math.min(1, 1 - b.fisherPhaseTimer / FISHER_REEL_TIME));
+      b.fisherHookX = b.fisherHookToX + (b.fisherHookFromX - b.fisherHookToX) * prog;
+      b.fisherHookY = b.fisherHookToY + (b.fisherHookFromY - b.fisherHookToY) * prog;
+      if (b.fisherPhaseTimer <= 0) {
+        fisherResolveResult(b, enemy);
+        b.fisherPhase = 'idle';
+        b.fisherTimer = 0;
+      }
+    }
+  }
+
+  // 釣魚佬：首領魚魚群佇列發射
+  for (let i = state.fisherSchoolQueue.length - 1; i >= 0; i--) {
+    const q = state.fisherSchoolQueue[i];
+    q.timer -= dt;
+    if (q.timer <= 0) {
+      const caster = state.balls.find(x => x.player === q.owner);
+      const target = state.balls.find(x => x.player !== q.owner);
+      if (caster && target) {
+        const ang = Math.atan2(target.y - caster.y, target.x - caster.x) + randBetween(-0.15, 0.15);
+        state.projectiles.push({
+          x: caster.x, y: caster.y, vx: Math.cos(ang) * FISHER_BOSSFISH_SPEED, vy: Math.sin(ang) * FISHER_BOSSFISH_SPEED,
+          type: 'fisher_school', owner: q.owner, damage: FISHER_BOSSFISH_DMG, r: 8, active: true
+        });
+      }
+      state.fisherSchoolQueue.splice(i, 1);
+    }
+  }
+
+  // 釣魚佬：大海海浪移動與命中判定
+  for (let i = state.fisherOceanWaves.length - 1; i >= 0; i--) {
+    const wv = state.fisherOceanWaves[i];
+    wv.x += FISHER_OCEAN_WAVE_SPEED * dt;
+    const target = state.balls.find(x => x.player !== wv.owner);
+    if (target && !wv.hit && Math.abs(target.x - wv.x) < FISHER_OCEAN_WAVE_WIDTH / 2) {
+      wv.hit = true;
+      dealDamage(target, FISHER_OCEAN_WAVE_DMG);
+      state.hitFlashes.push({ x: target.x, y: target.y, r: 28, alpha: 1, color: '#66ccff', t: 0.3 });
+    }
+    if (wv.x > W + FISHER_OCEAN_WAVE_WIDTH) state.fisherOceanWaves.splice(i, 1);
+  }
+
+  // 釣魚佬：結果飄字衰減
+  for (let i = state.fisherResultFX.length - 1; i >= 0; i--) {
+    const fx = state.fisherResultFX[i];
+    fx.life -= dt;
+    fx.y -= 16 * dt;
+    if (fx.life <= 0) state.fisherResultFX.splice(i, 1);
+  }
+
   // DIO：替身拳擊特效更新
   if (state.dioPunchFX) {
     for (let i = state.dioPunchFX.length - 1; i >= 0; i--) {
@@ -6895,6 +7618,117 @@ function fireProjectile(ball, enemy, type) {
   });
 }
 
+// 海灘場地：繪製沙灘、水域、潮汐、暗流、螃蟹、海膽、寶箱與電化特效
+function renderBeachArena() {
+  const bx = state.beachBoundary != null ? state.beachBoundary : ARENA_BEACH_MID_X;
+
+  // 沙灘底色與紋理
+  ctx.fillStyle = '#e8cf8a'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(170,140,80,0.18)';
+  for (let i = 0; i < 26; i++) {
+    ctx.beginPath(); ctx.arc((i * 53) % W, (i * 97) % H, 1.4, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 水域
+  const wgrad = ctx.createLinearGradient(0, 0, bx, 0);
+  wgrad.addColorStop(0, '#0f4c75');
+  wgrad.addColorStop(1, '#2f8fd0');
+  ctx.fillStyle = wgrad;
+  ctx.fillRect(0, 0, bx, H);
+
+  // 水面交界波浪線
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let y = 0; y <= H; y += 6) {
+    const wobble = Math.sin(elapsed * 2 + y * 0.15) * 3;
+    if (y === 0) ctx.moveTo(bx + wobble, y); else ctx.lineTo(bx + wobble, y);
+  }
+  ctx.stroke();
+  // 水面反光紋路
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const wy = ((i / 5) * H + (elapsed * 20)) % H;
+    ctx.beginPath(); ctx.moveTo(0, wy); ctx.lineTo(bx * 0.9, wy); ctx.stroke();
+  }
+
+  // 退潮後殘留水漬
+  if (state.beachPuddles) {
+    ctx.fillStyle = 'rgba(60,140,200,0.35)';
+    for (const pd of state.beachPuddles) {
+      ctx.beginPath(); ctx.ellipse(pd.x, pd.y, pd.r, pd.r * 0.55, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  // 雷電法王電化水域特效
+  if (state.beachElectrified) {
+    ctx.strokeStyle = `rgba(255,255,100,${0.5 + 0.3 * Math.sin(elapsed * 20)})`;
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 4; i++) {
+      let lx = Math.random() * bx, ly = Math.random() * H;
+      ctx.beginPath(); ctx.moveTo(lx, ly);
+      for (let s = 0; s < 3; s++) { lx += randBetween(-14, 14); ly += randBetween(-14, 14); ctx.lineTo(lx, ly); }
+      ctx.stroke();
+    }
+  }
+
+  // 暗流
+  if (state.beachCurrents) {
+    for (const cur of state.beachCurrents) {
+      const swirl = elapsed * 3;
+      const cg = ctx.createRadialGradient(cur.x, cur.y, 0, cur.x, cur.y, ARENA_BEACH_CURRENT_R);
+      cg.addColorStop(0, 'rgba(0,20,40,0.9)');
+      cg.addColorStop(0.7, 'rgba(0,60,100,0.5)');
+      cg.addColorStop(1, 'rgba(0,60,100,0)');
+      ctx.fillStyle = cg;
+      ctx.beginPath(); ctx.arc(cur.x, cur.y, ARENA_BEACH_CURRENT_R, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(150,220,255,0.8)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cur.x, cur.y, ARENA_BEACH_CURRENT_R * 0.6, swirl, swirl + Math.PI * 1.4); ctx.stroke();
+    }
+  }
+
+  // 螃蟹
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '18px serif';
+  for (const crab of state.beachCrabs || []) {
+    ctx.save();
+    ctx.translate(crab.x, crab.y);
+    ctx.rotate(Math.atan2(crab.vy, crab.vx));
+    ctx.fillText('🦀', 0, 0);
+    ctx.restore();
+  }
+
+  // 海膽
+  for (const u of state.beachUrchins || []) {
+    ctx.fillStyle = '#1a0a2a';
+    ctx.beginPath(); ctx.arc(u.x, u.y, ARENA_BEACH_URCHIN_R * 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3d1f5c'; ctx.lineWidth = 1.6;
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(u.x + Math.cos(a) * ARENA_BEACH_URCHIN_R * 0.4, u.y + Math.sin(a) * ARENA_BEACH_URCHIN_R * 0.4);
+      ctx.lineTo(u.x + Math.cos(a) * ARENA_BEACH_URCHIN_R, u.y + Math.sin(a) * ARENA_BEACH_URCHIN_R);
+      ctx.stroke();
+    }
+  }
+
+  // 寶箱
+  if (state.beachChest) {
+    ctx.font = '22px serif';
+    ctx.fillText('📦', state.beachChest.x, state.beachChest.y);
+  }
+
+  // 釣魚佬鯊魚鰭累積數
+  ctx.font = 'bold 11px sans-serif';
+  for (const b of state.balls) {
+    if (b.char.type !== 'fisherman') continue;
+    const n = (state.beachSharkFins && state.beachSharkFins[b.player]) || 0;
+    if (n > 0) {
+      ctx.fillStyle = '#333';
+      ctx.fillText(`🦈×${n}`, b.x, b.y - RADIUS - 14);
+    }
+  }
+}
+
 function render() {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = (state && state.bgColor) ? state.bgColor : '#a8d8f0'; ctx.fillRect(0, 0, W, H);
@@ -6924,6 +7758,83 @@ function render() {
     edgeGlow.addColorStop(0, 'rgba(255,40,0,0)');
     edgeGlow.addColorStop(1, `rgba(255,40,0,${0.18 + 0.06 * Math.sin(elapsed * 2)})`);
     ctx.fillStyle = edgeGlow; ctx.fillRect(0, 0, W, H);
+  }
+
+  // 冰雪場地背景
+  if (state.arena === 'snow') {
+    ctx.fillStyle = '#0c1620'; ctx.fillRect(0, 0, W, H);
+    const sgrad = ctx.createRadialGradient(W/2, H/2, 20, W/2, H/2, Math.max(W,H)*0.75);
+    sgrad.addColorStop(0, 'rgba(140,200,255,0.10)');
+    sgrad.addColorStop(1, 'rgba(20,40,70,0.25)');
+    ctx.fillStyle = sgrad; ctx.fillRect(0, 0, W, H);
+    if (!state.arenaSnowParticles) {
+      state.arenaSnowParticles = Array.from({length: 40}, () => ({
+        x: Math.random()*W, y: Math.random()*H, r: 1 + Math.random()*2, spd: 10 + Math.random()*20, drift: Math.random()*2-1
+      }));
+    }
+    ctx.fillStyle = 'rgba(220,240,255,0.7)';
+    for (const sp of state.arenaSnowParticles) {
+      sp.y += sp.spd * 0.016; sp.x += sp.drift * 0.3;
+      if (sp.y > H) { sp.y = -5; sp.x = Math.random()*W; }
+      if (sp.x > W) sp.x = 0; if (sp.x < 0) sp.x = W;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI*2); ctx.fill();
+    }
+    if (state.arenaBlizzardFX && state.arenaBlizzardFX.life > 0) {
+      state.arenaBlizzardFX.life -= 0.016;
+      const a = state.arenaBlizzardFX.life / state.arenaBlizzardFX.maxLife;
+      ctx.fillStyle = `rgba(200,230,255,${a*0.25})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+
+  // 青草場地背景
+  if (state.arena === 'grass') {
+    ctx.fillStyle = '#0e1c0a'; ctx.fillRect(0, 0, W, H);
+    const ggrad = ctx.createRadialGradient(W/2, H/2, 20, W/2, H/2, Math.max(W,H)*0.75);
+    ggrad.addColorStop(0, 'rgba(120,220,90,0.12)');
+    ggrad.addColorStop(1, 'rgba(20,50,15,0.25)');
+    ctx.fillStyle = ggrad; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(140,220,100,0.08)'; ctx.lineWidth = 1;
+    for (let i = 0; i < 18; i++) {
+      const gx = (W * (i / 17));
+      ctx.beginPath(); ctx.moveTo(gx, H); ctx.lineTo(gx + Math.sin(elapsed*0.6+i)*8, H*0.4); ctx.stroke();
+    }
+    const grassPulse = (Math.sin(elapsed * 1.2) + 1) / 2;
+    const gedge = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.3, W/2, H/2, Math.max(W,H)*0.75);
+    gedge.addColorStop(0, 'rgba(100,255,100,0)');
+    gedge.addColorStop(1, `rgba(100,255,100,${0.06 + 0.05*grassPulse})`);
+    ctx.fillStyle = gedge; ctx.fillRect(0, 0, W, H);
+  }
+
+  // 流沙場地背景
+  if (state.arena === 'sand') {
+    ctx.fillStyle = '#2a1f0c'; ctx.fillRect(0, 0, W, H);
+    const sandgrad = ctx.createRadialGradient(W/2, H/2, 20, W/2, H/2, Math.max(W,H)*0.75);
+    sandgrad.addColorStop(0, 'rgba(210,170,90,0.12)');
+    sandgrad.addColorStop(1, 'rgba(60,40,15,0.3)');
+    ctx.fillStyle = sandgrad; ctx.fillRect(0, 0, W, H);
+    if (state.arenaSandZones) {
+      for (const z of state.arenaSandZones) {
+        const fadeIn = Math.min(1, (z.maxLife - z.life) / 0.6);
+        const fadeOut = Math.min(1, z.life / 0.8);
+        const a = Math.min(fadeIn, fadeOut);
+        const swirl = elapsed * 1.5;
+        const sg = ctx.createRadialGradient(z.x, z.y, 0, z.x, z.y, ARENA_SAND_RADIUS);
+        sg.addColorStop(0, `rgba(180,140,60,${0.05*a})`);
+        sg.addColorStop(0.7, `rgba(200,160,70,${0.22*a})`);
+        sg.addColorStop(1, `rgba(160,120,50,${0.05*a})`);
+        ctx.fillStyle = sg;
+        ctx.beginPath(); ctx.arc(z.x, z.y, ARENA_SAND_RADIUS, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = `rgba(220,180,90,${0.5*a})`; ctx.lineWidth = 1.5; ctx.setLineDash([4,3]);
+        ctx.beginPath(); ctx.arc(z.x, z.y, ARENA_SAND_RADIUS, swirl, swirl + Math.PI*1.7); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+  }
+
+  // 海灘場地背景
+  if (state.arena === 'beach') {
+    renderBeachArena();
   }
 
   // 格線
@@ -7438,6 +8349,7 @@ function render() {
     ctx.font = '24px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('🔪',0,0); ctx.restore();
   }
+
 // ── 繪製 GOJO 術式球 ──
   for (const b of state.balls) {
     if (b.char.type !== 'gojo') continue;
@@ -7631,9 +8543,27 @@ function render() {
       ctx.fillRect(-14, -3, 28, 6);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(-10, -1, 20, 2);
+    } else if (p.type === 'fisher_fish') {
+      ctx.filter = 'none';
+      ctx.font = '22px serif';
+      ctx.rotate(p.vx < 0 ? Math.PI : 0);
+      ctx.fillText('🐟', 0, 0);
+    } else if (p.type === 'fisher_shark') {
+      ctx.filter = 'none';
+      ctx.font = '28px serif';
+      ctx.shadowColor = '#cc0022'; ctx.shadowBlur = 10;
+      ctx.rotate(p.vx < 0 ? Math.PI : 0);
+      ctx.fillText('🦈', 0, 0);
+    } else if (p.type === 'fisher_school') {
+      ctx.filter = 'none';
+      ctx.font = '16px serif';
+      ctx.rotate(p.vx < 0 ? Math.PI : 0);
+      ctx.fillText('🐟', 0, 0);
     } else {
       ctx.font = `${p.type==='knife'?24:16}px serif`;
-      ctx.fillText(p.type==='knife'?'🔪':'🍾', 0, 0);
+      {
+        ctx.fillText(p.type==='knife'?'🔪':'🍾', 0, 0);
+      }
     }
     ctx.restore();
   }
@@ -7689,6 +8619,80 @@ function render() {
     ctx.shadowBlur = 14;
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  // ── 釣魚佬：大海全場藍色覆蓋（在角色與投射物之前，作為背景色調）──
+  for (const b of state.balls) {
+    if (b.char.type !== 'fisherman' || !b.fisherOceanPhase) continue;
+    ctx.save();
+    ctx.globalAlpha = 0.22 + 0.06 * Math.sin(elapsed * 6);
+    ctx.fillStyle = '#1a5fb4';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
+  // 釣魚佬：海浪
+  for (const wv of state.fisherOceanWaves) {
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    const wg = ctx.createLinearGradient(wv.x - FISHER_OCEAN_WAVE_WIDTH/2, 0, wv.x + FISHER_OCEAN_WAVE_WIDTH/2, 0);
+    wg.addColorStop(0, 'rgba(120,200,255,0)');
+    wg.addColorStop(0.5, 'rgba(160,220,255,0.9)');
+    wg.addColorStop(1, 'rgba(120,200,255,0)');
+    ctx.fillStyle = wg;
+    ctx.fillRect(wv.x - FISHER_OCEAN_WAVE_WIDTH/2, 0, FISHER_OCEAN_WAVE_WIDTH, canvas.height);
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let yy = 0; yy <= canvas.height; yy += 14) {
+      const xx = wv.x + Math.sin(yy * 0.08 + elapsed * 10) * 6;
+      if (yy === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 釣魚佬：魚鉤（拋竿／收線階段）
+  for (const b of state.balls) {
+    if (b.char.type !== 'fisherman') continue;
+    if (b.fisherPhase === 'casting' || b.fisherPhase === 'waiting' || b.fisherPhase === 'reeling') {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(220,230,240,0.85)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.fisherHookX, b.fisherHookY);
+      ctx.stroke();
+      ctx.font = '20px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('🪝', b.fisherHookX, b.fisherHookY);
+      if (b.fisherPhase === 'waiting') {
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillStyle = '#ffe066';
+        ctx.fillText('！', b.fisherHookX, b.fisherHookY - 20);
+      }
+      ctx.restore();
+    }
+    // 大海：坐船勾甩視覺（船隨衝刺/勾住/揮甩階段顯示在自己位置）
+    if (b.fisherOceanPhase === 'dash' || b.fisherOceanPhase === 'grab' || b.fisherOceanPhase === 'slam') {
+      ctx.save();
+      ctx.font = '26px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('🚤', b.x, b.y);
+      ctx.restore();
+    }
+  }
+
+  // 釣魚佬：結果飄字
+  for (const fx of state.fisherResultFX) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, fx.life / fx.maxLife));
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#4a90d9'; ctx.shadowBlur = 10;
+    ctx.fillText(fx.text, fx.x, fx.y);
     ctx.restore();
   }
 
@@ -9151,6 +10155,24 @@ function render() {
     ctx.fillStyle = '#0d1117'; ctx.fill();
     ctx.strokeStyle = b.char.color; ctx.lineWidth = 2.5; ctx.stroke();
 
+    // 冰雪場地凍結效果
+    if (b.arenaFrozen > 0) {
+      const fPulse = 0.6 + 0.4 * Math.abs(Math.sin(elapsed * 6));
+      ctx.save();
+      ctx.beginPath(); ctx.arc(b.x, b.y, RADIUS + 7, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(140,220,255,${fPulse})`;
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#88ddff'; ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      // 冰晶符號
+      ctx.font = `12px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.globalAlpha = fPulse * 0.85;
+      ctx.fillText('❄️', b.x, b.y - RADIUS - 12);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
     // HP 圓弧
     const hpFrac = b.hp/MAX_HP;
     ctx.beginPath(); ctx.arc(b.x,b.y,RADIUS+4,-Math.PI/2,-Math.PI/2+Math.PI*2*hpFrac);
@@ -9830,7 +10852,7 @@ function updateHUD() {
   document.getElementById('p1-hp-num').textContent = `${Math.ceil(hp0)} / ${MAX_HP}`;
   document.getElementById('p2-hp-num').textContent = `${Math.ceil(hp1)} / ${MAX_HP}`;
   document.getElementById('timer-display').textContent =
-    (state.arena === 'lava' ? '🌋 ' : '') + Math.floor(elapsed) + 's';
+    ({lava:'🌋 ', snow:'❄️ ', grass:'🌿 ', sand:'🏜️ ', beach:'🏖️ '}[state.arena] || '') + Math.floor(elapsed) + 's';
 
   function statusText(b) {
     if (b.char.type === 'chef') {
