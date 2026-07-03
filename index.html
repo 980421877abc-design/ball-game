@@ -1088,7 +1088,8 @@ const CHARACTERS = [
   vsQuotes: { cursed: ['我的學生可都在身後看著呢。',
  '好乏味啊' ,'先聲明，你才是挑戰者'],
   yuta:'學會如何運用你身上的能力吧去保護他人吧，憂太。',
-  tiger:['我很看好你喔，悠仁。','五條什麼的，無所喂了吧。','放馬過來吧！']}
+  tiger:['我很看好你喔，悠仁。','五條什麼的，無所喂了吧。','放馬過來吧！'],
+  geto:['傑，你是我唯一的摯友。','因為我們是最強的。']}
   },
   {
   id: 'cursed', emoji: '💀', weapon: '⚔️', name: '詛咒之王',
@@ -1099,7 +1100,7 @@ const CHARACTERS = [
    vsQuotes: {cannondad : '呦，身體比我想的還強些。' ,
 gojo:['我可能一輩子都不會忘了你吧。','從小鬼出來後第一個就殺了你','你不過是板上的魚肉罷了','好無聊啊！'],
 yuta:'沒想到你能做到這地步，乙骨憂太！',
-tiger:['你那同情我的態度真是令人作嘔，這只顯得你很懦弱。','小鬼，別用你那套可悲的理想來衡量我。','你實在無聊，令我毫無興致。']
+tiger:['你那同情我的態度真是令人作嘔，這只顯得你很懦弱。','小鬼，別用你那套可悲的理想來衡量我。','你實在無聊，令我毫無興致。'],
   },
   
   },
@@ -1159,7 +1160,8 @@ tiger:['你那同情我的態度真是令人作嘔，這只顯得你很懦弱。
   color: '#e8e8f0', glowColor: 'rgba(220,220,255,0.6)', type: 'naobito',
   winQuote: '能跟上甚爾的人，只能是我。',
   vsQuotes: { yuta: '我可是真希的哥哥啊。',
-tiger:'是宿儺的容器啊，順便殺了吧'}
+tiger:'是宿儺的容器啊，順便殺了吧',
+}
   },
   {
   id: 'itachi', emoji: '🐦‍⬛', weapon: '🔥', name: '宇治波鼬',
@@ -1178,7 +1180,8 @@ tiger:'是宿儺的容器啊，順便殺了吧'}
 gojo:'五條老師，指教了',
 cursed:'我會親手殺了宿儺，為老師報仇。' , 
  itachi:'你沒有朋友或是家人嗎？',
- tiger:'你背負的罪惡不屬於你，你沒有錯。'
+ tiger:'你背負的罪惡不屬於你，你沒有錯。',
+ geto:'真失禮，我們可是純愛阿。'
  }
   },
   {
@@ -1212,7 +1215,8 @@ cursed:'格蘭尼達.... '}
   winQuote: '我只是個零件。就算我是個零件，也要盡可能地祓除詛咒。',
   vsQuotes: { yuta: '乙骨前輩，辛苦你了。',
 gojo:['這樣就可以了吧，老師。','老師你的術式好礙事啊。'],
-cursed:'我不會憎恨你，但我會殺了你。如果你願意回到我體內，我就放過你。'}
+cursed:'我不會憎恨你，但我會殺了你。如果你願意回到我體內，我就放過你。',
+geto:'在成為咒術師前，我們是人類。'}
   },
   {
   id: 'stargirl', emoji: '⭐', weapon: '🌟', name: '星星女孩',
@@ -1226,16 +1230,28 @@ cursed:'我不會憎恨你，但我會殺了你。如果你願意回到我體內
   desc: '擁有萬花筒寫輪眼。使用「火球」向敵人噴出火焰，並將敵人或投射物抓入「神威空間」。也可主動進入神威空間，！【被動】開啟虛化躲避敵人的攻擊！',
   stats: ['火球 60/10s', '神威', '神威空間 進出20傷', '虛化'],
   color: '#ff6600', glowColor: 'rgba(255,102,0,0.6)', type: 'obito',
-  winQuote: ['我沒有名字，也不以任何身份而活。','我要創造一個有琳的世界','不能守護該守護的人，這份力量又有什麼意義？']
+  winQuote: ['我沒有名字，也不以任何身份而活。','我要創造一個有琳的世界','不能守護該守護的人，這份力量又有什麼意義？'],
+  vsQuotes: { itachi: ['宇智波的血脈，終究逃不過悲劇嗎。','你選擇守護，我選擇毀滅，僅此而已。'],
+  geto: '為了理想的世界不擇手段，我們還挺像的。' }
   },
   {
   id: 'fisherman', emoji: '🎣', weapon: '🪝', name: '釣魚佬',
-  desc: '每隔一段時間向場地邊緣拋出魚鉤，願者上鉤！',
+  desc: '每隔一段時間向場地邊緣拋出魚鉤，依照釣上來的魚觸發效果，願者上鉤！',
   stats: ['釣魚', '魚', '鯊魚', '首領魚', '大海'],
   color: '#4a90d9', glowColor: 'rgba(74,144,217,0.6)', type: 'fisherman',
-  winQuote: ['只要相信海，海就會幫你。','聽海哭的聲音。','他說風雨中這點痛算什麼。']
+  winQuote: ['只要相信海，海就會幫你。','聽海哭的聲音。','他說風雨中這點痛算什麼。'],
+    },
+  {
+  id: 'geto', emoji: '🧘', weapon: '👻', name: '夏油條',
+  desc: '持有「咒靈操術」。每秒消耗咒靈化為小型咒靈作戰，血量過半時召喚特級咒靈助陣（隨機釋放糾纏／定身／咒力奔流其一），瀕死時發動極之番•漩渦。平時則靠游雲棍法貼身擊退敵人。',
+  stats: ['咒靈', '特級咒靈', '漩渦', '游雲'],
+  color: '#5b3a8e', glowColor: 'rgba(91,58,142,0.6)', type: 'geto',
+  winQuote: ['這個世界，只需要留下優秀的咒術師就好。','非術師不過是家畜罷了。',],
+  vsQuotes: { gojo: ['悟，這可不像你會說的話阿。','因為你是五條悟所以你是最強，還是因為你是最強所以是五條悟？'],
+   yuta: ['你這個欺騙愛人的東西，我可是大義！'],
+  tiger: '你要保護的那些人，有天會背叛你的。',
+  naobito: '禪院家的天才，也不過如此。' }
   }
-   
 ];
 
 // ──────────────── CAROUSEL STATE ────────────────
@@ -1782,7 +1798,7 @@ const OBITO_SPACE_ENTRY_DAMAGE   = 60;    // 進出神威空間傷害
 const OBITO_KAMUI_COOLDOWN       = 7.0;   // 神威冷卻（秒）
 const OBITO_KAMUI_GHOST_TIME     = 1.2;   // 虛影存在時間（秒，等待攻擊判定）
 const OBITO_KAMUI_TELEPORT_DELAY = 1.0;   // 從虛影消失到轉移完成的延遲（秒）
-const OBITO_KAMUI_CHAIN_DAMAGE   = 4;    // 鐵鏈揮舞每幀傷害（主場轉移版）
+const OBITO_KAMUI_CHAIN_DAMAGE   = 6;    // 鐵鏈揮舞每幀傷害（主場轉移版）
 const OBITO_KAMUI_CHAIN_RADIUS   = 60;    // 鐵鏈範圍半徑
 const OBITO_KAMUI_BOMB_DAMAGE    = 40;    // 起爆符傷害
 const OBITO_KAMUI_BOMB_RADIUS    = 80;    // 起爆符爆炸半徑
@@ -1891,12 +1907,12 @@ const FISHER_RESULT_WEIGHTS  = { fish: 30, shark: 8, airforce: 6, bossfish:4 , o
 const FISHER_FISH_DMG        = 30;
 const FISHER_FISH_SPEED      = 440;
 const FISHER_FISH_RED_DELAY  = 1.0;
-const FISHER_FISH_RED_DMG    = 40;
+const FISHER_FISH_RED_DMG    = 50;
 // 鯊魚
 const FISHER_SHARK_DMG       = 70;
 const FISHER_SHARK_SPEED     = 600;
 const FISHER_SHARK_BLEED_DUR = 3.0;
-const FISHER_SHARK_BLEED_DPS = 60;    // 每0.1秒6傷害 = 60/s
+const FISHER_SHARK_BLEED_DPS = 70;    // 每0.1秒7傷害 = 70/s
 // 首領魚
 const FISHER_BOSSFISH_COUNT  = 10;
 const FISHER_BOSSFISH_TOTAL  = 240;
@@ -1913,6 +1929,54 @@ const FISHER_OCEAN_HOOK_DMG     = 10;
 const FISHER_OCEAN_SLAM_DMG     = 130;
 const FISHER_OCEAN_DASH_SPEED   = 780;
 const FISHER_OCEAN_GRAB_HOLD    = 0.3;  // 勾住後揮甩停頓時間
+
+// 夏油條（咒靈操術）專屬常數 ────────────────
+const GETO_MAX_STOCK          = 80;   // 咒靈庫存上限
+const GETO_SPAWN_INTERVAL     = 1.0;   // 每隔幾秒消耗一隻庫存召喚小型咒靈
+const GETO_SPIRIT_HP          = 25;    // 小型咒靈血量
+const GETO_SPIRIT_DAMAGE      = 25;    // 小型咒靈碰觸傷害
+const GETO_SPIRIT_SPEED       = 105;   // 小型咒靈追擊速度
+const GETO_SPIRIT_RADIUS      = 13;
+const GETO_SPIRIT_CONTACT_CD  = 1.0;   // 咒靈碰觸傷害的間隔
+const GETO_SPIRIT_RETALIATE   = 25;    // 每次咬到敵人後，咒靈自身承受的反震傷害
+const GETO_SPIRIT_LIFESPAN    = 14;    // 咒靈最長存活時間（避免場面爆滿）
+
+const GETO_SPECIAL_TRIGGER_RATIO = 0.5;   // 血量剩餘比例：觸發召喚特級咒靈
+const GETO_SPECIAL_HP            = 300;   // 特級咒靈血量
+const GETO_SPECIAL_SHIELD_RATIO  = 0.3;   // 護身：承擔夏油條所受傷害的比例
+const GETO_SPECIAL_FOLLOW_RADIUS = 55;    // 特級咒靈繞著夏油條的跟隨半徑
+const GETO_SPECIAL_RADIUS        = 27;
+
+const GETO_ENTANGLE_INTERVAL     = 5.0;   // 糾纏：枝條發射間隔
+const GETO_ENTANGLE_RANGE        = 340;   // 糾纏：命中判定範圍
+const GETO_ENTANGLE_TICKS        = 4;     // 糾纏：持續傷害跳動次數
+const GETO_ENTANGLE_TICK_TIME    = 0.5;   // 糾纏：每跳間隔
+const GETO_ENTANGLE_TICK_DMG     = 22;    // 糾纏：每跳傷害
+const GETO_ENTANGLE_HEAL_RATIO   = 0.6;   // 糾纏：造成傷害轉換為夏油條回復的比例
+const GETO_ENTANGLE_BRANCH_MAX   = 6;     // 糾纏：身上最多同時存在的枝條數
+const GETO_ENTANGLE_BRANCH_GROW  = 0.3;   // 糾纏：單根枝條長成所需時間
+const GETO_ENTANGLE_BRANCH_FADE  = 1.2;   // 糾纏：DoT結束後枝條凋零所需時間
+
+const GETO_BIND_COOLDOWN         = 5.0;   // 定身：冷卻（雙方解除硬直後才開始計算）
+const GETO_BIND_RANGE            = 440;   // 定身：發動距離
+const GETO_BIND_DURATION         = 2.0;   // 定身：硬直時間
+
+const GETO_SURGE_COOLDOWN        = 6.0;   // 咒力奔流：冷卻
+const GETO_SURGE_RANGE           = 480;   // 咒力奔流：發動距離
+const GETO_SURGE_CHARGE_TIME     = 1.4;   // 咒力奔流：蓄力時間
+const GETO_SURGE_DAMAGE          = 95;    // 咒力奔流：傷害
+const GETO_SURGE_VULN_MULT       = 1.5;   // 咒力奔流：蓄力中特級咒靈承受傷害倍率（破綻）
+
+const GETO_ULTIMATE_TRIGGER_RATIO = 0.25; // 極之番•漩渦：觸發血量比例
+const GETO_ULTIMATE_CHARGE_TIME   = 2;  // 極之番•漩渦：蓄力時間
+const GETO_ULTIMATE_BASE_DMG      = 250;  // 極之番•漩渦：基礎傷害
+const GETO_ULTIMATE_STOCK_MULT    = 0.6;  // 極之番•漩渦：庫存咒靈加成係數
+const GETO_ULTIMATE_SPEED         = 400;  // 極之番•漩渦：光球飛行速度
+const GETO_ULTIMATE_RADIUS        = 30;
+
+const GETO_CANE_DAMAGE           = 40;    // 游雲（被動）：貼身棍擊傷害
+const GETO_CANE_COOLDOWN         = 2.0;   // 游雲：冷卻
+const GETO_CANE_KNOCKBACK        = 200;   // 游雲：擊退速度
 
 let gameLoop = null;
 let lastTime = 0;
@@ -1997,8 +2061,8 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
-const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff' };
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9', geto:'#5b3a8e' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff', geto:'#a678e0' };
 
 const PROGRESS_HANDLERS = {
   opm(b) {
@@ -2148,6 +2212,29 @@ const PROGRESS_HANDLERS = {
     return {
       atFrac: Math.max(0, Math.min(1, (b.fisherTimer || 0) / FISHER_CAST_COOLDOWN)),
       barColor: b.char.color
+    };
+  },
+  geto(b) {
+    if (b.getoUltimateCharging) return { atFrac: 1 - Math.max(0, b.getoUltimateChargeTimer) / GETO_ULTIMATE_CHARGE_TIME, barColor: '#c9a6ff' };
+    if (b.getoSpecialActive) {
+      if (b.getoSpecialSkill === 'surge' && b.getoSurgeCharging) {
+        return { atFrac: 1 - Math.max(0, b.getoSurgeChargeTimer) / GETO_SURGE_CHARGE_TIME, barColor: '#c9a6ff' };
+      }
+      if (b.getoSpecialSkill === 'entangle') {
+        return { atFrac: 1 - Math.max(0, b.getoEntangleTimer) / GETO_ENTANGLE_INTERVAL, barColor: '#6b8e3d' };
+      }
+      if (b.getoSpecialSkill === 'bind') {
+        const enemy = state.balls.find(x => x.player !== b.player);
+        if (enemy && enemy.getoBoundTimer > 0) return { atFrac: 1, barColor: '#8e6fd9' };
+        return { atFrac: 1 - Math.max(0, b.getoBindTimer) / GETO_BIND_COOLDOWN, barColor: '#8e6fd9' };
+      }
+      if (b.getoSpecialSkill === 'surge') {
+        return { atFrac: 1 - Math.max(0, b.getoSurgeTimer) / GETO_SURGE_COOLDOWN, barColor: b.char.color };
+      }
+    }
+    return {
+      atFrac: b.getoStock > 0 ? 1 - Math.max(0, b.getoSpawnTimer) / GETO_SPAWN_INTERVAL : 1,
+      barColor: b.getoStock > 0 ? b.char.color : '#555'
     };
   },
   __default(b) {
@@ -2435,6 +2522,31 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       fisherOceanTargetX:  ch.type === 'fisherman' ? 0 : null,
       fisherOceanTargetY:  ch.type === 'fisherman' ? 0 : null,
       fisherGrabbedBy:     null,   // 被大海勾住時鎖定，暫停自身行動（任何角色都可能被抓）
+      // 夏油條專屬狀態
+      getoStock:            ch.type === 'geto' ? GETO_MAX_STOCK : null,        // 咒靈庫存
+      getoSpawnTimer:       ch.type === 'geto' ? GETO_SPAWN_INTERVAL : null,   // 召喚小型咒靈倒數
+      getoSpecialActive:    ch.type === 'geto' ? false : null,                 // 特級咒靈是否存活中
+      getoSpecialSpawned:   ch.type === 'geto' ? false : null,                 // 是否已觸發過召喚（一次性）
+      getoSpecialHp:        ch.type === 'geto' ? 0 : null,                     // 特級咒靈血量
+      getoSpecialAngle:     ch.type === 'geto' ? 0 : null,                     // 特級咒靈跟隨繞行角度
+      getoSpecialSkill:     ch.type === 'geto' ? null : null,                  // 'entangle' | 'bind' | 'surge'
+      getoEntangleTimer:    ch.type === 'geto' ? GETO_ENTANGLE_INTERVAL * 0.4 : null,
+      getoBindTimer:        ch.type === 'geto' ? GETO_BIND_COOLDOWN * 0.4 : null,   // 定身冷卻倒數（僅在雙方解除硬直後才遞減）
+      getoBoundTimer:       0,    // 被定身硬直剩餘時間（任何角色都可能被定身）
+      getoSpecialBoundTimer: ch.type === 'geto' ? 0 : null,                    // 特級咒靈自己的定身剩餘時間（純跟隨動畫暫停，不影響夏油條本體）
+      getoSurgeTimer:       ch.type === 'geto' ? GETO_SURGE_COOLDOWN * 0.5 : null,
+      getoSurgeCharging:    ch.type === 'geto' ? false : null,
+      getoSurgeChargeTimer: ch.type === 'geto' ? 0 : null,
+      getoDotTimer:         0,    // 糾纏持續傷害：剩餘跳動次數計時（任何角色都可能中招）
+      getoDotTickTimer:     0,    // 糾纏：下一跳倒數
+      getoDotDmg:           0,    // 糾纏：每跳傷害
+      getoDotOwnerPlayer:   null, // 糾纏：施放者玩家編號（用於回血）
+      getoBranches:         [],  // 糾纏：長在身上的枝條列表（任何角色都可能中招）
+      getoCaneCooldown:     ch.type === 'geto' ? 0 : null,                     // 游雲被動冷卻
+      getoUltimateTriggered:ch.type === 'geto' ? false : null,                 // 極之番•漩渦是否已觸發（一次性）
+      getoUltimateCharging: ch.type === 'geto' ? false : null,
+      getoUltimateChargeTimer: ch.type === 'geto' ? 0 : null,
+      getoUltimateAngle:    ch.type === 'geto' ? 0 : null,
     };
   }
 
@@ -2489,6 +2601,13 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     fisherResultFX: [],       // 釣魚佬：釣魚結果飄字列表
     fisherOceanWaves: [],     // 釣魚佬：大海海浪列表
     fisherSchoolQueue: [],    // 釣魚佬：首領魚待發射的魚群佇列
+    getoSpirits: [],          // 夏油條：場上小型咒靈列表
+    getoEntangleFX: [],       // 夏油條：糾纏枝條特效列表
+    getoBindFX: [],           // 夏油條：定身特效列表
+    getoSurgeFX: [],          // 夏油條：咒力奔流特效列表
+    getoUltimateProjectiles: [], // 夏油條：漩渦光球列表
+    getoDeathFX: [],          // 夏油條：咒靈/特級咒靈消散特效列表
+    getoCaneFX: [],           // 夏油條：游雲甩棍揮擊動畫列表
   };
 
   updateHUD();
@@ -2743,7 +2862,28 @@ function dealDamage(target, dmg, options = {}) {
   // 工程師：機甲模式減傷
   if (target.char && target.char.type === 'engineer' && target.engMechActive && !options.bypassParry) mul *= (1 - ENGINEER_MECH_DMG_REDUCE);
   const prevHp = target.hp;
-  let actual = Math.min(target.hp, dmg * mul);
+  let rawAmount = dmg * mul;
+  // 夏油條被動「護身」：特級咒靈承擔夏油條所受30%傷害（直接分擔在特級咒靈血量上）
+  // 注意：必須在「傷害封頂於目前血量」之前扣除護身部分，否則致命一擊永遠會被護身分走一小部分，
+  // 導致 actual 永遠小於 target.hp，血量只會無限趨近於 0 卻永遠扣不完（卡血無法擊敗的bug）。
+  if (target.char && target.char.type === 'geto' && target.getoSpecialActive && !options.bypassParry) {
+    const shieldRatio = GETO_SPECIAL_SHIELD_RATIO * (target.getoSurgeCharging ? GETO_SURGE_VULN_MULT : 1);
+    const shielded = Math.min(target.getoSpecialHp, rawAmount * shieldRatio);
+    if (shielded > 0) {
+      target.getoSpecialHp -= shielded;
+      rawAmount -= shielded;
+      if (state) state.hitFlashes.push({ x: target.x, y: target.y, r: 16, alpha: 0.6, color: '#5b3a8e', t: 0.25 });
+      if (target.getoSpecialHp <= 0) {
+        target.getoSpecialHp = 0;
+        target.getoSpecialActive = false;
+        if (state) {
+          state.getoDeathFX.push({ x: target.x, y: target.y, life: 0.6, maxLife: 0.6, r: GETO_SPECIAL_RADIUS });
+          playHitSound('opm');
+        }
+      }
+    }
+  }
+  let actual = Math.min(target.hp, rawAmount);
   // 系統殺：若原始傷害本應致命，一拳超人的減傷不應讓他逃過一死
   if (isOpmReduced && dmg >= prevHp) {
     actual = prevHp;
@@ -3284,8 +3424,15 @@ function update(dt) {
       b.vx = 0; b.vy = 0;
     }
 
+    // 夏油條特級咒靈「定身」硬直倒數（被定身的敵人在此期間完全無法行動；冷卻計算見夏油條主邏輯）
+    if (b.getoBoundTimer > 0) {
+      b.getoBoundTimer -= dt;
+      b.vx = 0; b.vy = 0;
+      if (b.getoBoundTimer < 0) b.getoBoundTimer = 0;
+    }
+
     // 移動（凍結則不移動；虎天帝超新星蓄力視為被束縛定身，完全不動；被帶土抓進神威空間者完全凍結；冰雪場地凍結同樣完全不動）
-    if (!b.frozenByVampire && !b.obitoInSpace && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0) && !(b.arenaFrozen > 0) && !(b.beachCurrentSuckTimer > 0)) {
+    if (!b.frozenByVampire && !b.obitoInSpace && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0) && !(b.arenaFrozen > 0) && !(b.getoBoundTimer > 0) && !b.getoUltimateCharging && !(b.beachCurrentSuckTimer > 0)) {
       const speedMul = (b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0) * (b.inSandZone ? ARENA_SAND_SLOW_FACTOR : 1.0);
 
       // 最低速度保證（排除技能主動停止的情況）
@@ -3549,6 +3696,35 @@ function update(dt) {
             state.hitFlashes.push({ x: target.x, y: target.y, r: 22, alpha: 0.6, color: '#c0392b', t: 0.3 });
             playHitSound('curse_slash');
           }
+        }
+      }
+
+      // 夏油條被動「游雲」：貼身棍擊敵人並將其擊退
+      for (let gi = 0; gi < state.balls.length; gi++) {
+        const geto = state.balls[gi];
+        if (geto.char.type !== 'geto') continue;
+        const target = state.balls.find(x => x.player !== geto.player);
+        if (!target || target.getoBoundTimer > 0) continue;
+        if (!(geto.getoCaneCooldown > 0)) {
+          geto.getoCaneCooldown = GETO_CANE_COOLDOWN;
+          dealDamage(target, GETO_CANE_DAMAGE);
+          const kdx = target.x - geto.x, kdy = target.y - geto.y;
+          const kd = Math.hypot(kdx, kdy) || 1;
+          const hitAngle = Math.atan2(kdy, kdx);
+          target.vx += (kdx / kd) * GETO_CANE_KNOCKBACK;
+          target.vy += (kdy / kd) * GETO_CANE_KNOCKBACK;
+          // 甩棍本體揮擊動畫（錨定在夏油條身上，由後往前掃出）
+          state.getoCaneFX.push({
+            owner: geto.player, angle: hitAngle,
+            life: 0.28, maxLife: 0.28
+          });
+          // 命中處的紫色棍擊爆裂特效（取代原本借用的紅色十字斬）
+          state.slashMarks.push({
+            x: target.x, y: target.y, angle: hitAngle,
+            life: 0.35, maxLife: 0.35, hit: true, owner: geto.player, style: 'geto_cane'
+          });
+          state.hitFlashes.push({ x: target.x, y: target.y, r: 20, alpha: 0.85, color: '#5b3a8e', t: 0.3 });
+          playHitSound('knife');
         }
       }
     } else {
@@ -7565,6 +7741,233 @@ waypoints.push({
     if (hf.t <= 0) state.hitFlashes.splice(i, 1);
   }
 
+  // ══════════════ 夏油條邏輯 ══════════════
+  for (const b of state.balls) {
+    if (b.char.type !== 'geto') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
+
+    // 游雲被動冷卻遞減
+    if (b.getoCaneCooldown > 0) b.getoCaneCooldown -= dt;
+
+    // 技能一：咒靈操術 — 庫存每秒消耗一隻召喚小型咒靈
+    if (b.getoStock > 0) {
+      b.getoSpawnTimer -= dt;
+      if (b.getoSpawnTimer <= 0) {
+        b.getoSpawnTimer = GETO_SPAWN_INTERVAL;
+        b.getoStock--;
+        state.getoSpirits.push({
+          x: b.x + randBetween(-16, 16), y: b.y + randBetween(-16, 16),
+          hp: GETO_SPIRIT_HP, maxHp: GETO_SPIRIT_HP, owner: b.player,
+          contactCd: 0, life: GETO_SPIRIT_LIFESPAN, spawnFlash: 0.3
+        });
+      }
+    }
+
+    // 技能二：血量剩餘50%時，一次性召喚特級咒靈
+    if (!b.getoSpecialSpawned && b.hp <= MAX_HP * GETO_SPECIAL_TRIGGER_RATIO) {
+      b.getoSpecialSpawned = true;
+      b.getoSpecialActive = true;
+      b.getoSpecialHp = GETO_SPECIAL_HP;
+      b.getoSpecialAngle = Math.random() * Math.PI * 2;
+      b.getoSpecialSkill = ['entangle', 'bind', 'surge'][Math.floor(Math.random() * 3)];
+      b.getoEntangleTimer = GETO_ENTANGLE_INTERVAL * 0.5;
+      b.getoBindTimer = GETO_BIND_COOLDOWN * 0.5;
+      b.getoSurgeTimer = GETO_SURGE_COOLDOWN * 0.5;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 60, alpha: 1.1, color: '#5b3a8e', t: 0.6 });
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 1.0, color: '#ffffff', t: 0.4 });
+      playHitSound('opm');
+    }
+
+    // 特級咒靈：跟隨繞行 + 三選一技能運作
+    if (b.getoSpecialActive) {
+      if (b.getoSpecialBoundTimer > 0) {
+        b.getoSpecialBoundTimer -= dt;
+        if (b.getoSpecialBoundTimer < 0) b.getoSpecialBoundTimer = 0;
+      } else {
+        b.getoSpecialAngle += dt * 1.3;
+      }
+      b.getoSpecialX = b.x + Math.cos(b.getoSpecialAngle) * GETO_SPECIAL_FOLLOW_RADIUS;
+      b.getoSpecialY = b.y + Math.sin(b.getoSpecialAngle) * GETO_SPECIAL_FOLLOW_RADIUS;
+      const distToEnemy = Math.hypot(enemy.x - b.getoSpecialX, enemy.y - b.getoSpecialY);
+
+      if (b.getoSpecialSkill === 'entangle') {
+        b.getoEntangleTimer -= dt;
+        if (b.getoEntangleTimer <= 0) {
+          b.getoEntangleTimer = GETO_ENTANGLE_INTERVAL;
+          if (distToEnemy < GETO_ENTANGLE_RANGE) {
+            enemy.getoDotDmg = GETO_ENTANGLE_TICK_DMG;
+            enemy.getoDotTimer = GETO_ENTANGLE_TICKS;
+            enemy.getoDotTickTimer = GETO_ENTANGLE_TICK_TIME;
+            enemy.getoDotOwnerPlayer = b.player;
+            state.getoEntangleFX.push({
+              fromX: b.getoSpecialX, fromY: b.getoSpecialY, toX: enemy.x, toY: enemy.y,
+              life: 0.45, maxLife: 0.45
+            });
+            playHitSound('trap_chain');
+          }
+        }
+      } else if (b.getoSpecialSkill === 'bind') {
+        const enemyBound = enemy.getoBoundTimer > 0;
+        if (!enemyBound) {
+          if (b.getoBindTimer > 0) b.getoBindTimer -= dt;
+          if (b.getoBindTimer <= 0 && distToEnemy < GETO_BIND_RANGE) {
+            enemy.getoBoundTimer = GETO_BIND_DURATION;
+            b.getoSpecialBoundTimer = GETO_BIND_DURATION; // 特級咒靈自己定在原地（不影響夏油條本體移動）
+            b.getoBindTimer = GETO_BIND_COOLDOWN;  // 冷卻已重置，但因敵方硬直中會暫停遞減，實際從硬直解除那刻才開始倒數
+            state.getoBindFX.push({ x: (b.getoSpecialX + enemy.x) / 2, y: (b.getoSpecialY + enemy.y) / 2, life: GETO_BIND_DURATION, maxLife: GETO_BIND_DURATION });
+            state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 30, alpha: 0.9, color: '#8e6fd9', t: 0.4 });
+            playHitSound('trap_chain');
+          }
+        }
+      } else if (b.getoSpecialSkill === 'surge') {
+        if (!b.getoSurgeCharging) {
+          if (b.getoSurgeTimer > 0) b.getoSurgeTimer -= dt;
+          if (b.getoSurgeTimer <= 0 && distToEnemy < GETO_SURGE_RANGE) {
+            b.getoSurgeCharging = true;
+            b.getoSurgeChargeTimer = GETO_SURGE_CHARGE_TIME;
+            b.getoSurgeAngle = Math.atan2(enemy.y - b.getoSpecialY, enemy.x - b.getoSpecialX);
+            state.hitFlashes.push({ x: b.getoSpecialX, y: b.getoSpecialY, r: 26, alpha: 1, color: '#c9a6ff', t: GETO_SURGE_CHARGE_TIME });
+          }
+        } else {
+          b.getoSurgeChargeTimer -= dt;
+          if (b.getoSurgeChargeTimer <= 0) {
+            b.getoSurgeCharging = false;
+            b.getoSurgeTimer = GETO_SURGE_COOLDOWN;
+            const dd = Math.hypot(enemy.x - b.getoSpecialX, enemy.y - b.getoSpecialY);
+            if (dd < GETO_SURGE_RANGE + 60) {
+              dealDamage(enemy, GETO_SURGE_DAMAGE);
+              state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 34, alpha: 1, color: '#c9a6ff', t: 0.35 });
+            }
+            state.getoSurgeFX.push({
+              fromX: b.getoSpecialX, fromY: b.getoSpecialY, angle: b.getoSurgeAngle,
+              life: 0.3, maxLife: 0.3
+            });
+            playHitSound('opm');
+          }
+        }
+      }
+    }
+
+    // 技能三：極之番•漩渦 — 血量剩餘25%時觸發
+    if (!b.getoUltimateTriggered && b.hp <= MAX_HP * GETO_ULTIMATE_TRIGGER_RATIO) {
+      b.getoUltimateTriggered = true;
+      b.getoUltimateCharging = true;
+      b.getoUltimateChargeTimer = GETO_ULTIMATE_CHARGE_TIME;
+      b.vx = 0; b.vy = 0;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 70, alpha: 1.2, color: '#c9a6ff', t: GETO_ULTIMATE_CHARGE_TIME });
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 1.0, color: '#ffffff', t: 0.5 });
+      playHitSound('opm');
+    }
+    if (b.getoUltimateCharging) {
+      b.vx = 0; b.vy = 0;
+      b.getoUltimateChargeTimer -= dt;
+      // 蓄力全程持續描準，鎖定敵人當下位置，確保發射瞬間角度最準
+      b.getoUltimateAngle = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+      if (b.getoUltimateChargeTimer <= 0) {
+        b.getoUltimateCharging = false;
+        const dmg = GETO_ULTIMATE_BASE_DMG + b.getoStock * GETO_ULTIMATE_STOCK_MULT;
+        const ang = b.getoUltimateAngle;
+        state.getoUltimateProjectiles.push({
+          x: b.x, y: b.y,
+          vx: Math.cos(ang) * GETO_ULTIMATE_SPEED, vy: Math.sin(ang) * GETO_ULTIMATE_SPEED,
+          r: GETO_ULTIMATE_RADIUS, damage: dmg, owner: b.player, life: 3.5, active: true
+        });
+        playHitSound('opm');
+      }
+    }
+  }
+
+  // 夏油條：糾纏持續傷害跳動處理（掛在受傷方身上，任何角色都可能中招）
+  for (const b of state.balls) {
+    if (b.getoDotTimer > 0) {
+      b.getoDotTickTimer -= dt;
+      if (b.getoDotTickTimer <= 0) {
+        b.getoDotTickTimer = GETO_ENTANGLE_TICK_TIME;
+        dealDamage(b, b.getoDotDmg);
+        const healer = state.balls.find(x => x.player === b.getoDotOwnerPlayer);
+        if (healer && healer.hp > 0) healer.hp = Math.min(MAX_HP, healer.hp + b.getoDotDmg * GETO_ENTANGLE_HEAL_RATIO);
+        state.hitFlashes.push({ x: b.x + randBetween(-10, 10), y: b.y + randBetween(-10, 10), r: 12, alpha: 0.7, color: '#5b3a8e', t: 0.3 });
+        // 每次觸發傷害，身上長出一根新枝條
+        if (!b.getoBranches) b.getoBranches = [];
+        b.getoBranches.push({
+          angle: Math.random() * Math.PI * 2,
+          growTimer: 0,
+          targetLen: RADIUS * (0.5 + Math.random() * 0.4),
+          swayPhase: Math.random() * Math.PI * 2,
+          fadeTimer: 0,
+        });
+        if (b.getoBranches.length > GETO_ENTANGLE_BRANCH_MAX) b.getoBranches.shift();
+        b.getoDotTimer--;
+        if (b.getoDotTimer <= 0) { b.getoDotTimer = 0; b.getoDotDmg = 0; b.getoDotOwnerPlayer = null; }
+      }
+    }
+    // 枝條生長動畫；DoT結束後開始凋零並自動清除
+    if (b.getoBranches && b.getoBranches.length) {
+      for (let i = b.getoBranches.length - 1; i >= 0; i--) {
+        const br = b.getoBranches[i];
+        br.growTimer += dt;
+        if (b.getoDotTimer <= 0) {
+          br.fadeTimer += dt;
+          if (br.fadeTimer >= GETO_ENTANGLE_BRANCH_FADE) b.getoBranches.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  // 夏油條：小型咒靈移動、貼身傷害與生命週期
+  for (let i = state.getoSpirits.length - 1; i >= 0; i--) {
+    const s = state.getoSpirits[i];
+    if (s.spawnFlash > 0) s.spawnFlash -= dt;
+    s.life -= dt;
+    if (s.life <= 0 || s.hp <= 0) {
+      state.getoDeathFX.push({ x: s.x, y: s.y, life: 0.35, maxLife: 0.35, r: GETO_SPIRIT_RADIUS });
+      state.getoSpirits.splice(i, 1);
+      continue;
+    }
+    const enemy = state.balls.find(x => x.player !== s.owner);
+    if (!enemy || (state.dioWorldGlobalActive && state.dioWorldCaster && state.dioWorldCaster.player !== s.owner)) continue;
+    const dx = enemy.x - s.x, dy = enemy.y - s.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const nx = dx / dist, ny = dy / dist;
+    s.x += nx * GETO_SPIRIT_SPEED * dt;
+    s.y += ny * GETO_SPIRIT_SPEED * dt;
+    if (s.contactCd > 0) s.contactCd -= dt;
+    if (dist < RADIUS + GETO_SPIRIT_RADIUS && s.contactCd <= 0) {
+      s.contactCd = GETO_SPIRIT_CONTACT_CD;
+      dealDamage(enemy, GETO_SPIRIT_DAMAGE);
+      s.hp -= GETO_SPIRIT_RETALIATE;
+      state.hitFlashes.push({ x: (s.x + enemy.x) / 2, y: (s.y + enemy.y) / 2, r: 14, alpha: 0.8, color: '#5b3a8e', t: 0.25 });
+      playHitSound('trap_hit');
+    }
+  }
+
+  // 夏油條：極之番•漩渦光球移動與命中
+  for (let i = state.getoUltimateProjectiles.length - 1; i >= 0; i--) {
+    const p = state.getoUltimateProjectiles[i];
+    p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+    if (p.life <= 0 || p.x < -50 || p.x > W + 50 || p.y < -50 || p.y > H + 50) { state.getoUltimateProjectiles.splice(i, 1); continue; }
+    const target = state.balls.find(x => x.player !== p.owner);
+    if (target) {
+      const dd = Math.hypot(target.x - p.x, target.y - p.y);
+      if (dd < RADIUS + p.r) {
+        dealDamage(target, p.damage);
+        state.hitFlashes.push({ x: target.x, y: target.y, r: 55, alpha: 1.2, color: '#c9a6ff', t: 0.45 });
+        state.hitFlashes.push({ x: target.x, y: target.y, r: 30, alpha: 1.0, color: '#ffffff', t: 0.3 });
+        playHitSound('opm');
+        state.getoUltimateProjectiles.splice(i, 1);
+      }
+    }
+  }
+
+  // 夏油條：各類特效壽命衰減
+  for (let i = state.getoEntangleFX.length - 1; i >= 0; i--) { state.getoEntangleFX[i].life -= dt; if (state.getoEntangleFX[i].life <= 0) state.getoEntangleFX.splice(i, 1); }
+  for (let i = state.getoBindFX.length - 1; i >= 0; i--) { state.getoBindFX[i].life -= dt; if (state.getoBindFX[i].life <= 0) state.getoBindFX.splice(i, 1); }
+  for (let i = state.getoSurgeFX.length - 1; i >= 0; i--) { state.getoSurgeFX[i].life -= dt; if (state.getoSurgeFX[i].life <= 0) state.getoSurgeFX.splice(i, 1); }
+  for (let i = state.getoDeathFX.length - 1; i >= 0; i--) { state.getoDeathFX[i].life -= dt; if (state.getoDeathFX[i].life <= 0) state.getoDeathFX.splice(i, 1); }
+  for (let i = state.getoCaneFX.length - 1; i >= 0; i--) { state.getoCaneFX[i].life -= dt; if (state.getoCaneFX[i].life <= 0) state.getoCaneFX.splice(i, 1); }
+
   // ── DIO 世界（時停）：將敵方所有狀態還原為本幀凍結前的樣子（HP變化除外，讓DIO的傷害保留）──
   if (dioFreezeTarget && dioFreezeSnapshot) {
     const survivedHp = dioFreezeTarget.hp;
@@ -7873,6 +8276,22 @@ function render() {
       ctx.globalAlpha = prog * 0.5;
       ctx.beginPath(); ctx.moveTo(-len*0.35, -len*0.35); ctx.lineTo(len*0.35, len*0.35); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(len*0.35, -len*0.35); ctx.lineTo(-len*0.35, len*0.35); ctx.stroke();
+    } else if (s.style === 'geto_cane') {
+      // 游雲：鈍器命中的紫色爆裂星紋（區別於刀劍系的斬擊線）
+      const len = 26;
+      ctx.strokeStyle = '#c9a6ff';
+      ctx.lineWidth = 3 - prog * 1.5;
+      ctx.shadowColor = '#8e6fd9'; ctx.shadowBlur = 16 * prog;
+      for (let k = 0; k < 6; k++) {
+        const a2 = (k / 6) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a2) * len * 0.3, Math.sin(a2) * len * 0.3);
+        ctx.lineTo(Math.cos(a2) * len, Math.sin(a2) * len);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = prog * 0.6;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.arc(0, 0, len * 0.4, 0, Math.PI * 2); ctx.stroke();
     } else if (s.style === 'domain_burst') {
       // 御廚子啟動：長且粗的放射斬線，深紅帶白芯
       const len = 80;
@@ -8693,6 +9112,247 @@ function render() {
     ctx.fillStyle = '#ffffff';
     ctx.shadowColor = '#4a90d9'; ctx.shadowBlur = 10;
     ctx.fillText(fx.text, fx.x, fx.y);
+    ctx.restore();
+  }
+
+  // 夏油條：小型咒靈
+  for (const s of state.getoSpirits) {
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    const hpRatio = s.hp / s.maxHp;
+    const flash = s.spawnFlash > 0 ? s.spawnFlash * 2 : 0;
+    ctx.shadowColor = '#5b3a8e';
+    ctx.shadowBlur = 12 + flash * 20;
+    ctx.globalAlpha = 0.55 + hpRatio * 0.45 + flash;
+    ctx.beginPath();
+    ctx.arc(0, 0, GETO_SPIRIT_RADIUS, 0, Math.PI * 2);
+    const g = ctx.createRadialGradient(0, 0, 1, 0, 0, GETO_SPIRIT_RADIUS);
+    g.addColorStop(0, '#c9a6ff');
+    g.addColorStop(1, '#5b3a8e');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.strokeStyle = '#2e1c4a';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('咒', 0, 1);
+    ctx.restore();
+  }
+
+  // 夏油條：特級咒靈
+  for (const b of state.balls) {
+    if (b.char.type !== 'geto' || !b.getoSpecialActive) continue;
+    ctx.save();
+    ctx.translate(b.getoSpecialX, b.getoSpecialY);
+    const hpRatio = Math.max(0, b.getoSpecialHp / GETO_SPECIAL_HP);
+    ctx.shadowColor = '#8e6fd9';
+    ctx.shadowBlur = 20 + (b.getoSurgeCharging ? 20 * Math.abs(Math.sin(elapsed * 10)) : 0);
+    ctx.beginPath();
+    ctx.arc(0, 0, GETO_SPECIAL_RADIUS, 0, Math.PI * 2);
+    const g2 = ctx.createRadialGradient(0, 0, 2, 0, 0, GETO_SPECIAL_RADIUS);
+    g2.addColorStop(0, '#e6d6ff');
+    g2.addColorStop(0.6, '#7a4fbf');
+    g2.addColorStop(1, '#3a2560');
+    ctx.fillStyle = g2;
+    ctx.fill();
+    ctx.strokeStyle = '#2e1c4a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('特', 0, 1);
+    ctx.restore();
+    // 特級咒靈血條
+    ctx.save();
+    const bw = 40;
+    ctx.translate(b.getoSpecialX - bw / 2, b.getoSpecialY - GETO_SPECIAL_RADIUS - 12);
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, 0, bw, 5);
+    ctx.fillStyle = '#a678e0';
+    ctx.fillRect(0, 0, bw * hpRatio, 5);
+    ctx.restore();
+  }
+
+  // 夏油條：糾纏枝條特效
+  for (const fx of state.getoEntangleFX) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, fx.life / fx.maxLife) * 0.9;
+    ctx.strokeStyle = '#6b8e3d';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = '#6b8e3d';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    const midx = (fx.fromX + fx.toX) / 2 + (fx.toY - fx.fromY) * 0.15;
+    const midy = (fx.fromY + fx.toY) / 2 - (fx.toX - fx.fromX) * 0.15;
+    ctx.moveTo(fx.fromX, fx.fromY);
+    ctx.quadraticCurveTo(midx, midy, fx.toX, fx.toY);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 夏油條：糾纏枝條（長在中招者身上，隨受擊次數增生、DoT結束後凋零）
+  for (const tb of state.balls) {
+    if (!tb.getoBranches || !tb.getoBranches.length) continue;
+    for (const br of tb.getoBranches) {
+      const growRatio = Math.min(1, br.growTimer / GETO_ENTANGLE_BRANCH_GROW);
+      const curLen = br.targetLen * growRatio;
+      if (curLen < 1) continue;
+      const fadeRatio = br.fadeTimer > 0 ? Math.max(0, 1 - br.fadeTimer / GETO_ENTANGLE_BRANCH_FADE) : 1;
+      const sway = Math.sin(br.swayPhase + br.growTimer * 2.4) * 0.12;
+      const ang = br.angle + sway;
+      const baseX = tb.x + Math.cos(br.angle) * (RADIUS * 0.7);
+      const baseY = tb.y + Math.sin(br.angle) * (RADIUS * 0.7);
+      const tipX = baseX + Math.cos(ang) * curLen;
+      const tipY = baseY + Math.sin(ang) * curLen;
+      const midX = (baseX + tipX) / 2 + Math.cos(ang + Math.PI / 2) * curLen * 0.18;
+      const midY = (baseY + tipY) / 2 + Math.sin(ang + Math.PI / 2) * curLen * 0.18;
+      ctx.save();
+      ctx.globalAlpha = 0.9 * fadeRatio;
+      ctx.strokeStyle = '#5c7a34';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.shadowColor = '#6b8e3d';
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.quadraticCurveTo(midX, midY, tipX, tipY);
+      ctx.stroke();
+      // 分岔小葉
+      if (growRatio > 0.5) {
+        const leafAng = ang + Math.PI / 2;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(midX + Math.cos(leafAng) * curLen * 0.22, midY + Math.sin(leafAng) * curLen * 0.22);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  // 夏油條：定身特效
+  for (const fx of state.getoBindFX) {
+    ctx.save();
+    const ratio = Math.max(0, fx.life / fx.maxLife);
+    ctx.globalAlpha = 0.7 * ratio + 0.2;
+    ctx.strokeStyle = '#8e6fd9';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#8e6fd9';
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.arc(fx.x, fx.y, 34 + (1 - ratio) * 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 夏油條：咒力奔流特效
+  for (const fx of state.getoSurgeFX) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, fx.life / fx.maxLife);
+    ctx.strokeStyle = '#c9a6ff';
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = '#c9a6ff';
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.moveTo(fx.fromX, fx.fromY);
+    ctx.lineTo(fx.fromX + Math.cos(fx.angle) * GETO_SURGE_RANGE, fx.fromY + Math.sin(fx.angle) * GETO_SURGE_RANGE);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 夏油條：極之番•漩渦光球
+  for (const p of state.getoUltimateProjectiles) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(elapsed * 6);
+    ctx.shadowColor = '#c9a6ff';
+    ctx.shadowBlur = 26;
+    const gr = ctx.createRadialGradient(0, 0, 2, 0, 0, p.r);
+    gr.addColorStop(0, '#ffffff');
+    gr.addColorStop(0.5, '#c9a6ff');
+    gr.addColorStop(1, '#5b3a8e');
+    ctx.fillStyle = gr;
+    ctx.beginPath();
+    ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+    ctx.fill();
+    for (let k = 0; k < 3; k++) {
+      ctx.rotate(Math.PI * 2 / 3);
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, p.r - 6, k, k + 1.6);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // 夏油條：咒靈/特級咒靈消散特效
+  for (const fx of state.getoDeathFX) {
+    ctx.save();
+    const ratio = Math.max(0, fx.life / fx.maxLife);
+    ctx.globalAlpha = ratio * 0.8;
+    ctx.strokeStyle = '#c9a6ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(fx.x, fx.y, fx.r + (1 - ratio) * 25, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 夏油條：游雲甩棍揮擊動畫（棍子本體由後往前掃過）
+  for (const fx of state.getoCaneFX) {
+    const geto = state.balls.find(x => x.player === fx.owner);
+    if (!geto) continue;
+    const prog = 1 - Math.max(0, fx.life) / fx.maxLife; // 0→1 揮動進度
+    const swing = (prog - 0.5) * 2.2; // 揮動幅度：從 -1.1rad 掃到 +1.1rad
+    const curAngle = fx.angle + swing;
+    ctx.save();
+    ctx.translate(geto.x, geto.y);
+    ctx.rotate(curAngle);
+    ctx.globalAlpha = Math.max(0, 1 - prog) * 0.95;
+    // 棍身
+    ctx.strokeStyle = '#caa06b';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = '#8e6fd9';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(RADIUS * 0.3, 0);
+    ctx.lineTo(RADIUS + 30, 0);
+    ctx.stroke();
+    // 棍頭咒力光點
+    ctx.beginPath();
+    ctx.arc(RADIUS + 30, 0, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#c9a6ff';
+    ctx.shadowBlur = 14;
+    ctx.fill();
+    // 揮動殘影弧線
+    ctx.globalAlpha *= 0.5;
+    ctx.strokeStyle = '#c9a6ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, RADIUS + 26, -0.5, 0, false);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 夏油條：被定身角色的鎖鏈提示
+  for (const b of state.balls) {
+    if (!(b.getoBoundTimer > 0)) continue;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = '#8e6fd9';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, RADIUS + 10, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -10993,6 +11653,21 @@ function updateHUD() {
       if (phase === 'returning') return `🌀 帶回主場地！`;
       if (phase === 'chaining') return `⛓️ 鎖鏈甩飛！`;
       return `🔥 火球:${fireCd}s 🌀 神威:${kamuiCd > 0 ? kamuiCd+'s' : '就緒！'} 📦${spaceCount}`;
+    } else if (b.char.type === 'geto') {
+      const spiritCount = state.getoSpirits ? state.getoSpirits.filter(s => s.owner === b.player).length : 0;
+      if (b.getoUltimateCharging) return `🌀 極之番•漩渦蓄力中！`;
+      if (b.getoSpecialActive) {
+        const skillLabel = { entangle: '🌿糾纏', bind: '💜定身', surge: '✨咒力奔流' }[b.getoSpecialSkill] || '';
+        let extra = '';
+        if (b.getoSpecialSkill === 'surge' && b.getoSurgeCharging) extra = '蓄力中⚠️';
+        else if (b.getoSpecialSkill === 'bind') {
+          const enemy = state.balls.find(x => x.player !== b.player);
+          extra = (enemy && enemy.getoBoundTimer > 0) ? '鎖定中！' : `CD:${Math.max(0, b.getoBindTimer || 0).toFixed(1)}s`;
+        } else if (b.getoSpecialSkill === 'entangle') extra = `${Math.max(0, b.getoEntangleTimer || 0).toFixed(1)}s`;
+        else if (b.getoSpecialSkill === 'surge') extra = `CD:${Math.max(0, b.getoSurgeTimer || 0).toFixed(1)}s`;
+        return `👻咒靈${b.getoStock}(場${spiritCount}) 🔮特級${Math.max(0,Math.ceil(b.getoSpecialHp))}/${GETO_SPECIAL_HP} ${skillLabel}${extra}`;
+      }
+      return `👻 咒靈庫存 ${b.getoStock}/${GETO_MAX_STOCK}（場上${spiritCount}隻）`;
     } else {
       return '';
     }
