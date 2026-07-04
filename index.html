@@ -1251,7 +1251,14 @@ geto:'在成為咒術師前，我們是人類。'}
    yuta: ['你這個欺騙愛人的東西，我可是大義！'],
   tiger: '你要保護的那些人，有天會背叛你的。',
   naobito: '禪院家的天才，也不過如此。' }
-  }
+  },
+  {
+  id: 'sakiko', emoji: '🎹', weapon: '🎼', name: 'Oblivionis',
+  desc: '我，「無懼遺忘。」以鍵盤譜寫命運，以意志掌控舞台。凡踏入她所編織的劇場者，都將成為故事的一部分。你的掙扎，只是我劇本中的一段插曲',
+  stats: ['頌樂音符 ', '鋼琴/管風琴', '新月甦醒', '殘月的餘韻'],
+  color: '#c9a4d1', glowColor: 'rgba(201,164,209,0.6)', type: 'sakiko',
+  winQuote: ['現在正是復權的時代','歡迎來到Ave mujica的世界。','我將成為神'],
+    }
 ];
 
 // ──────────────── CAROUSEL STATE ────────────────
@@ -1774,7 +1781,7 @@ const STAR_BIG_LIFETIME         = 12.0;  // 大星星存活時間（秒）
 const STAR_SCATTER_RANGE        = 80;    // 星散感應範圍（px，比碰撞半徑大很多）
 const STAR_SMALL_COUNT          = 5;     // 星散爆出小星星數
 const STAR_SMALL_SPEED          = 300;   // 小星星速度（px/s）
-const STAR_SMALL_DAMAGE         = 25;    // 小星星碰敵人傷害
+const STAR_SMALL_DAMAGE         = 24;    // 小星星碰敵人傷害
 const STAR_SMALL_RADIUS         = 8;     // 小星星半徑（px）
 const STAR_SMALL_LIFETIME       = 10.0;  // 小星星存活時間（秒）
 const STAR_EXPLODE_DAMAGE       = 80;    // 小星星接觸爆炸傷害（碰小星星/大星星/女孩）
@@ -1938,7 +1945,7 @@ const GETO_SPIRIT_DAMAGE      = 25;    // 小型咒靈碰觸傷害
 const GETO_SPIRIT_SPEED       = 105;   // 小型咒靈追擊速度
 const GETO_SPIRIT_RADIUS      = 13;
 const GETO_SPIRIT_CONTACT_CD  = 1.0;   // 咒靈碰觸傷害的間隔
-const GETO_SPIRIT_RETALIATE   = 25;    // 每次咬到敵人後，咒靈自身承受的反震傷害
+const GETO_SPIRIT_RETALIATE   = 27;    // 每次咬到敵人後，咒靈自身承受的反震傷害
 const GETO_SPIRIT_LIFESPAN    = 14;    // 咒靈最長存活時間（避免場面爆滿）
 
 const GETO_SPECIAL_TRIGGER_RATIO = 0.5;   // 血量剩餘比例：觸發召喚特級咒靈
@@ -1977,6 +1984,36 @@ const GETO_ULTIMATE_RADIUS        = 30;
 const GETO_CANE_DAMAGE           = 40;    // 游雲（被動）：貼身棍擊傷害
 const GETO_CANE_COOLDOWN         = 2.0;   // 游雲：冷卻
 const GETO_CANE_KNOCKBACK        = 200;   // 游雲：擊退速度
+
+// ── Oblivionis（豐川祥子）專屬常數 ──
+const SAKIKO_NOTE_MAX_STACK      = 10;    // 場上音符（含Nova）上限層數
+const SAKIKO_NOTE_DMG_PER_STACK  = 0.06;  // 場上每多1顆音符，傷害加成比例（滿層+60%）
+const SAKIKO_PIANO_DAMAGE        = 30;    // 🎹鋼琴模式：音符基礎傷害
+const SAKIKO_PIANO_INTERVAL      = 1.1;   // 🎹鋼琴模式：發射間隔（攻速較慢）
+const SAKIKO_PIANO_SPEED         = 150;   // 🎹鋼琴模式：音符移動速度（較慢）
+const SAKIKO_ORGAN_DAMAGE        = 10;    // 🎺管風琴模式：音符基礎傷害（較低）
+const SAKIKO_ORGAN_INTERVAL      = 0.45;  // 管風琴模式：發射間隔（攻速大幅提升）
+const SAKIKO_ORGAN_SPEED         = 260;   // 管風琴模式：音符移動速度（較快）
+const SAKIKO_NOTE_RADIUS         = 7;     // 音符判定半徑
+const SAKIKO_NOTE_TURN_RATE      = 2.0;   // 音符追蹤轉向速率（弧度/秒）
+const SAKIKO_NOTE_LIFESPAN       = 6.0;   // 音符最長存在時間（秒）
+
+const SAKIKO_FEVER_MAX           = 450;   // Fever值上限
+const SAKIKO_FEVER_PER_HIT       = 15;     // 音符命中敵人時，Fever增加量
+
+const SAKIKO_NOVA_COOLDOWN       = 9.0;   // 新月甦醒：冷卻
+const SAKIKO_NOVA_COUNT          = 8;     // 新月甦醒：連續釋放音符數
+const SAKIKO_NOVA_GAP            = 0.09;  // 新月甦醒：每發間隔
+const SAKIKO_NOVA_SPEED          = 340;   // 新月甦醒：音符飛行速度
+const SAKIKO_NOVA_BASE_DAMAGE    = 95;    // 新月甦醒：單發滿額（80%）時的參考傷害
+const SAKIKO_NOVA_DECAY_START    = 0.8;   // 新月甦醒：第一發傷害倍率（80%）
+const SAKIKO_NOVA_DECAY_END      = 0.04;  // 新月甦醒：最後一發傷害倍率（4%）
+
+const SAKIKO_DUAL_DURATION       = 5.0;   // 殘月的餘韻：雙音色齊發＋不死持續時間
+const SAKIKO_DUAL_FIRE_INTERVAL  = 0.25;  // 殘月的餘韻：期間每個音色的發射間隔（比平時快，但不過度誇張）
+const SAKIKO_DUAL_SPAWN_BURST    = 1;     // 殘月的餘韻：每次觸發噴出的音符數
+const SAKIKO_DUAL_NOTE_CAP       = 20;    // 殘月的餘韻：期間場上音符數量上限（平時的兩倍）
+const SAKIKO_DUAL_SPREAD         = 0.35;  // 殘月的餘韻：音符噴發散射角度（弧度）
 
 let gameLoop = null;
 let lastTime = 0;
@@ -2061,8 +2098,8 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
-const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9', geto:'#5b3a8e' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff', geto:'#a678e0' };
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9', geto:'#5b3a8e', sakiko:'#c9a4d1' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff', geto:'#a678e0', sakiko:'#e8cdf0' };
 
 const PROGRESS_HANDLERS = {
   opm(b) {
@@ -2235,6 +2272,15 @@ const PROGRESS_HANDLERS = {
     return {
       atFrac: b.getoStock > 0 ? 1 - Math.max(0, b.getoSpawnTimer) / GETO_SPAWN_INTERVAL : 1,
       barColor: b.getoStock > 0 ? b.char.color : '#555'
+    };
+  },
+  sakiko(b) {
+    if (b.sakikoDualActive) {
+      return { atFrac: Math.max(0, Math.min(1, b.sakikoDualTimer / SAKIKO_DUAL_DURATION)), barColor: '#ffd76b' };
+    }
+    return {
+      atFrac: Math.max(0, Math.min(1, (b.sakikoFever || 0) / SAKIKO_FEVER_MAX)),
+      barColor: b.sakikoMode === 'piano' ? '#e8d9c0' : '#8e6fd9'
     };
   },
   __default(b) {
@@ -2547,6 +2593,19 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       getoUltimateCharging: ch.type === 'geto' ? false : null,
       getoUltimateChargeTimer: ch.type === 'geto' ? 0 : null,
       getoUltimateAngle:    ch.type === 'geto' ? 0 : null,
+      // Oblivionis（豐川祥子）專屬狀態
+      sakikoMode:           ch.type === 'sakiko' ? 'piano' : null,          // 'piano'🎹 | 'organ'🎺
+      sakikoPianoTimer:     ch.type === 'sakiko' ? 0 : null,                 // 鋼琴音色發射計時
+      sakikoOrganTimer:     ch.type === 'sakiko' ? 0 : null,                 // 管風琴音色發射計時
+      sakikoNotes:          ch.type === 'sakiko' ? [] : null,                // 場上所有音符（含新月甦醒音符）
+      sakikoFever:          ch.type === 'sakiko' ? 0 : null,                 // Fever值
+      sakikoNovaTimer:      ch.type === 'sakiko' ? SAKIKO_NOVA_COOLDOWN * 0.4 : null, // 新月甦醒冷卻倒數
+      sakikoNovaFiring:     ch.type === 'sakiko' ? false : null,             // 新月甦醒是否正在連發
+      sakikoNovaShotsLeft:  ch.type === 'sakiko' ? 0 : null,                 // 新月甦醒剩餘發數
+      sakikoNovaShotTimer:  ch.type === 'sakiko' ? 0 : null,                 // 新月甦醒單發間隔計時
+      sakikoDualActive:     ch.type === 'sakiko' ? false : null,             // 殘月的餘韻是否啟動中
+      sakikoDualTimer:      ch.type === 'sakiko' ? 0 : null,                 // 殘月的餘韻剩餘時間
+      sakikoShadowHp:       ch.type === 'sakiko' ? null : null,              // 殘月的餘韻期間的真實血量（可低於0）
     };
   }
 
@@ -2624,6 +2683,26 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
 }
 
 function randBetween(min, max) { return min + Math.random() * (max - min); }
+
+// Oblivionis：生成一顆追蹤音符（一般攻擊或新月甦醒共用）
+function spawnSakikoNote(b, enemy, tone, overrides = {}) {
+  const isPiano = tone === 'piano';
+  const baseDamage = isPiano ? SAKIKO_PIANO_DAMAGE : SAKIKO_ORGAN_DAMAGE;
+  const speed = overrides.speed != null ? overrides.speed : (isPiano ? SAKIKO_PIANO_SPEED : SAKIKO_ORGAN_SPEED);
+  const spread = overrides.spread != null ? overrides.spread : 0.25;
+  const angle = Math.atan2(enemy.y - b.y, enemy.x - b.x) + randBetween(-spread, spread);
+  b.sakikoNotes.push({
+    x: b.x, y: b.y,
+    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+    r: SAKIKO_NOTE_RADIUS,
+    damage: overrides.damage != null ? overrides.damage : baseDamage,
+    tone,
+    color: isPiano ? '#e8d9c0' : '#8e6fd9',
+    life: SAKIKO_NOTE_LIFESPAN,
+    active: true,
+    isNova: !!overrides.isNova
+  });
+}
 
 // 釣魚佬：依權重隨機決定釣魚結果
 function fisherRollResult() {
@@ -2901,7 +2980,14 @@ function dealDamage(target, dmg, options = {}) {
       actual -= bleedAmt; // 這部分傷害先不立即扣，改為流血慢扣
     }
   }
-  target.hp = Math.max(0, target.hp - actual);
+  // Oblivionis「殘月的餘韻」：Fever全滿期間，血量歸零也不會立即倒下，改記錄真實血量（可低於0），效果結束後才正式結算生死
+  if (target.char && target.char.type === 'sakiko' && target.sakikoDualActive) {
+    if (target.sakikoShadowHp == null) target.sakikoShadowHp = target.hp;
+    target.sakikoShadowHp -= actual;
+    target.hp = Math.max(1, target.hp - actual);
+  } else {
+    target.hp = Math.max(0, target.hp - actual);
+  }
   // 記錄傷害到對方玩家的 stats（攻擊者 = 對方）
   if (state && state.stats && target.player) {
     const attackerPlayer = target.player === 1 ? 2 : 1;
@@ -3524,6 +3610,13 @@ function update(dt) {
           state.hitFlashes.push({ x: px, y: py, r: THUNDER_SPAWN_FX_R, alpha: 1.0, color: '#f1c40f', t: 0.4 });
         }
       }
+    }
+    // Oblivionis：滿月舞會──碰牆時在鋼琴／管風琴音色間切換
+    if (hitWall && b.char.type === 'sakiko' && !b.sakikoDualActive) {
+      b.sakikoMode = b.sakikoMode === 'piano' ? 'organ' : 'piano';
+      const modeColor = b.sakikoMode === 'piano' ? '#e8d9c0' : '#8e6fd9';
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 26, alpha: 0.8, color: modeColor, t: 0.35 });
+      playHitSound('trap_place');
     }
   }
 
@@ -7968,6 +8061,118 @@ waypoints.push({
   for (let i = state.getoDeathFX.length - 1; i >= 0; i--) { state.getoDeathFX[i].life -= dt; if (state.getoDeathFX[i].life <= 0) state.getoDeathFX.splice(i, 1); }
   for (let i = state.getoCaneFX.length - 1; i >= 0; i--) { state.getoCaneFX[i].life -= dt; if (state.getoCaneFX[i].life <= 0) state.getoCaneFX.splice(i, 1); }
 
+  // ══════════════ Oblivionis（豐川祥子）邏輯 ══════════════
+  for (const b of state.balls) {
+    if (b.char.type !== 'sakiko') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace) continue;
+
+    // 殘月的餘韻：Fever滿層時觸發雙音色齊發＋期間不死
+    if (!b.sakikoDualActive && (b.sakikoFever || 0) >= SAKIKO_FEVER_MAX) {
+      b.sakikoDualActive = true;
+      b.sakikoDualTimer = SAKIKO_DUAL_DURATION;
+      b.sakikoFever = 0;
+      b.sakikoShadowHp = b.hp;
+      if (state && state.stats) state.stats[b.player].skillUses++;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 46, alpha: 1.1, color: '#ffd76b', t: 0.6 });
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 26, alpha: 1.0, color: '#ffffff', t: 0.4 });
+      playHitSound('opm');
+    }
+
+    // 殘月的餘韻：倒數，結束後依真實血量正式結算生死
+    if (b.sakikoDualActive) {
+      b.sakikoDualTimer -= dt;
+      if (b.sakikoDualTimer <= 0) {
+        b.sakikoDualActive = false;
+        b.hp = Math.max(0, Math.round(b.sakikoShadowHp));
+        b.sakikoShadowHp = null;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 0.8, color: '#8e6fd9', t: 0.4 });
+      }
+    }
+
+    // 新月甦醒：連發推進 / 冷卻計時
+    if (b.sakikoNovaFiring) {
+      b.sakikoNovaShotTimer -= dt;
+      if (b.sakikoNovaShotTimer <= 0) {
+        b.sakikoNovaShotTimer = SAKIKO_NOVA_GAP;
+        const shotIdx = SAKIKO_NOVA_COUNT - b.sakikoNovaShotsLeft; // 0-based
+        const ratio = SAKIKO_NOVA_COUNT > 1
+          ? SAKIKO_NOVA_DECAY_START * Math.pow(SAKIKO_NOVA_DECAY_END / SAKIKO_NOVA_DECAY_START, shotIdx / (SAKIKO_NOVA_COUNT - 1))
+          : SAKIKO_NOVA_DECAY_START;
+        spawnSakikoNote(b, enemy, b.sakikoMode, {
+          isNova: true,
+          damage: SAKIKO_NOVA_BASE_DAMAGE * ratio,
+          speed: SAKIKO_NOVA_SPEED
+        });
+        b.sakikoNovaShotsLeft--;
+        if (b.sakikoNovaShotsLeft <= 0) b.sakikoNovaFiring = false;
+      }
+    } else if (!(b.gunnerStunTimer > 0) && !(b.thunderParalyzed > 0)) {
+      b.sakikoNovaTimer += dt;
+      if (b.sakikoNovaTimer >= SAKIKO_NOVA_COOLDOWN) {
+        b.sakikoNovaTimer = 0;
+        b.sakikoNovaFiring = true;
+        b.sakikoNovaShotsLeft = SAKIKO_NOVA_COUNT;
+        b.sakikoNovaShotTimer = 0;
+        if (state && state.stats) state.stats[b.player].skillUses++;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 24, alpha: 0.9, color: '#ffffff', t: 0.3 });
+        playHitSound('vampire_dash');
+      }
+    }
+
+    // 頌樂音符（被動）：持續發射，殘月的餘韻期間雙音色狂暴齊發（大量噴發）
+    const dualBoost = b.sakikoDualActive;
+    const tones = dualBoost ? ['piano', 'organ'] : [b.sakikoMode];
+    for (const tone of tones) {
+      if (b.gunnerStunTimer > 0 || b.thunderParalyzed > 0) continue;
+      const interval = dualBoost ? SAKIKO_DUAL_FIRE_INTERVAL : (tone === 'piano' ? SAKIKO_PIANO_INTERVAL : SAKIKO_ORGAN_INTERVAL);
+      const timerKey = tone === 'piano' ? 'sakikoPianoTimer' : 'sakikoOrganTimer';
+      b[timerKey] += dt;
+      if (b[timerKey] >= interval) {
+        b[timerKey] -= interval;
+        const cap = dualBoost ? SAKIKO_DUAL_NOTE_CAP : SAKIKO_NOTE_MAX_STACK;
+        const stackCount = b.sakikoNotes.filter(n => !n.isNova && n.active).length;
+        if (stackCount < cap) {
+          const burst = dualBoost ? SAKIKO_DUAL_SPAWN_BURST : 1;
+          for (let k = 0; k < burst; k++) {
+            spawnSakikoNote(b, enemy, tone, dualBoost ? { spread: SAKIKO_DUAL_SPREAD } : {});
+          }
+        }
+      }
+    }
+
+    // 音符：追蹤移動、命中判定（依場上音符層數加成傷害）、壽命
+    b.sakikoNotes = b.sakikoNotes.filter(n => n.active);
+    for (const n of b.sakikoNotes) {
+      const desiredAng = Math.atan2(enemy.y - n.y, enemy.x - n.x);
+      const curAng = Math.atan2(n.vy, n.vx);
+      let diff = desiredAng - curAng;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      const maxTurn = SAKIKO_NOTE_TURN_RATE * dt;
+      const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
+      const newAng = curAng + turn;
+      const spd = Math.hypot(n.vx, n.vy);
+      n.vx = Math.cos(newAng) * spd; n.vy = Math.sin(newAng) * spd;
+      n.x += n.vx * dt; n.y += n.vy * dt;
+      n.life -= dt;
+      if (n.life <= 0) { n.active = false; continue; }
+      if (n.x < n.r || n.x > W - n.r || n.y < n.r || n.y > H - n.r) { n.active = false; continue; }
+      const dd = Math.hypot(enemy.x - n.x, enemy.y - n.y);
+      if (dd < RADIUS + n.r) {
+        const stackCount = b.sakikoNotes.filter(x => !x.isNova && x.active).length;
+        const stackCap = b.sakikoDualActive ? SAKIKO_DUAL_NOTE_CAP : SAKIKO_NOTE_MAX_STACK;
+        const finalDmg = n.isNova ? n.damage : n.damage * (1 + SAKIKO_NOTE_DMG_PER_STACK * Math.min(stackCount, stackCap));
+        dealDamage(enemy, finalDmg);
+        b.sakikoFever = Math.min(SAKIKO_FEVER_MAX, (b.sakikoFever || 0) + SAKIKO_FEVER_PER_HIT);
+        n.active = false;
+        state.hitFlashes.push({ x: n.x, y: n.y, r: 16, alpha: 0.85, color: n.color, t: 0.25 });
+        playHitSound('knife');
+      }
+    }
+  }
+
   // ── DIO 世界（時停）：將敵方所有狀態還原為本幀凍結前的樣子（HP變化除外，讓DIO的傷害保留）──
   if (dioFreezeTarget && dioFreezeSnapshot) {
     const survivedHp = dioFreezeTarget.hp;
@@ -9113,6 +9318,48 @@ function render() {
     ctx.shadowColor = '#4a90d9'; ctx.shadowBlur = 10;
     ctx.fillText(fx.text, fx.x, fx.y);
     ctx.restore();
+  }
+
+  // Oblivionis：殘月的餘韻──雙音色齊發不死光環
+  for (const b of state.balls) {
+    if (b.char.type !== 'sakiko' || !b.sakikoDualActive) continue;
+    ctx.save();
+    const pulse = 0.55 + 0.35 * Math.sin(elapsed * 10);
+    ctx.strokeStyle = `rgba(255,215,107,${pulse})`;
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#ffd76b';
+    ctx.shadowBlur = 22;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, RADIUS + 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Oblivionis：頌樂音符
+  for (const b of state.balls) {
+    if (b.char.type !== 'sakiko' || !b.sakikoNotes) continue;
+    for (const n of b.sakikoNotes) {
+      ctx.save();
+      ctx.translate(n.x, n.y);
+      ctx.rotate(Math.atan2(n.vy, n.vx));
+      ctx.shadowColor = n.color;
+      ctx.shadowBlur = n.isNova ? 20 : 12;
+      ctx.globalAlpha = n.isNova ? 1 : 0.9;
+      ctx.beginPath();
+      ctx.arc(0, 0, n.r, 0, Math.PI * 2);
+      const g = ctx.createRadialGradient(0, 0, 1, 0, 0, n.r);
+      g.addColorStop(0, '#ffffff');
+      g.addColorStop(1, n.color);
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.rotate(-Math.atan2(n.vy, n.vx));
+      ctx.font = `${n.r + 5}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#2a1f33';
+      ctx.fillText(n.tone === 'piano' ? '♪' : '♫', 0, 0);
+      ctx.restore();
+    }
   }
 
   // 夏油條：小型咒靈
@@ -11668,6 +11915,13 @@ function updateHUD() {
         return `👻咒靈${b.getoStock}(場${spiritCount}) 🔮特級${Math.max(0,Math.ceil(b.getoSpecialHp))}/${GETO_SPECIAL_HP} ${skillLabel}${extra}`;
       }
       return `👻 咒靈庫存 ${b.getoStock}/${GETO_MAX_STOCK}（場上${spiritCount}隻）`;
+    } else if (b.char.type === 'sakiko') {
+      const noteCount = b.sakikoNotes ? b.sakikoNotes.filter(n => !n.isNova).length : 0;
+      const modeLabel = b.sakikoMode === 'piano' ? '🎹鋼琴' : '🎺管風琴';
+      if (b.sakikoDualActive) return `✨殘月的餘韻！${Math.ceil(b.sakikoDualTimer)}s 音符${noteCount}/${SAKIKO_DUAL_NOTE_CAP}`;
+      if (b.sakikoNovaFiring) return `🌙新月甦醒！連發中 ${modeLabel}`;
+      const novaCd = Math.max(0, SAKIKO_NOVA_COOLDOWN - (b.sakikoNovaTimer || 0)).toFixed(1);
+      return `${modeLabel} 音符${noteCount}/${SAKIKO_NOTE_MAX_STACK} Fever${Math.floor(b.sakikoFever||0)}/${SAKIKO_FEVER_MAX} 🌙${novaCd}s`;
     } else {
       return '';
     }
