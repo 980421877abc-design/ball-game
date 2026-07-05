@@ -1205,7 +1205,8 @@ cursed:'格蘭尼達.... '}
   desc: '惡人的救世主。持有替身「世界」。可發動「the world」使時間停止，並在時停中丟刀。吃下場上的麵包可以回血並丟刀，吃滿一定數量後進入HIGH狀態。',
   stats: ['替身連打 10/0.2s', '世界冷卻 10s／時停 3s', '飛刀 25', 'HIGH 時停 5s'],
   color: '#f5d020', glowColor: 'rgba(245,208,32,0.6)', type: 'dio',
-  winQuote: '我現在真是high到不行！'
+  winQuote: '我現在真是high到不行！',
+  vsQuotes:{ joseph :['如果說這個世界上還有誰配得上我正眼相看，那就只有你了','我不做人了，JOJO！']}
   },
   {
   id: 'tiger', emoji: '🐯', weapon: '👊', name: '虎天帝',
@@ -1258,6 +1259,14 @@ geto:'在成為咒術師前，我們是人類。'}
   stats: ['頌樂音符 ', '鋼琴/管風琴', '新月甦醒', '殘月的餘韻'],
   color: '#c9a4d1', glowColor: 'rgba(201,164,209,0.6)', type: 'sakiko',
   winQuote: ['現在正是復權的時代','歡迎來到Ave mujica的世界。','我將成為神'],
+    },
+  {
+  id: 'joseph', emoji: '☀️', weapon: '👊', name: '大喬',
+  desc: '出身名門喬斯達家，擁有高尚的品格與堅不可摧的意志。面對宿敵，即使失去一切，也從未放棄守護他人。歷經殘酷試煉後，習得「波紋」之力，以生命能量化作驅逐黑暗的光芒。',
+  stats: ['碰觸 15(未蓄氣5)', '波紋疾走 ', '彈簧拳 ', 'SYO '],
+  color: '#2f7dc0', glowColor: 'rgba(47,125,192,0.6)', type: 'joseph',
+  winQuote: ['願你的靈魂能得到救贖，再見了。','這就是喬斯達家族的力量！'],
+  vsQuotes: { dio: ['你的野心到此為止了！','艾琳娜，你要幸福'] }
     }
 ];
 
@@ -1938,10 +1947,10 @@ const FISHER_OCEAN_DASH_SPEED   = 780;
 const FISHER_OCEAN_GRAB_HOLD    = 0.3;  // 勾住後揮甩停頓時間
 
 // 夏油條（咒靈操術）專屬常數 ────────────────
-const GETO_MAX_STOCK          = 80;   // 咒靈庫存上限
+const GETO_MAX_STOCK          = 100;   // 咒靈庫存上限
 const GETO_SPAWN_INTERVAL     = 1.0;   // 每隔幾秒消耗一隻庫存召喚小型咒靈
 const GETO_SPIRIT_HP          = 25;    // 小型咒靈血量
-const GETO_SPIRIT_DAMAGE      = 25;    // 小型咒靈碰觸傷害
+const GETO_SPIRIT_DAMAGE      = 27;    // 小型咒靈碰觸傷害
 const GETO_SPIRIT_SPEED       = 105;   // 小型咒靈追擊速度
 const GETO_SPIRIT_RADIUS      = 13;
 const GETO_SPIRIT_CONTACT_CD  = 1.0;   // 咒靈碰觸傷害的間隔
@@ -1987,11 +1996,11 @@ const GETO_CANE_KNOCKBACK        = 200;   // 游雲：擊退速度
 
 // ── Oblivionis（豐川祥子）專屬常數 ──
 const SAKIKO_NOTE_MAX_STACK      = 10;    // 場上音符（含Nova）上限層數
-const SAKIKO_NOTE_DMG_PER_STACK  = 0.06;  // 場上每多1顆音符，傷害加成比例（滿層+60%）
-const SAKIKO_PIANO_DAMAGE        = 30;    // 🎹鋼琴模式：音符基礎傷害
-const SAKIKO_PIANO_INTERVAL      = 1.1;   // 🎹鋼琴模式：發射間隔（攻速較慢）
+const SAKIKO_NOTE_DMG_PER_STACK  = 0.04;  // 場上每多1顆音符，傷害加成比例（滿層+40%）
+const SAKIKO_PIANO_DAMAGE        = 20;    // 🎹鋼琴模式：音符基礎傷害
+const SAKIKO_PIANO_INTERVAL      = 1.2;   // 🎹鋼琴模式：發射間隔（攻速較慢）
 const SAKIKO_PIANO_SPEED         = 150;   // 🎹鋼琴模式：音符移動速度（較慢）
-const SAKIKO_ORGAN_DAMAGE        = 10;    // 🎺管風琴模式：音符基礎傷害（較低）
+const SAKIKO_ORGAN_DAMAGE        = 8;    // 🎺管風琴模式：音符基礎傷害（較低）
 const SAKIKO_ORGAN_INTERVAL      = 0.45;  // 管風琴模式：發射間隔（攻速大幅提升）
 const SAKIKO_ORGAN_SPEED         = 260;   // 管風琴模式：音符移動速度（較快）
 const SAKIKO_NOTE_RADIUS         = 7;     // 音符判定半徑
@@ -2001,19 +2010,56 @@ const SAKIKO_NOTE_LIFESPAN       = 6.0;   // 音符最長存在時間（秒）
 const SAKIKO_FEVER_MAX           = 450;   // Fever值上限
 const SAKIKO_FEVER_PER_HIT       = 15;     // 音符命中敵人時，Fever增加量
 
-const SAKIKO_NOVA_COOLDOWN       = 9.0;   // 新月甦醒：冷卻
+const SAKIKO_NOVA_COOLDOWN       = 10.0;   // 新月甦醒：冷卻
 const SAKIKO_NOVA_COUNT          = 8;     // 新月甦醒：連續釋放音符數
 const SAKIKO_NOVA_GAP            = 0.09;  // 新月甦醒：每發間隔
 const SAKIKO_NOVA_SPEED          = 340;   // 新月甦醒：音符飛行速度
-const SAKIKO_NOVA_BASE_DAMAGE    = 95;    // 新月甦醒：單發滿額（80%）時的參考傷害
+const SAKIKO_NOVA_BASE_DAMAGE    = 60;    // 新月甦醒：單發滿額（80%）時的參考傷害
 const SAKIKO_NOVA_DECAY_START    = 0.8;   // 新月甦醒：第一發傷害倍率（80%）
 const SAKIKO_NOVA_DECAY_END      = 0.04;  // 新月甦醒：最後一發傷害倍率（4%）
 
-const SAKIKO_DUAL_DURATION       = 5.0;   // 殘月的餘韻：雙音色齊發＋不死持續時間
+const SAKIKO_DUAL_DURATION       = 3.0;   // 殘月的餘韻：雙音色齊發＋不死持續時間
 const SAKIKO_DUAL_FIRE_INTERVAL  = 0.25;  // 殘月的餘韻：期間每個音色的發射間隔（比平時快，但不過度誇張）
 const SAKIKO_DUAL_SPAWN_BURST    = 1;     // 殘月的餘韻：每次觸發噴出的音符數
 const SAKIKO_DUAL_NOTE_CAP       = 20;    // 殘月的餘韻：期間場上音符數量上限（平時的兩倍）
 const SAKIKO_DUAL_SPREAD         = 0.35;  // 殘月的餘韻：音符噴發散射角度（弧度）
+
+// 大喬（波紋使者）
+const JOSEPH_CHARGE_TIME         = 2;   // 波紋呼吸法蓄力時間
+const JOSEPH_RETRY_DELAY         = 5.0;   // 蓄力中斷後，再次嘗試的等待時間
+const JOSEPH_ATTEMPT_DEADLINE    = 60.0;  // 開局後嘗試進入波紋呼吸法的總時限（超過則放棄，維持素體狀態）
+const JOSEPH_CONTACT_DMG_RIPPLE  = 15;    // 波紋呼吸法期間，碰觸傷害
+const JOSEPH_CONTACT_DMG_BASE    = 5;     // 未開啟波紋呼吸法，碰觸傷害
+const JOSEPH_CONTACT_CD          = 0.45;  // 碰觸觸發冷卻（避免同一次貼身重複計算）
+const JOSEPH_HP_REGEN_INTERVAL   = 1.0;   // 波紋呼吸法：定時回血間隔
+const JOSEPH_HP_REGEN_AMOUNT     = 5;     // 定時回血量
+const JOSEPH_HP_REGEN_ON_HIT     = 25;     // 每次造成傷害，額外回血量
+const JOSEPH_DASH_COOLDOWN       = 4.0;   // 波紋疾走冷卻
+const JOSEPH_DASH_RANGE          = 150;   // 波紋疾走觸發距離
+const JOSEPH_DASH_DAMAGE         = 30;    // 波紋疾走傷害
+const JOSEPH_DASH_STACK          = 1;     // 波紋疾走附加波紋層數
+const JOSEPH_SPRING_COOLDOWN     = 7.0;   // 彈簧拳冷卻
+const JOSEPH_SPRING_RANGE        = 300;   // 彈簧拳觸發距離（中距離，大於波紋疾走）
+const JOSEPH_SPRING_DAMAGE       = 50;    // 彈簧拳傷害
+const JOSEPH_SPRING_STACK        = 2;     // 彈簧拳附加波紋層數
+const JOSEPH_ULTIMATE_UNLOCK     = 35.0;  // 進入波紋呼吸法後，經過多久解鎖SYO
+const JOSEPH_ULTIMATE_RANGE      = 140;   // SYO 第一拳觸發距離
+const JOSEPH_ULTIMATE_COOLDOWN   = 14.0;  // SYO 每次發動（不論命中與否）後的冷卻
+const JOSEPH_ULTIMATE_FIRST_DMG  = 20;    // SYO 第一拳傷害
+const JOSEPH_ULTIMATE_COMBO_HITS = 8;     // SYO 連續痛擊次數（共100傷害，均分）
+const JOSEPH_ULTIMATE_COMBO_DMG  = 100;   // SYO 連續痛擊總傷害
+const JOSEPH_ULTIMATE_COMBO_INTERVAL = 0.12; // SYO 連續痛擊每下間隔
+const JOSEPH_ULTIMATE_FINAL_DMG  = 15;    // SYO 最後一拳（擊退）額外傷害
+const JOSEPH_ULTIMATE_FINAL_STACK = 3;    // SYO 最後一拳附加波紋層數（一般情況）
+const JOSEPH_ULTIMATE_FINAL_KNOCKBACK = 320; // SYO 最後一拳擊退力道
+const JOSEPH_ULTIMATE_DIO_PIERCE = 10;    // 面對DIO：最後一拳額外貫穿傷害
+const JOSEPH_ULTIMATE_DIO_STACK  = 28;    // 面對DIO：最後一拳附加波紋層數
+const JOSEPH_DIO_START_HP_COST   = 50;    // 面對DIO：開局直接進入波紋呼吸法所付出的血量代價
+const RIPPLE_TICK_INTERVAL       = 1.0;   // 波紋層數：每秒結算一次
+const RIPPLE_TICK_DMG_PER_STACK  = 1;   // 波紋層數：每層每秒傷害
+const RIPPLE_BURST_THRESHOLD     = 7;     // 波紋層數：達到此層數觸發爆裂
+const RIPPLE_BURST_CONSUME       = 7;     // 波紋層數：爆裂消耗層數
+const RIPPLE_BURST_DAMAGE        = 30;    // 波紋層數：爆裂傷害
 
 let gameLoop = null;
 let lastTime = 0;
@@ -2098,8 +2144,8 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
-const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9', geto:'#5b3a8e', sakiko:'#c9a4d1' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff', geto:'#a678e0', sakiko:'#e8cdf0' };
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9', geto:'#5b3a8e', sakiko:'#c9a4d1', joseph:'#2f7dc0' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff', geto:'#a678e0', sakiko:'#e8cdf0', joseph:'#6fb8ee' };
 
 const PROGRESS_HANDLERS = {
   opm(b) {
@@ -2282,6 +2328,15 @@ const PROGRESS_HANDLERS = {
       atFrac: Math.max(0, Math.min(1, (b.sakikoFever || 0) / SAKIKO_FEVER_MAX)),
       barColor: b.sakikoMode === 'piano' ? '#e8d9c0' : '#8e6fd9'
     };
+  },
+  joseph(b) {
+    if (b.josephState === 'charging') return { atFrac: Math.min(1, (b.josephChargeTimer||0) / JOSEPH_CHARGE_TIME), barColor: '#66ccff' };
+    if (b.josephState === 'waiting') return { atFrac: Math.max(0, 1 - (b.josephRetryTimer||0) / JOSEPH_RETRY_DELAY), barColor: '#3a5f88' };
+    if (b.josephUltimateActive) return { atFrac: 1, barColor: '#ffe066' };
+    if (b.josephState !== 'breathing') return { atFrac: 0, barColor: '#555' };
+    if (b.josephUltimateReady) return { atFrac: 1, barColor: '#ffe066' };
+    const dashFrac = Math.max(0, 1 - (b.josephDashTimer||0) / JOSEPH_DASH_COOLDOWN);
+    return { atFrac: dashFrac, barColor: '#2f7dc0' };
   },
   __default(b) {
     return {
@@ -2606,6 +2661,29 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
       sakikoDualActive:     ch.type === 'sakiko' ? false : null,             // 殘月的餘韻是否啟動中
       sakikoDualTimer:      ch.type === 'sakiko' ? 0 : null,                 // 殘月的餘韻剩餘時間
       sakikoShadowHp:       ch.type === 'sakiko' ? null : null,              // 殘月的餘韻期間的真實血量（可低於0）
+      // 大喬（波紋使者）專屬狀態
+      josephState:          ch.type === 'joseph' ? 'charging' : null,       // 'charging' | 'waiting' | 'breathing' | 'failed'
+      josephChargeTimer:    ch.type === 'joseph' ? 0 : null,                // 蓄力計時
+      josephRetryTimer:     ch.type === 'joseph' ? 0 : null,                // 中斷後的重試倒數
+      josephAttemptClock:   ch.type === 'joseph' ? 0 : null,                // 開局至今經過秒數（判斷60秒時限）
+      josephBreathingTimer: ch.type === 'joseph' ? 0 : null,                // 進入波紋呼吸法後經過秒數
+      josephRegenTimer:     ch.type === 'joseph' ? 0 : null,                // 定時回血倒數
+      josephDashTimer:      ch.type === 'joseph' ? JOSEPH_DASH_COOLDOWN * 0.5 : null,   // 波紋疾走冷卻
+      josephSpringTimer:    ch.type === 'joseph' ? JOSEPH_SPRING_COOLDOWN * 0.5 : null, // 彈簧拳冷卻
+      josephUltimateReady:  ch.type === 'joseph' ? false : null,            // SYO 是否已解鎖可用
+      josephUltimateCooldown: ch.type === 'joseph' ? 0 : null,              // SYO 冷卻倒數
+      josephUltimateActive: ch.type === 'joseph' ? false : null,            // SYO 是否進行中
+      josephUltimateStep:   ch.type === 'joseph' ? 0 : null,                // SYO 連續痛擊已打第幾下
+      josephUltimateTimer:  ch.type === 'joseph' ? 0 : null,                // SYO 下一下倒數
+      josephUltimateTarget: ch.type === 'joseph' ? null : null,             // SYO 鎖定目標參考
+      josephContactCd:      ch.type === 'joseph' ? 0 : null,                // 碰觸傷害冷卻
+      josephDioHpCostDone:  ch.type === 'joseph' ? false : null,            // 對上DIO的開局扣血是否已執行
+      // 波紋層數（任何角色都可能被大喬施加）
+      rippleStacks: 0,
+      rippleTickTimer: 0,
+      // 被大喬SYO定身（任何角色都可能）
+      frozenByJoseph: false,
+      frozenByJosephTimer: 0,
     };
   }
 
@@ -2667,6 +2745,9 @@ gojoChargingVisual: ch.type === 'gojo' ? false : null,
     getoUltimateProjectiles: [], // 夏油條：漩渦光球列表
     getoDeathFX: [],          // 夏油條：咒靈/特級咒靈消散特效列表
     getoCaneFX: [],           // 夏油條：游雲甩棍揮擊動畫列表
+    josephChargeFX: [],       // 大喬：蓄力波紋呼吸法特效列表
+    josephPunchFX: [],        // 大喬：波紋疾走/彈簧拳/SYO 出拳特效列表
+    rippleStackFX: [],        // 波紋層數：爆裂特效列表
   };
 
   updateHUD();
@@ -3466,6 +3547,30 @@ function update(dt) {
         b.frozenByVampire = false;
       }
     }
+    if (b.frozenByJoseph) {
+      b.frozenByJosephTimer -= dt;
+      if (b.frozenByJosephTimer <= 0) {
+        b.frozenByJoseph = false;
+        b.frozenByJosephTimer = 0;
+      }
+    }
+
+    // 波紋層數：每秒結算一次DOT，達到門檻則爆裂（任何角色都可能承受，大喬技能附加）
+    if ((b.rippleStacks || 0) > 0 && !(state.dioWorldGlobalActive && b !== state.dioWorldCaster)) {
+      b.rippleTickTimer = (b.rippleTickTimer || 0) + dt;
+      if (b.rippleTickTimer >= RIPPLE_TICK_INTERVAL) {
+        b.rippleTickTimer -= RIPPLE_TICK_INTERVAL;
+        dealDamage(b, b.rippleStacks * RIPPLE_TICK_DMG_PER_STACK);
+        if (Math.random() < 0.5) state.hitFlashes.push({ x: b.x+randBetween(-10,10), y: b.y+randBetween(-10,10), r: 10, alpha: 0.6, color: '#2f7dc0', t: 0.3 });
+        if (b.rippleStacks >= RIPPLE_BURST_THRESHOLD) {
+          b.rippleStacks -= RIPPLE_BURST_CONSUME;
+          dealDamage(b, RIPPLE_BURST_DAMAGE);
+          state.rippleStackFX.push({ x: b.x, y: b.y, life: 0.4, maxLife: 0.4 });
+          state.hitFlashes.push({ x: b.x, y: b.y, r: 32, alpha: 1, color: '#66ccff', t: 0.4 });
+          playHitSound('opm');
+        }
+      }
+    }
 
     // 詛咒 dot 傷害（捌）
     if (b.curseDotTimer > 0) {
@@ -3518,7 +3623,7 @@ function update(dt) {
     }
 
     // 移動（凍結則不移動；虎天帝超新星蓄力視為被束縛定身，完全不動；被帶土抓進神威空間者完全凍結；冰雪場地凍結同樣完全不動）
-    if (!b.frozenByVampire && !b.obitoInSpace && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0) && !(b.arenaFrozen > 0) && !(b.getoBoundTimer > 0) && !b.getoUltimateCharging && !(b.beachCurrentSuckTimer > 0)) {
+    if (!b.frozenByVampire && !b.obitoInSpace && !(b.char.type === 'vampire' && b.vampireBiting) && !(b.mageFreezeTimer > 0) && !(b.itachiPinnedTimer > 0) && !b.itachiBiting && !b.tigerNovaCharging && !(b.thunderStunTimer > 0) && !(b.arenaFrozen > 0) && !(b.getoBoundTimer > 0) && !b.getoUltimateCharging && !(b.beachCurrentSuckTimer > 0) && !b.frozenByJoseph && !(b.char.type === 'joseph' && (b.josephState === 'charging' || b.josephUltimateActive))) {
       const speedMul = (b.curseSlowTimer > 0 ? CURSE_SLASH_SLOW_FACTOR : 1.0) * (b.inSandZone ? ARENA_SAND_SLOW_FACTOR : 1.0);
 
       // 最低速度保證（排除技能主動停止的情況）
@@ -3820,6 +3925,22 @@ function update(dt) {
           playHitSound('knife');
         }
       }
+
+      // 大喬：碰觸傷害（波紋呼吸法期間15傷害，未開啟則5傷害；每次判定後短暫冷卻避免重複觸發）
+      for (let ji = 0; ji < state.balls.length; ji++) {
+        const jo = state.balls[ji];
+        if (jo.char.type !== 'joseph') continue;
+        const target = state.balls.find(x => x.player !== jo.player);
+        if (!target) continue;
+        if (!(jo.josephContactCd > 0)) {
+          jo.josephContactCd = JOSEPH_CONTACT_CD;
+          const isBreathing = jo.josephState === 'breathing';
+          const dmg = isBreathing ? JOSEPH_CONTACT_DMG_RIPPLE : JOSEPH_CONTACT_DMG_BASE;
+          dealDamage(target, dmg);
+          if (isBreathing) jo.hp = Math.min(MAX_HP, jo.hp + JOSEPH_HP_REGEN_ON_HIT);
+          state.hitFlashes.push({ x: target.x, y: target.y, r: 16, alpha: 0.7, color: isBreathing ? '#2f7dc0' : '#7799bb', t: 0.25 });
+        }
+      }
     } else {
       // 強制分開避免穿模（居合衝刺中跳過）
       const eitherIaido = (b0.char.type==='samurai' && b0.samuraiIaidoing) ||
@@ -3868,6 +3989,7 @@ for (let bi = 0; bi < state.balls.length; bi++) {
     }
     b.attackTimer += dt;
     if (b.char.type === 'opm' && b.opmCollisionCooldown > 0) b.opmCollisionCooldown -= dt;
+    if (b.char.type === 'joseph' && b.josephContactCd > 0) b.josephContactCd -= dt;
     // 帶土被假想子彈彈出後硬直
     if (b.obitoEjectStun > 0) {
       b.obitoEjectStun -= dt;
@@ -7593,6 +7715,151 @@ waypoints.push({
     }
   }
 
+  // 大喬（波紋使者）：波紋呼吸法狀態機、波紋疾走／彈簧拳／Sunlight Yellow Overdrive
+  for (const b of state.balls) {
+    if (b.char.type !== 'joseph') continue;
+    const enemy = state.balls.find(x => x.player !== b.player);
+    if (!enemy) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace || (b.arenaFrozen > 0)) continue;
+    if (b.gunnerStunTimer > 0) continue; // 被閃光彈暈眩：暫停波紋呼吸法與所有技能判定
+    if (!b.josephDioHpCostDone && enemy.char.type === 'dio') {
+      b.josephDioHpCostDone = true;
+      b.hp = Math.max(1, b.hp - JOSEPH_DIO_START_HP_COST);
+      b.josephState = 'breathing';
+      b.josephBreathingTimer = 0;
+      b.josephRegenTimer = JOSEPH_HP_REGEN_INTERVAL;
+      b.josephChargeTimer = 0;
+      b.josephRetryTimer = 0;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 1, color: '#2f7dc0', t: 0.5 });
+    }
+
+    // 開局至今經過秒數（僅在尚未成功進入呼吸法前累計，判定60秒時限）
+    if (b.josephState === 'charging' || b.josephState === 'waiting') {
+      b.josephAttemptClock += dt;
+    }
+
+    if (b.josephState === 'charging') {
+      b.josephChargeTimer += dt;
+      b.vx = 0; b.vy = 0; // 蓄力期間原地不動
+      if (b.josephChargeTimer >= JOSEPH_CHARGE_TIME) {
+        b.josephState = 'breathing';
+        b.josephBreathingTimer = 0;
+        b.josephRegenTimer = JOSEPH_HP_REGEN_INTERVAL;
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 1, color: '#66ccff', t: 0.5 });
+        playHitSound('curse_slash');
+      } else if (b.josephAttemptClock >= JOSEPH_ATTEMPT_DEADLINE) {
+        b.josephState = 'failed'; // 超過時限仍未成功，放棄嘗試，維持素體狀態
+      }
+    } else if (b.josephState === 'waiting') {
+      b.josephRetryTimer -= dt;
+      if (b.josephAttemptClock >= JOSEPH_ATTEMPT_DEADLINE) {
+        b.josephState = 'failed';
+      } else if (b.josephRetryTimer <= 0) {
+        b.josephState = 'charging';
+        b.josephChargeTimer = 0;
+      }
+    } else if (b.josephState === 'breathing') {
+      b.josephBreathingTimer += dt;
+      if (!b.josephUltimateReady && b.josephBreathingTimer >= JOSEPH_ULTIMATE_UNLOCK) {
+        b.josephUltimateReady = true;
+      }
+      b.josephRegenTimer -= dt;
+      if (b.josephRegenTimer <= 0) {
+        b.josephRegenTimer = JOSEPH_HP_REGEN_INTERVAL;
+        b.hp = Math.min(MAX_HP, b.hp + JOSEPH_HP_REGEN_AMOUNT);
+        state.hitFlashes.push({ x: b.x, y: b.y, r: 16, alpha: 0.6, color: '#66ccff', t: 0.3 });
+      }
+    }
+    // 'failed' 狀態：不再嘗試蓄力，維持素體（無技能，碰觸傷害固定5，見球球碰撞區塊）
+
+    if (b.josephUltimateCooldown > 0) b.josephUltimateCooldown -= dt;
+    const jDistToEnemy = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+
+    if (b.josephUltimateActive) {
+      // Sunlight Yellow Overdrive 連續痛擊進行中：雙方定身
+      b.vx = 0; b.vy = 0;
+      const tgt = b.josephUltimateTarget;
+      if (tgt) { tgt.vx = 0; tgt.vy = 0; }
+      b.josephUltimateTimer -= dt;
+      if (b.josephUltimateTimer <= 0 && tgt) {
+        b.josephUltimateStep++;
+        const isFinalHit = b.josephUltimateStep >= JOSEPH_ULTIMATE_COMBO_HITS;
+        const perHitDmg = JOSEPH_ULTIMATE_COMBO_DMG / JOSEPH_ULTIMATE_COMBO_HITS;
+        dealDamage(tgt, perHitDmg);
+        b.hp = Math.min(MAX_HP, b.hp + JOSEPH_HP_REGEN_ON_HIT);
+        state.hitFlashes.push({ x: tgt.x, y: tgt.y, r: 22, alpha: 0.9, color: '#ffe066', t: 0.2 });
+        state.josephPunchFX.push({ x: b.x, y: b.y, tx: tgt.x, ty: tgt.y, side: (b.josephUltimateStep % 2 === 0 ? 1 : -1), life: 0.2, maxLife: 0.2, owner: b.player, style: 'combo' });
+        playHitSound('opm');
+        if (isFinalHit) {
+          const vsDio = tgt.char.type === 'dio';
+          if (vsDio) {
+            dealDamage(tgt, JOSEPH_ULTIMATE_DIO_PIERCE);
+            tgt.rippleStacks = (tgt.rippleStacks || 0) + JOSEPH_ULTIMATE_DIO_STACK;
+          } else {
+            dealDamage(tgt, JOSEPH_ULTIMATE_FINAL_DMG);
+            tgt.rippleStacks = (tgt.rippleStacks || 0) + JOSEPH_ULTIMATE_FINAL_STACK;
+          }
+          b.hp = Math.min(MAX_HP, b.hp + JOSEPH_HP_REGEN_ON_HIT);
+          const kdx = tgt.x - b.x, kdy = tgt.y - b.y;
+          const kd = Math.hypot(kdx, kdy) || 1;
+          tgt.vx += (kdx / kd) * JOSEPH_ULTIMATE_FINAL_KNOCKBACK;
+          tgt.vy += (kdy / kd) * JOSEPH_ULTIMATE_FINAL_KNOCKBACK;
+          state.josephPunchFX.push({ x: b.x, y: b.y, tx: tgt.x, ty: tgt.y, angle: Math.atan2(kdy, kdx), life: 0.4, maxLife: 0.4, owner: b.player, style: 'final' });
+          state.hitFlashes.push({ x: tgt.x, y: tgt.y, r: 34, alpha: 1.1, color: '#ffcc00', t: 0.4 });
+          playHitSound('curse_slash');
+          b.josephUltimateActive = false;
+          b.josephUltimateStep = 0;
+          b.josephUltimateTarget = null;
+          tgt.frozenByJoseph = false;
+          tgt.frozenByJosephTimer = 0;
+        } else {
+          b.josephUltimateTimer = JOSEPH_ULTIMATE_COMBO_INTERVAL;
+        }
+      }
+    } else if (b.josephState === 'breathing' && b.josephUltimateReady && b.josephUltimateCooldown <= 0 && jDistToEnemy < JOSEPH_ULTIMATE_RANGE) {
+      // 發動 Sunlight Yellow Overdrive：第一拳
+      b.josephUltimateCooldown = JOSEPH_ULTIMATE_COOLDOWN;
+      dealDamage(enemy, JOSEPH_ULTIMATE_FIRST_DMG);
+      b.hp = Math.min(MAX_HP, b.hp + JOSEPH_HP_REGEN_ON_HIT);
+      state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 26, alpha: 1, color: '#ffe066', t: 0.3 });
+      state.josephPunchFX.push({ x: b.x, y: b.y, tx: enemy.x, ty: enemy.y, life: 0.28, maxLife: 0.28, owner: b.player, style: 'first' });
+      playHitSound('opm');
+      // 這一拳命中，敵人停止攻擊與移動，展開連續痛擊
+      enemy.frozenByJoseph = true;
+      enemy.frozenByJosephTimer = (JOSEPH_ULTIMATE_COMBO_HITS * JOSEPH_ULTIMATE_COMBO_INTERVAL) + 0.6;
+      b.josephUltimateActive = true;
+      b.josephUltimateStep = 0;
+      b.josephUltimateTimer = JOSEPH_ULTIMATE_COMBO_INTERVAL;
+      b.josephUltimateTarget = enemy;
+      b.vx = 0; b.vy = 0;
+    } else {
+      // 波紋疾走／彈簧拳（僅在波紋呼吸法型態下可用）
+      if (b.josephDashTimer > 0) b.josephDashTimer -= dt;
+      if (b.josephSpringTimer > 0) b.josephSpringTimer -= dt;
+      if (b.josephState === 'breathing') {
+        if (b.josephDashTimer <= 0 && jDistToEnemy < JOSEPH_DASH_RANGE) {
+          b.josephDashTimer = JOSEPH_DASH_COOLDOWN;
+          dealDamage(enemy, JOSEPH_DASH_DAMAGE);
+          b.hp = Math.min(MAX_HP, b.hp + JOSEPH_HP_REGEN_ON_HIT);
+          enemy.rippleStacks = (enemy.rippleStacks || 0) + JOSEPH_DASH_STACK;
+          const dashAng = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+          state.josephPunchFX.push({ x: b.x, y: b.y, angle: dashAng, dist: jDistToEnemy, life: 0.22, maxLife: 0.22, owner: b.player, style: 'dash' });
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 20, alpha: 0.85, color: '#4aa8ff', t: 0.25 });
+          playHitSound('knife');
+        } else if (b.josephSpringTimer <= 0 && jDistToEnemy < JOSEPH_SPRING_RANGE && jDistToEnemy >= JOSEPH_DASH_RANGE) {
+          b.josephSpringTimer = JOSEPH_SPRING_COOLDOWN;
+          dealDamage(enemy, JOSEPH_SPRING_DAMAGE);
+          b.hp = Math.min(MAX_HP, b.hp + JOSEPH_HP_REGEN_ON_HIT);
+          enemy.rippleStacks = (enemy.rippleStacks || 0) + JOSEPH_SPRING_STACK;
+          const springAng = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+          state.josephPunchFX.push({ x: b.x, y: b.y, angle: springAng, dist: jDistToEnemy, life: 0.42, maxLife: 0.42, owner: b.player, style: 'spring' });
+          state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 24, alpha: 0.9, color: '#2f7dc0', t: 0.3 });
+          playHitSound('curse_slash');
+        }
+      }
+    }
+  }
+
   // 虎天帝：血球壽命更新
   if (state.tigerBloodOrbs) {
     for (let i = state.tigerBloodOrbs.length - 1; i >= 0; i--) {
@@ -8060,6 +8327,8 @@ waypoints.push({
   for (let i = state.getoSurgeFX.length - 1; i >= 0; i--) { state.getoSurgeFX[i].life -= dt; if (state.getoSurgeFX[i].life <= 0) state.getoSurgeFX.splice(i, 1); }
   for (let i = state.getoDeathFX.length - 1; i >= 0; i--) { state.getoDeathFX[i].life -= dt; if (state.getoDeathFX[i].life <= 0) state.getoDeathFX.splice(i, 1); }
   for (let i = state.getoCaneFX.length - 1; i >= 0; i--) { state.getoCaneFX[i].life -= dt; if (state.getoCaneFX[i].life <= 0) state.getoCaneFX.splice(i, 1); }
+  if (state.josephPunchFX) for (let i = state.josephPunchFX.length - 1; i >= 0; i--) { state.josephPunchFX[i].life -= dt; if (state.josephPunchFX[i].life <= 0) state.josephPunchFX.splice(i, 1); }
+  if (state.rippleStackFX) for (let i = state.rippleStackFX.length - 1; i >= 0; i--) { state.rippleStackFX[i].life -= dt; if (state.rippleStackFX[i].life <= 0) state.rippleStackFX.splice(i, 1); }
 
   // ══════════════ Oblivionis（豐川祥子）邏輯 ══════════════
   for (const b of state.balls) {
@@ -8164,9 +8433,10 @@ waypoints.push({
         const stackCount = b.sakikoNotes.filter(x => !x.isNova && x.active).length;
         const stackCap = b.sakikoDualActive ? SAKIKO_DUAL_NOTE_CAP : SAKIKO_NOTE_MAX_STACK;
         const finalDmg = n.isNova ? n.damage : n.damage * (1 + SAKIKO_NOTE_DMG_PER_STACK * Math.min(stackCount, stackCap));
-        dealDamage(enemy, finalDmg);
-        b.sakikoFever = Math.min(SAKIKO_FEVER_MAX, (b.sakikoFever || 0) + SAKIKO_FEVER_PER_HIT);
-        n.active = false;
+       dealDamage(enemy, finalDmg);
+if (!b.sakikoDualActive) {
+  b.sakikoFever = Math.min(SAKIKO_FEVER_MAX, (b.sakikoFever || 0) + SAKIKO_FEVER_PER_HIT);
+}        n.active = false;
         state.hitFlashes.push({ x: n.x, y: n.y, r: 16, alpha: 0.85, color: n.color, t: 0.25 });
         playHitSound('knife');
       }
@@ -8335,6 +8605,42 @@ function renderBeachArena() {
       ctx.fillText(`🦈×${n}`, b.x, b.y - RADIUS - 14);
     }
   }
+}
+
+// 大喬：波紋拳頭圖形（拳頭主體＋指節反光），in local rotated coords，(x,y)為拳心位置
+function drawHamonFist(ctx, x, y, angle, size, color) {
+  if (size <= 0) return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.shadowColor = '#66ccff';
+  ctx.shadowBlur = size * 0.9;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, size * 0.62, size * 0.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  for (let k = -1; k <= 1; k++) {
+    ctx.beginPath();
+    ctx.arc(size * 0.18, k * size * 0.32, size * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// 大喬：波紋衝擊環（世界座標）
+function drawHamonRing(ctx, x, y, r, alpha, color, lineWidth) {
+  if (alpha <= 0 || r <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, alpha);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function render() {
@@ -9589,6 +9895,174 @@ function render() {
     ctx.restore();
   }
 
+  // 大喬：波紋疾走/彈簧拳/SYO 出拳特效
+  if (state.josephPunchFX) {
+    for (const fx of state.josephPunchFX) {
+      const prog = 1 - Math.max(0, fx.life) / fx.maxLife; // 0→1
+
+      if (fx.style === 'dash') {
+        // 普通拳擊（波紋疾走）：直拳貫穿，波紋沿手臂脈動traveling，拳頭衝擊
+        const dashDist = fx.dist || (RADIUS + 30);
+        const reach = Math.max(40, dashDist - RADIUS * 1.05);
+        const extend = Math.min(1, prog / 0.55);
+        const eased = 1 - Math.pow(1 - extend, 2);
+        const curReach = reach * eased;
+
+        ctx.save();
+        ctx.translate(fx.x, fx.y);
+        ctx.rotate(fx.angle);
+        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, prog - 0.6) / 0.4);
+
+        const grad = ctx.createLinearGradient(RADIUS * 0.3, 0, RADIUS * 0.3 + curReach, 0);
+        grad.addColorStop(0, 'rgba(74,168,255,0.15)');
+        grad.addColorStop(1, 'rgba(140,220,255,0.95)');
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = '#66ccff'; ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.moveTo(RADIUS * 0.3, 0);
+        ctx.lineTo(RADIUS * 0.3 + curReach, 0);
+        ctx.stroke();
+
+        for (let k = 0; k < 2; k++) {
+          const rp = eased - k * 0.28;
+          if (rp > 0 && rp < 1) drawHamonRing(ctx, RADIUS * 0.3 + curReach * rp, 0, 5 + rp * 4, (1 - rp) * 0.8, '#bfe8ff', 2);
+        }
+        if (eased > 0.4) drawHamonFist(ctx, RADIUS * 0.3 + curReach, 0, 0, 15 * Math.min(1, (eased - 0.4) / 0.3), '#dff3ff');
+        ctx.restore();
+
+        if (prog > 0.55) {
+          const ip = Math.min(1, (prog - 0.55) / 0.45);
+          const tipX = fx.x + Math.cos(fx.angle) * (RADIUS * 0.3 + curReach);
+          const tipY = fx.y + Math.sin(fx.angle) * (RADIUS * 0.3 + curReach);
+          drawHamonRing(ctx, tipX, tipY, 8 + ip * 26, (1 - ip) * 0.9, '#4aa8ff', 3);
+        }
+
+      } else if (fx.style === 'spring') {
+        // 彈簧拳：分段伸長 —— 彈簧狀手臂由捲曲逐段甩出並拉直，末端命中爆開波紋
+        const dist = fx.dist || (RADIUS + 60);
+        const reach = Math.max(50, dist - RADIUS * 1.15);
+        const extend = Math.min(1, prog / 0.62);
+        const eased = 1 - Math.pow(1 - extend, 3); // 甩出時加速
+        const curReach = reach * eased;
+        const coilAmp = 15 * (1 - eased) + 1.5; // 越伸展越平直，命中瞬間仍保留微震動
+        const segs = 7;
+
+        ctx.save();
+        ctx.translate(fx.x, fx.y);
+        ctx.rotate(fx.angle);
+        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, prog - 0.78) / 0.22);
+
+        ctx.strokeStyle = '#2f7dc0';
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = '#66ccff'; ctx.shadowBlur = 16;
+        ctx.beginPath();
+        ctx.moveTo(RADIUS * 0.3, 0);
+        const nodes = [];
+        for (let i = 1; i <= segs; i++) {
+          const t = i / segs;
+          const px = RADIUS * 0.3 + curReach * t;
+          const taper = 1 - t * 0.85; // 靠近拳頭處逐漸拉直，模擬彈簧鎖死伸展
+          const py = (i % 2 === 0 ? 1 : -1) * coilAmp * taper;
+          ctx.lineTo(px, py);
+          nodes.push([px, py]);
+        }
+        ctx.stroke();
+        ctx.fillStyle = '#8fd0ff';
+        for (const [nx, ny] of nodes) { ctx.beginPath(); ctx.arc(nx, ny, 3, 0, Math.PI * 2); ctx.fill(); }
+        if (eased > 0.15) drawHamonFist(ctx, RADIUS * 0.3 + curReach, 0, 0, 12 + 10 * Math.min(1, eased), '#eaf7ff');
+        ctx.restore();
+
+        if (prog > 0.6) {
+          const ip = Math.min(1, (prog - 0.6) / 0.4);
+          const tipX = fx.x + Math.cos(fx.angle) * (RADIUS * 0.3 + curReach);
+          const tipY = fx.y + Math.sin(fx.angle) * (RADIUS * 0.3 + curReach);
+          drawHamonRing(ctx, tipX, tipY, 10 + ip * 30, (1 - ip) * 0.9, '#2f7dc0', 4);
+          drawHamonRing(ctx, tipX, tipY, 4 + ip * 18, (1 - ip) * 0.7, '#bfe8ff', 2);
+        }
+
+      } else if (fx.style === 'first' || fx.style === 'combo' || fx.style === 'final') {
+        // SYO：連續痛擊拳頭群（第一拳／連擊快拳／終結拳）
+        const isFinal = fx.style === 'final';
+        const isFirst = fx.style === 'first';
+        const tx = fx.tx != null ? fx.tx : fx.x;
+        const ty = fx.ty != null ? fx.ty : fx.y;
+        const angle = fx.angle != null ? fx.angle : Math.atan2(ty - fx.y, tx - fx.x);
+        const dist = Math.max(20, Math.hypot(tx - fx.x, ty - fx.y));
+        const sideOff = (fx.side || 0) * 8; // 連擊左右交錯微偏移，模擬快速連續出拳節奏
+
+        const windup = Math.min(1, prog / (isFinal ? 0.3 : isFirst ? 0.4 : 0.55));
+        const eased = 1 - Math.pow(1 - windup, 2);
+        const curReach = dist * eased;
+
+        ctx.save();
+        ctx.translate(fx.x, fx.y);
+        ctx.rotate(angle);
+        ctx.translate(0, sideOff);
+        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, prog - 0.6) / 0.4);
+
+        ctx.strokeStyle = isFinal ? '#ffcc00' : '#ffe066';
+        ctx.lineWidth = isFinal ? 6 : 3;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = '#ffe066'; ctx.shadowBlur = isFinal ? 20 : 10;
+        ctx.beginPath();
+        ctx.moveTo(RADIUS * 0.25, 0);
+        ctx.lineTo(RADIUS * 0.25 + curReach, 0);
+        ctx.stroke();
+        drawHamonFist(ctx, RADIUS * 0.25 + curReach, 0, 0, isFinal ? 22 : (isFirst ? 16 : 11), isFinal ? '#fff2c2' : '#ffedb0');
+        ctx.restore();
+
+        if (prog > (isFinal ? 0.25 : 0.5)) {
+          const ip = Math.min(1, (prog - (isFinal ? 0.25 : 0.5)) / (isFinal ? 0.75 : 0.5));
+          drawHamonRing(ctx, tx, ty, (isFinal ? 16 : 8) + ip * (isFinal ? 55 : 20), (1 - ip) * (isFinal ? 1 : 0.85), isFinal ? '#ffcc00' : '#ffe066', isFinal ? 5 : 3);
+          if (isFinal) {
+            // 終結拳：放射狀波紋刺爆開
+            for (let s = 0; s < 8; s++) {
+              const sa = (Math.PI * 2 / 8) * s;
+              const sr = 16 + ip * 48;
+              ctx.save();
+              ctx.globalAlpha = (1 - ip) * 0.8;
+              ctx.strokeStyle = '#ffe066';
+              ctx.lineWidth = 3;
+              ctx.beginPath();
+              ctx.moveTo(tx + Math.cos(sa) * sr * 0.4, ty + Math.sin(sa) * sr * 0.4);
+              ctx.lineTo(tx + Math.cos(sa) * sr, ty + Math.sin(sa) * sr);
+              ctx.stroke();
+              ctx.restore();
+            }
+          }
+        }
+      } else {
+        // 後備：舊版命中圈
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 1 - prog);
+        ctx.beginPath();
+        ctx.arc(fx.x, fx.y, 10 + prog * 22, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffe066';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+
+  // 波紋層數：爆裂特效
+  if (state.rippleStackFX) {
+    for (const fx of state.rippleStackFX) {
+      const prog = 1 - Math.max(0, fx.life) / fx.maxLife;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, 1 - prog);
+      ctx.beginPath();
+      ctx.arc(fx.x, fx.y, 14 + prog * 40, 0, Math.PI * 2);
+      ctx.strokeStyle = '#66ccff';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   // 夏油條：被定身角色的鎖鏈提示
   for (const b of state.balls) {
     if (!(b.getoBoundTimer > 0)) continue;
@@ -9599,6 +10073,20 @@ function render() {
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     ctx.arc(b.x, b.y, RADIUS + 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 大喬 SYO：被定身角色的波紋鎖定提示
+  for (const b of state.balls) {
+    if (!b.frozenByJoseph) continue;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = '#ffe066';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, RADIUS + 12, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
@@ -11131,6 +11619,55 @@ function render() {
         ctx.restore();
       }
     }
+    // 大喬：波紋呼吸法狀態視覺 + 波紋層數提示
+    if (b.char.type === 'joseph') {
+      if (b.josephState === 'charging') {
+        const chargeFrac = Math.min(1, (b.josephChargeTimer||0) / JOSEPH_CHARGE_TIME);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, RADIUS + 8 + chargeFrac * 6, 0, Math.PI * 2 * chargeFrac);
+        ctx.strokeStyle = 'rgba(102,204,255,0.9)'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.restore();
+      } else if (b.josephState === 'breathing') {
+        const pulse = 0.5 + 0.4 * Math.abs(Math.sin(elapsed * 4));
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, RADIUS + 10, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(47,125,192,${pulse})`; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.restore();
+        if (b.josephUltimateReady && !b.josephUltimateActive) {
+          ctx.save(); ctx.translate(b.x, b.y - RADIUS - 14);
+          ctx.font = 'bold 11px sans-serif';
+          ctx.fillStyle = b.josephUltimateCooldown > 0 ? 'rgba(180,180,180,0.7)' : `rgba(255,224,102,${0.7+0.3*Math.sin(elapsed*10)})`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(b.josephUltimateCooldown > 0 ? '☀️' : '☀️就緒！', 0, 0);
+          ctx.restore();
+        }
+      } else if (b.josephState === 'waiting') {
+        ctx.save(); ctx.translate(b.x, b.y - RADIUS - 14);
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = 'rgba(150,190,220,0.7)';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('💧', 0, 0);
+        ctx.restore();
+      }
+      if (b.josephUltimateActive) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, RADIUS + 14, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,224,102,${0.6+0.4*Math.abs(Math.sin(elapsed*15))})`; ctx.lineWidth = 4; ctx.stroke();
+        ctx.restore();
+      }
+    }
+    // 波紋層數（任何角色被施加波紋都會顯示）
+    if ((b.rippleStacks || 0) > 0) {
+      ctx.save(); ctx.translate(b.x + RADIUS + 4, b.y + RADIUS + 4);
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillStyle = b.rippleStacks >= RIPPLE_BURST_THRESHOLD ? 'rgba(255,120,80,0.9)' : 'rgba(102,204,255,0.85)';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`🌀${Math.floor(b.rippleStacks)}`, 0, 0);
+      ctx.restore();
+    }
     // 帶土虛化態結束：還原 alpha + 畫虛化外圈提示
     if (isPhasing) {
       ctx.restore();
@@ -11922,6 +12459,18 @@ function updateHUD() {
       if (b.sakikoNovaFiring) return `🌙新月甦醒！連發中 ${modeLabel}`;
       const novaCd = Math.max(0, SAKIKO_NOVA_COOLDOWN - (b.sakikoNovaTimer || 0)).toFixed(1);
       return `${modeLabel} 音符${noteCount}/${SAKIKO_NOTE_MAX_STACK} Fever${Math.floor(b.sakikoFever||0)}/${SAKIKO_FEVER_MAX} 🌙${novaCd}s`;
+    } else if (b.char.type === 'joseph') {
+      const stacks = Math.floor(b.rippleStacks || 0);
+      const stackStr = stacks > 0 ? ` 🌀波紋×${stacks}` : '';
+      if (b.josephState === 'charging') return `🌊 蓄力波紋呼吸法中... ${(b.josephChargeTimer||0).toFixed(1)}/${JOSEPH_CHARGE_TIME}s`;
+      if (b.josephState === 'waiting') return `💧 蓄力中斷，${Math.max(0, b.josephRetryTimer||0).toFixed(1)}s後再試`;
+      if (b.josephState === 'failed') return `⚪ 未能習得波紋呼吸法（碰觸5傷害）`;
+      if (b.josephUltimateActive) return `☀️ Sunlight Yellow Overdrive！${b.josephUltimateStep}/${JOSEPH_ULTIMATE_COMBO_HITS}`;
+      const breathLeft = Math.max(0, JOSEPH_ULTIMATE_UNLOCK - (b.josephBreathingTimer||0));
+      const syoStr = b.josephUltimateReady ? (b.josephUltimateCooldown > 0 ? `☀️CD:${b.josephUltimateCooldown.toFixed(1)}s` : '☀️就緒！') : `☀️${breathLeft.toFixed(1)}s`;
+      const dashCd = Math.max(0, b.josephDashTimer||0).toFixed(1);
+      const springCd = Math.max(0, b.josephSpringTimer||0).toFixed(1);
+      return `🌊波紋呼吸法 疾走${dashCd}s 彈簧${springCd}s ${syoStr}${stackStr}`;
     } else {
       return '';
     }
