@@ -443,6 +443,15 @@
   .hp-bar.p3 { background: linear-gradient(90deg, #1e8e4a, #2ecc71); }
   .hp-bar.p4 { background: linear-gradient(90deg, #cc7a00, #f5b041); float: right; }
 
+  .cd-bars { display: inline-flex; gap: 3px; vertical-align: middle; margin: 0 3px; }
+  .cd-bar-wrap {
+    width: 26px; height: 6px; background: rgba(255,255,255,0.12);
+    border-radius: 3px; overflow: hidden; position: relative;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .cd-bar-fill { height: 100%; border-radius: 3px; transition: width 0.15s linear; }
+  .cd-bar-label { font-size: 0.55rem; margin-right: 1px; }
+
   .hud.multi {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -522,6 +531,18 @@
   .bottom-bar.multi .forfeit-btn { grid-column: 1 / -1; order: -1; justify-self: center; margin-bottom: 3px; }
   .bottom-bar.multi span { flex: none; text-align: center !important; }
 
+  /* 沙盒模式：底部列只剩「結束」按鈕，維持置中並提高亮度（不套用.multi那套較暗的樣式） */
+  .bottom-bar.sandbox-solo {
+    display: flex;
+    justify-content: center;
+    opacity: 1;
+  }
+  .bottom-bar.sandbox-solo .forfeit-btn {
+    color: rgba(255,150,150,0.95);
+    background: rgba(120,20,20,0.55);
+    border-color: rgba(255,120,120,0.55);
+  }
+
   .forfeit-btn {
     font-family: 'Oswald', sans-serif;
     font-size: 0.6rem;
@@ -593,6 +614,9 @@
     flex-direction: column;
     gap: 1.5rem;
     backdrop-filter: blur(4px);
+    overflow-y: auto;
+    padding: 24px 12px;
+    box-sizing: border-box;
   }
 
   #overlay.show { display: flex; }
@@ -1405,8 +1429,17 @@ document.addEventListener('touchstart', () => { if (audioCtx) audioCtx.resume();
 // ──────────────── GAME CONSTANTS ────────────────
 const canvas = document.getElementById('arena');
 const ctx    = canvas.getContext('2d');
-const W      = canvas.width;
-const H      = canvas.height;
+let W      = canvas.width;
+let H      = canvas.height;
+// 沙盒模式：調整競技場大小（連同 canvas 實際尺寸一起改，其餘程式碼都是即時讀取 W/H，不需要另外處理）
+function resizeArena(w, h) {
+  w = Math.max(300, Math.min(3000, Math.round(w) || canvas.width));
+  h = Math.max(300, Math.min(3000, Math.round(h) || canvas.height));
+  canvas.width = w;
+  canvas.height = h;
+  W = w;
+  H = h;
+}
 
 const RADIUS             = 25;
 
@@ -1482,7 +1515,8 @@ const MODES = [
   { count: 4, emoji: '💀', name: '4人混戰', desc: '四方混戰，一拳超人停用。' },
   { special: 'endless', emoji: '🔥', name: '模擬手札', desc: '無盡闖關，逐關強化。' },
   { special: 'assemble', emoji: '🤖', name: '組裝模式', desc: '自組零件，闖關對決。' },
-  { special: 'wheel', emoji: '🔁', name: '車輪戰', desc: '3v3接力，一拳超人停用。' }
+  { special: 'wheel', emoji: '🔁', name: '車輪戰', desc: '3v3接力，一拳超人停用。' },
+  { special: 'sandbox', emoji: '🧪', name: '沙盒模式', desc: '不限隊伍與人數，自訂場地大小與地圖。' }
 ];
 let selectedBgColor = '#000000'; // 玩家自訂背景顏色
 const WALL               = 1;
@@ -2202,6 +2236,39 @@ const RSQJS_ENCHANT_MAX_LV         = 5;    // 附魔等級上限（避免無限�
 const RSQJS_STEALTH_DURATION = 2.0;    // 復仇後「迅捷潛行」無敵時間
 const RSQJS_STEALTH_CD       = 6.0;    // 迅捷潛行冷卻
 
+// ══════════════ 四天之龍：次元融合（四球共享血量角色） ══════════════
+const DRAGON4_DMG_REDUCE       = 0.20;  // 被動：受到傷害減免20%
+const DRAGON4_ENRAGE_HP        = 500;   // 血量低於此值進入強化狀態
+const DRAGON4_ENRAGE_CD_MUL    = 0.5;   // 強化狀態：技能冷卻減半
+
+// 🟨擺弧噴射
+const DRAGON4_PENDULUM_CD        = 6;
+const DRAGON4_PENDULUM_DURATION  = 2;
+const DRAGON4_PENDULUM_DPS       = 100;
+const DRAGON4_PENDULUM_RANGE     = 34;   // 判定半寬
+
+// 🟪猛毒控制
+const DRAGON4_VENOM_CD           = 6;
+const DRAGON4_VENOM_DASH_SPEED   = 820;
+const DRAGON4_VENOM_DAMAGE       = 40;
+const DRAGON4_VENOM_STUN         = 2;
+const DRAGON4_VENOM_POISON_DUR   = 5;
+const DRAGON4_VENOM_POISON_DPS   = 20;
+
+// ⬜淨翼白光
+const DRAGON4_WING_CD            = 6;
+const DRAGON4_WING_BUFF_DURATION = 6;
+const DRAGON4_WING_BUFF_MULT     = 0.10;
+const DRAGON4_WING_DAMAGE        = 50;
+const DRAGON4_WING_PARALYZE_DUR  = 1.5;
+
+// ⬛叛逆吸取
+const DRAGON4_REBEL_CD           = 6;
+const DRAGON4_REBEL_DAMAGE       = 50;
+const DRAGON4_REBEL_WEAKEN_DUR   = 4;
+const DRAGON4_REBEL_WEAKEN_MULT  = 0.5;  // 對手傷害輸出減半
+
+
 
 
 const MIN_SPEED          = 100;   // 最低移動速度（技能停止中除外）
@@ -2273,7 +2340,6 @@ const CUSTOM_PARTS = {
 };
 
 // ══════════════ 組裝模式：全角色零件庫（泛用引擎驅動） ══════════════
-// 這批零件不是照搬原角色程式碼，而是用幾種「泛用招式引擎」重新實作、對齊原角色的數值精神。
 // 每個零件對應的引擎：heal（定時回血）／projectile（定時射出飛行物）／dash（定時衝刺撞擊）／
 // debuff（定時對最近敵人施加傷害+異常狀態：poison中毒／root定身／stun暈眩／knockback擊退）／
 // delayedAoe（定時在敵人腳下標記，延遲後對範圍內敵人造成傷害，類似地雷）。
@@ -2282,6 +2348,14 @@ const CUSTOM_PART_CFG = {
   s1_cursed:    { engine: 'debuff', interval: 4.25, damage: 140, kind: 'root', duration: 0.6, color: '#c0392b' },
 };
 
+
+// 四龍各自的外觀（共用同一個角色本體，僅顯示用配色不同）
+const DRAGON4_ROLES = [
+  { role: 'pendulum', emoji: '🐲', color: '#e8c93d', glowColor: 'rgba(232,201,61,0.6)',  name: '擺弧龍' },
+  { role: 'venom',    emoji: '🐲', color: '#8e44ad', glowColor: 'rgba(142,68,173,0.6)',  name: '猛毒龍' },
+  { role: 'wing',     emoji: '🐲', color: '#eeeeee', glowColor: 'rgba(238,238,238,0.6)', name: '淨翼龍' },
+  { role: 'rebel',    emoji: '🐲', color: '#3a3a3a', glowColor: 'rgba(120,120,120,0.6)', name: '叛逆龍' },
+];
 
 const CHARACTERS = [
   {
@@ -2681,6 +2755,21 @@ yuki:'這是對我哥哥重要的人來說，她的理想'
     },
     winQuote: ['在另一個世界，我們還是朋友嗎？。', '這一次，終於改寫了結局。'],
     
+  },
+  {
+    id: 'dragon4', emoji: '🐲', weapon: '🐲', name: '四天之龍',
+    desc: '「次元融合，四天歸位。」由四顆能力迥異的龍球融合而成的存在，擺弧、猛毒、淨翼、叛逆——四種截然不同的力量共享同一份生命。',
+    stats: ['擺弧噴射', '猛毒控制', '淨翼白光', '叛逆吸取'],
+    skills: [
+      `次元融合：本角色由🟨擺弧龍／🟪猛毒龍／⬜淨翼龍／⬛叛逆龍四顆球組成，四龍共享同一份血量，受到傷害減免${Math.round(DRAGON4_DMG_REDUCE*100)}%；血量低於${DRAGON4_ENRAGE_HP}時進入強化狀態，四項技能冷卻全部減半。`,
+      `🟨擺弧噴射：原地向敵人噴射螺旋波，持續${DRAGON4_PENDULUM_DURATION}s，每秒造成${DRAGON4_PENDULUM_DPS}傷害，冷卻${DRAGON4_PENDULUM_CD}s。`,
+      `🟪猛毒控制：衝向敵人造成${DRAGON4_VENOM_DAMAGE}傷害並暈眩${DRAGON4_VENOM_STUN}s，並附加每秒${DRAGON4_VENOM_POISON_DPS}點、持續${DRAGON4_VENOM_POISON_DUR}s的中毒，冷卻${DRAGON4_VENOM_CD}s。`,
+      `⬜淨翼白光：自身散發白光，使四龍攻擊力提升${Math.round(DRAGON4_WING_BUFF_MULT*100)}%，持續${DRAGON4_WING_BUFF_DURATION}s；同時對敵人造成${DRAGON4_WING_DAMAGE}傷害並使其麻痺，冷卻${DRAGON4_WING_CD}s。`,
+      `⬛叛逆吸取：對敵人遠程吸取造成${DRAGON4_REBEL_DAMAGE}傷害，並使其傷害輸出降低${Math.round(DRAGON4_REBEL_WEAKEN_MULT*100)}%，持續${DRAGON4_REBEL_WEAKEN_DUR}s，冷卻${DRAGON4_REBEL_CD}s。`
+    ],
+    color: '#e8c93d', glowColor: 'rgba(232,201,61,0.6)', type: 'dragon4', isQuad: true,
+    winQuote: '怎麼了，畏縮了嗎，人類們啊？吾可是如汝等所願而復活的！。',
+    loseQuote: '融合……終究還是崩解了嗎。'
   }
 ];
 
@@ -2720,7 +2809,7 @@ function setPlayerMode(count) {
 
 // 三人以上混戰時，機制在多人場面會失衡的角色停用選取：
 // 一拳超人（一擊必殺）、DIO（世界時停對多人影響過大）
-const LOCKED_IN_MULTI = ['opm', 'dio', 'rsqjs']; // rsqjs：雙生角色佔用兩顆球，3人以上混戰的淘汰/HUD邏輯未驗證，先停用
+const LOCKED_IN_MULTI = ['opm', 'dio','rsqjs' , 'dragon4']; // rsqjs/dragon4：多球共用一個玩家欄位，3人以上混戰的淘汰/HUD邏輯未驗證，先停用
 
 function refreshOpmLock() {
   const locked = playerModeCount >= 3;
@@ -2905,6 +2994,7 @@ function renderModeModal() {
       if (m.special === 'endless') { startEndless(); return; }
       if (m.special === 'assemble') { startAssembleMode(); return; }
       if (m.special === 'wheel') { window.openWheelPick(); return; }
+      if (m.special === 'sandbox') { sandboxOpenSetup(); return; }
       setPlayerMode(m.count);
     };
     grid.appendChild(card);
@@ -3083,7 +3173,7 @@ function closeRoster() { document.getElementById('roster-modal').classList.remov
   const backBtn = document.getElementById('wp-back-btn');
   const cancelBtn = document.getElementById('wp-cancel-btn');
 
-  const WHEEL_LOCKED = ['opm', 'rsqjs']; // 車輪戰停用角色：一拳超人的一擊必殺在接力賽中太破壞平衡；rsqjs 雙球角色的車輪戰交接邏輯未支援
+  const WHEEL_LOCKED = ['opm', 'rsqjs', 'dragon4']; // 車輪戰停用角色：一拳超人的一擊必殺在接力賽中太破壞平衡；rsqjs/dragon4 多球角色的車輪戰交接邏輯未支援
 
   CHARACTERS.forEach(ch => {
     const sq = document.createElement('div');
@@ -3621,7 +3711,9 @@ let updateWuxingFn = null; // 無形的變身更新邏輯（在 startGame 內賦
 
 // ──────────────── BUTTONS ────────────────
 document.getElementById('start-btn').addEventListener('click', startGame);
-document.getElementById('replay-btn').addEventListener('click', startGame);
+document.getElementById('replay-btn').addEventListener('click', () => {
+  if (sandboxMode) sandboxStartBattle(); else startGame();
+});
 
 // 場地選擇（彈窗）
 function renderArenaModal() {
@@ -3720,8 +3812,13 @@ document.getElementById('bg-color-picker').addEventListener('input', (e) => {
 document.getElementById('back-btn').addEventListener('click', () => {
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('game-screen').style.display = 'none';
-  document.getElementById('select-screen').style.display = 'flex';
   if (gameLoop) { cancelAnimationFrame(gameLoop); gameLoop = null; }
+  if (sandboxMode) {
+    document.getElementById('sandbox-screen').style.display = 'flex';
+    sandboxRenderTeams();
+  } else {
+    document.getElementById('select-screen').style.display = 'flex';
+  }
 });
 
 document.getElementById('forfeit-btn').addEventListener('click', forfeitGame);
@@ -3748,8 +3845,8 @@ function forfeitGame() {
   overlay.classList.add('show');
 }
 
-const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9', geto:'#5b3a8e', sakiko:'#c9a4d1', joseph:'#2f7dc0', steve:'#4a8f3c',daji:'#e08ac7',yuki:'#b8860b',wuxing:'#9b8cce',sans:'#e8e8e8',pucci:'#8e6bbf',baie:'#e8c840',rsqjs:'#e84b4b' };
-const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff', geto:'#a678e0', sakiko:'#e8cdf0', joseph:'#6fb8ee', steve:'#8fd96b',daji:'#e8cdf8' ,yuki:'#b8960b',wuxing:'#c3b8e8',sans:'#a8d8f0',pucci:'#c9a8e8',baie:'#a86fe0',rsqjs:'#3fa9e8'};
+const P1_COLORS ={ chef:'#e84545',drunk:'#7b4cca', opm:'#f5f5f5', vampire:'#8b1a8b', gojo:'#00cfff', cursed:'#c0392b', trapper:'#27ae60', yi:'#e8e8e8', gunner:'#b8860b', samurai:'#d4af37', mage:'#9b59b6', thunder:'#f1c40f', blacksmith:'#cd7f32', naobito:'#c8c8e8', itachi:'#8b0000', yuta:'#ff6fa5', engineer:'#3a8fd6', cannondad:'#bdbdbd', dio:'#f5d020', tiger:'#cc2200', stargirl:'#ffe066', obito:'#ff6600', fisherman:'#4a90d9', geto:'#5b3a8e', sakiko:'#c9a4d1', joseph:'#2f7dc0', steve:'#4a8f3c',daji:'#e08ac7',yuki:'#b8860b',wuxing:'#9b8cce',sans:'#e8e8e8',pucci:'#8e6bbf',baie:'#e8c840',rsqjs:'#e84b4b',dragon4:'#c9a959' };
+const P2_COLORS = { chef:'#ff9f43', drunk:'#48dbfb', opm:'#aaaaaa', vampire:'#cc44cc', gojo:'#7ff8ff', cursed:'#e74c3c', trapper:'#2ecc71', yi:'#cccccc', gunner:'#f0c040', samurai:'#ffe88a', mage:'#d7aefb', thunder:'#ffe066', blacksmith:'#e8a840', naobito:'#aaaacc', itachi:'#ff3333', yuta:'#ffa3c8', engineer:'#7ec8ff', cannondad:'#787878', dio:'#fff066', tiger:'#ff4422', stargirl:'#fff5aa', obito:'#ffaa44', fisherman:'#8ec6ff', geto:'#a678e0', sakiko:'#e8cdf0', joseph:'#6fb8ee', steve:'#8fd96b',daji:'#e8cdf8' ,yuki:'#b8960b',wuxing:'#c3b8e8',sans:'#a8d8f0',pucci:'#c9a8e8',baie:'#a86fe0',rsqjs:'#3fa9e8',dragon4:'#e8d38f'};
 
 // 玩家 1、2 用既有的兩張色表；玩家 3 以上（多人混戰用）用同一顏色做色調偏移，避免撞色。
 // 之後若要幫玩家 3/4 手動指定色表，只要新增 P3_COLORS / P4_COLORS 並在這裡優先讀取即可。
@@ -4044,6 +4141,32 @@ const PROGRESS_HANDLERS = {
       barColor: (b.char.type !== 'chef' || b.knives > 0) ? b.char.color : '#555'
     };
   },
+  rsqjs(b) {
+    // 雙生角色沒有一般普攻，改顯示各自技能的冷卻進度（炸藥／附魔書），避免套用預設attackTimer導致進度條卡滿不動
+    if (b.rsqjsHasBombSkill) {
+      return { atFrac: 1 - Math.max(0, b.rsqjsBombTimer) / RSQJS_BOMB_CD, barColor: '#e74c3c' };
+    }
+    if (b.twinRole === 'diamond') {
+      return { atFrac: 1 - Math.max(0, b.rsqjsBookTimer) / RSQJS_BOOK_CD, barColor: '#3498db' };
+    }
+    return { atFrac: 1, barColor: b.char.color };
+  },
+  dragon4(b) {
+    // 四天之龍：四顆球各自技能CD不同，顯示自己那顆的技能冷卻進度
+    const roleCd = {
+      pendulum: DRAGON4_PENDULUM_CD,
+      venom:    DRAGON4_VENOM_CD,
+      wing:     DRAGON4_WING_CD,
+      rebel:    DRAGON4_REBEL_CD
+    };
+    const enraged = b.hp <= DRAGON4_ENRAGE_HP;
+    const cdMul = enraged ? DRAGON4_ENRAGE_CD_MUL : 1;
+    const maxCd = (roleCd[b.char.quadRole] || 4) * cdMul;
+    return {
+      atFrac: maxCd > 0 ? 1 - Math.max(0, b.dragon4SkillTimer || 0) / maxCd : 1,
+      barColor: b.char.color
+    };
+  },
   sans(b) {
     if (b.sansUltActive) return { atFrac: 1, barColor: '#ffffff' };
     if (b.hp <= 1) return { atFrac: 1, barColor: '#ff5050' };
@@ -4081,46 +4204,58 @@ for (const c of CHARACTERS) {
 }
 
 // ──────────────── START GAME ────────────────
-  function makeBall(x, y, vx, vy, ch, player, twinRole) {
-    return {
-      x, y, vx, vy,
-      hp: ch.type === 'sans' ? SANS_MAX_HP : ch.type === 'rsqjs' ? RSQJS_MAX_HP : MAX_HP,
-      char: ch, player,
-      twinRole: ch.type === 'rsqjs' ? twinRole : null,          // 'stop'(🛑紅石) 或 'diamond'(🔷青金石)
-      twinPartnerId: null,                                       // 執行期指向搭檔球（見 startGame 連結）
-      attackTimer: 0,
-      attackInterval: ch.type === 'chef' ? CHEF_ATTACK_INTERVAL : ch.type === 'yi' ? YI_BLACK_INTERVAL :
-        ch.type === 'custom' ? (ch.parts.basic === 'a_chef' ? CUSTOM_BASIC_CHEF_INTERVAL : ch.parts.basic === 'a_gunner' ? CUSTOM_BASIC_GUNNER_INTERVAL : CUSTOM_BASIC_DRUNK_INTERVAL) :
-        ch.type === 'rsqjs' ? RSQJS_BOMB_CD :
-        DRUNK_ATTACK_INTERVAL,
-      knives: ch.type === 'chef' ? KNIFE_MAX_COUNT : null,
-      knifeRecalling: false,   // 是否回收中
-      drunkTimer: ch.type === 'drunk' ? randBetween(DRUNK_DIR_CHANGE_MIN, DRUNK_DIR_CHANGE_MAX) : null,
-      opmPunched: ch.type === 'opm' ? false : null,
-      opmCountdown: ch.type === 'opm' ? OPM_COUNTDOWN_START : null,
-      opmWasColliding: ch.type === 'opm' ? false : null,
-      opmCollisionCooldown: ch.type === 'opm' ? 0 : null,
-      opmWallTouching: ch.type === 'opm' ? false : null,
-      // 詛咒之王專屬狀態
-      curseSlashTimer: ch.type === 'cursed' ? CURSE_SLASH_INTERVAL : null, // 解CD
-      curseDomainActive: ch.type === 'cursed' ? false : null,               // 伏魔是否展開
-      curseDomainUsed: ch.type === 'cursed' ? false : null,                 // 伏魔是否已用過
-      curseDomainFreezeTimer: ch.type === 'cursed' ? 0 : null,              // 伏魔原地倒數
-      // 被施加詛咒（捌）的狀態（任何角色都可能被施加）
-      curseDotTimer: 0,     // dot剩餘時間
-      curseDotDmg: 0,       // 每秒傷害量
-      curseDotOwnerPlayer: null, // 詛咒dot施放者玩家編號（多人混戰傷害歸屬用）
-      curseSlowTimer: 0,    // 緩速剩餘時間
-      // 暗夜領主專屬狀態
-      vampireBiting: ch.type === 'vampire' ? false : null,       // 是否正在咬擊
-      vampireBiteStep: ch.type === 'vampire' ? 0 : null,         // 第幾次咬擊（0-2）
-      vampireBiteTimer: ch.type === 'vampire' ? 0 : null,        // 下次咬擊倒數
-      vampireBiteCooldown: ch.type === 'vampire' ? 0 : null,     // 咬擊結束後CD（防立即重觸發）
-      vampireDashTimer: ch.type === 'vampire' ? VAMPIRE_DASH_INTERVAL : null, // 衝刺CD
-      vampireDashing: ch.type === 'vampire' ? false : null,  // 是否正在衝刺
-      vampireDashElapsed: ch.type === 'vampire' ? 0 : null,  // 衝刺已持續時間
-      // 被暗夜領主鎖定而停止移動
-      gojoTimer: ch.type === 'gojo' ? 0 : null,
+
+function makeBall(x, y, vx, vy, ch, player, twinRole) {
+  return {
+    x, y, vx, vy,
+    hp: ch.type === 'sans' ? SANS_MAX_HP : ch.type === 'rsqjs' ? RSQJS_MAX_HP : MAX_HP,
+    char: ch, player,
+    twinRole: ch.type === 'rsqjs' ? twinRole : null,          // 'stop'(🛑紅石) 或 'diamond'(🔷青金石)
+    twinPartnerId: null,                                       // 執行期指向搭檔球（見 startGame 連結）
+    // ══════ 四天之龍（dragon4）專屬狀態 ══════
+    quadSiblings: ch.type === 'dragon4' ? [] : null,           // 其餘三顆龍球參考（見 startGame 連結），用於血量同步
+    dragon4SkillTimer: ch.type === 'dragon4' ?
+      (ch.quadRole === 'pendulum' ? DRAGON4_PENDULUM_CD * 0.5 :
+       ch.quadRole === 'venom'    ? DRAGON4_VENOM_CD * 0.5 :
+       ch.quadRole === 'wing'     ? DRAGON4_WING_CD * 0.5 :
+       ch.quadRole === 'rebel'    ? DRAGON4_REBEL_CD * 0.5 : 4) : null,
+    dragon4PendulumChannelTimer: ch.type === 'dragon4' && ch.quadRole === 'pendulum' ? 0 : null,
+    dragon4PendulumAngle: null,
+    dragon4AtkBuffTimer: ch.type === 'dragon4' ? 0 : null,     // 淨翼白光：全隊攻擊力提升剩餘時間
+    weakenTimer: 0, weakenMult: 1,                              // 通用欄位：叛逆吸取等「使對手輸出降低」debuff
+    attackTimer: 0,
+    attackInterval: ch.type === 'chef' ? CHEF_ATTACK_INTERVAL : ch.type === 'yi' ? YI_BLACK_INTERVAL :
+      ch.type === 'custom' ? (ch.parts.basic === 'a_chef' ? CUSTOM_BASIC_CHEF_INTERVAL : ch.parts.basic === 'a_gunner' ? CUSTOM_BASIC_GUNNER_INTERVAL : CUSTOM_BASIC_DRUNK_INTERVAL) :
+      ch.type === 'rsqjs' ? RSQJS_BOMB_CD :
+      DRUNK_ATTACK_INTERVAL,
+    knives: ch.type === 'chef' ? KNIFE_MAX_COUNT : null,
+    knifeRecalling: false,   // 是否回收中
+    drunkTimer: ch.type === 'drunk' ? randBetween(DRUNK_DIR_CHANGE_MIN, DRUNK_DIR_CHANGE_MAX) : null,
+    opmPunched: ch.type === 'opm' ? false : null,
+    opmCountdown: ch.type === 'opm' ? OPM_COUNTDOWN_START : null,
+    opmWasColliding: ch.type === 'opm' ? false : null,
+    opmCollisionCooldown: ch.type === 'opm' ? 0 : null,
+    opmWallTouching: ch.type === 'opm' ? false : null,
+    // 詛咒之王專屬狀態
+    curseSlashTimer: ch.type === 'cursed' ? CURSE_SLASH_INTERVAL : null, // 解CD
+    curseDomainActive: ch.type === 'cursed' ? false : null,               // 伏魔是否展開
+    curseDomainUsed: ch.type === 'cursed' ? false : null,                 // 伏魔是否已用過
+    curseDomainFreezeTimer: ch.type === 'cursed' ? 0 : null,              // 伏魔原地倒數
+    // 被施加詛咒（捌）的狀態（任何角色都可能被施加）
+    curseDotTimer: 0,     // dot剩餘時間
+    curseDotDmg: 0,       // 每秒傷害量
+    curseDotOwnerPlayer: null, // 詛咒dot施放者玩家編號（多人混戰傷害歸屬用）
+    curseSlowTimer: 0,    // 緩速剩餘時間
+    // 暗夜領主專屬狀態
+    vampireBiting: ch.type === 'vampire' ? false : null,       // 是否正在咬擊
+    vampireBiteStep: ch.type === 'vampire' ? 0 : null,         // 第幾次咬擊（0-2）
+    vampireBiteTimer: ch.type === 'vampire' ? 0 : null,        // 下次咬擊倒數
+    vampireBiteCooldown: ch.type === 'vampire' ? 0 : null,     // 咬擊結束後CD（防立即重觸發）
+    vampireDashTimer: ch.type === 'vampire' ? VAMPIRE_DASH_INTERVAL : null, // 衝刺CD
+    vampireDashing: ch.type === 'vampire' ? false : null,  // 是否正在衝刺
+    vampireDashElapsed: ch.type === 'vampire' ? 0 : null,  // 衝刺已持續時間
+    // 被暗夜領主鎖定而停止移動
+    gojoTimer: ch.type === 'gojo' ? 0 : null,
 gojoCooldown: ch.type === 'gojo' ? GOJO_COOLDOWN : null,
 gojoUnlocked: ch.type === 'gojo' ? false : null,
 gojoCharging: ch.type === 'gojo' ? false : null,
@@ -4128,452 +4263,461 @@ gojoChargeTimer: ch.type === 'gojo' ? 0 : null,
 gojoHasTriggered: ch.type === 'gojo' ? false : null,
 gojoBalls: ch.type === 'gojo' ? [] : null,
 gojoChargingVisual: ch.type === 'gojo' ? false : null,
-      frozenByVampire: false,     
-      frozenTimer: 0,
-      dajiCharmedTimer: 0,      // 被妲己魅惑拉近時，暫停自身移動的剩餘時間（任何角色都可能被魅惑）
-      boostTimer: randBetween(BOOST_INTERVAL_MIN, BOOST_INTERVAL_MAX),
-      trail: [],
-      // 陷阱大師專屬狀態
-      trapChainTimer: ch.type === 'trapper' ? TRAP_CHAIN_INTERVAL : null,  // 鎖鏈CD
-      trapChainActive: ch.type === 'trapper' ? false : null,               // 鎖鏈是否正在拉扯
-      trapChainTimer2: ch.type === 'trapper' ? 0 : null,                   // 拉扯已持續時間
-      trapChainTargetTrap: ch.type === 'trapper' ? null : null,            // 觸發的尖刺物件參考
-      // 被尖刺 dot（任何角色）
-      trapDotTimer: 0,
-      trapDotDps: 0,
-      trapDotOwnerPlayer: null, // 尖刺dot施放者玩家編號（多人混戰傷害歸屬用）
-      // 奕專屬狀態
-      yiBlackTimer: ch.type === 'yi' ? YI_BLACK_INTERVAL : null,  // 落黑棋CD
-      yiBlackCount: ch.type === 'yi' ? 0 : null,                   // 當前黑棋計數（累積到4觸發白旗）
-      yiArenaUsed: ch.type === 'yi' ? false : null,                 // 小競技場是否已使用
-      yiArenaActive: ch.type === 'yi' ? false : null,               // 小競技場是否生效中
-      yiArenaTimer: ch.type === 'yi' ? 0 : null,                    // 小競技場剩餘時間
-      yiArenaCx: ch.type === 'yi' ? 0 : null,                       // 小競技場中心 x
-      yiArenaCy: ch.type === 'yi' ? 0 : null,                       // 小競技場中心 y
-      // 無名槍手專屬狀態
-      gunnerAmmo: ch.type === 'gunner' ? 0 : null,           // 當前彈藥數
-      gunnerFiring: ch.type === 'gunner' ? false : null,      // 是否正在連射
-      gunnerFireTimer: ch.type === 'gunner' ? 0 : null,       // 連射間隔計時
-      gunnerAmmoFired: ch.type === 'gunner' ? 0 : null,       // 本輪已射出幾發
-      gunnerFlashTimer: ch.type === 'gunner' ? GUNNER_FLASH_INTERVAL : null, // 閃光彈CD
-      // 組裝模式「連射」零件專屬狀態（比照無名槍手撞牆裝彈→連射）
-      customGunnerAmmo:      ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? 0 : null,
-      customGunnerFiring:    ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? false : null,
-      customGunnerAmmoFired: ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? 0 : null,
-      customGunnerFireTimer: ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? 0 : null,
-      // 被閃光彈命中的狀態（任何角色）
-      gunnerStunTimer: 0,
-      // 魔術師專屬狀態
-      mageDoveTimer:   ch.type === 'mage' ? MAGE_DOVE_INTERVAL : null,
-      mageTeleportTimer: ch.type === 'mage' ? -1 : null,  // >0 時倒數瞬移
-      mageHitCount:    ch.type === 'mage' ? 0 : null,     // 累積命中次數
-      mageTrickReady:  ch.type === 'mage' ? false : null, // 下一顆鴿子附帶技巧
-      mageTrickType:   ch.type === 'mage' ? null : null,  // 技巧類型 1-4
-      // 被魔術師技巧影響（任何角色）
-      mageFreezeTimer: 0,   // 定身剩餘時間
-      // 末代武士專屬狀態
-      samuraiParryTimer: ch.type === 'samurai' ? SAMURAI_PARRY_INTERVAL : null,  // 招架CD
-      samuraiParrying: ch.type === 'samurai' ? false : null,                      // 是否招架中
-      samuraiParryElapsed: ch.type === 'samurai' ? 0 : null,                     // 招架已持續
-      samuraiParryHit: ch.type === 'samurai' ? false : null,                     // 招架期間有效（反彈或碰撞）
-      samuraiIaidoCount: ch.type === 'samurai' ? 0 : null,                       // 累積居合次數
-      samuraiIaidoing: ch.type === 'samurai' ? false : null,                     // 是否居合衝刺中
-      samuraiIaidoTimer: ch.type === 'samurai' ? 0 : null,                       // 居合衝刺計時
-      samuraiIaidoAngle: ch.type === 'samurai' ? 0 : null,                       // 居合方向
-      samuraiShimetsuing: ch.type === 'samurai' ? false : null,                  // 識滅斬是否在進行
-      samuraiShimetsuSlashes: ch.type === 'samurai' ? [] : null,                 // 識滅斬斬擊列表
-      samuraiNextIsShimetsu: ch.type === 'samurai' ? false : null,               // 下次招架改為識滅斬
-      // 被招架反彈不記 owner（靠投射物 owner 判斷）
-      // 雷電法王專屬狀態
-      thunderStrikeTimer: ch.type === 'thunder' ? THUNDER_STRIKE_INTERVAL : null, // 閃電發射CD
-      thunderParalyzed: 0,           // 麻痺剩餘時間（秒），>0 表示麻痺中
-      thunderStunTimer: 0,           // 打斷定身剩餘時間（秒）
-      thunderParalyzeWasHit: false, // 上次是否已被麻痺（防連續）
-      // 鍛造師專屬狀態
-      smithForgeTimer: ch.type === 'blacksmith' ? SMITH_FORGE_INTERVAL_BASE : null, // 下次鍛造倒數
-      smithForgeInterval: ch.type === 'blacksmith' ? SMITH_FORGE_INTERVAL_BASE : null, // 當前鍛造間隔
-      smithForgeStacks: ch.type === 'blacksmith' ? 0 : null,  // 累積鍛造層數
-      smithSwordTimer: ch.type === 'blacksmith' ? 0 : null,   // 劍擊CD倒數
-      smithSwordSwinging: ch.type === 'blacksmith' ? false : null, // 是否正在揮劍
-      smithSwordSwingTimer: ch.type === 'blacksmith' ? 0 : null,   // 揮劍動畫計時
-      // 禪院直哉專屬狀態
-      naoPathTimer: ch.type === 'naobito' ? 0 : null,          // 下次規劃路徑倒數（0=立即規劃）
-      naoWaypoints: ch.type === 'naobito' ? [] : null,         // 當前路徑中繼點列表
-      naoWaypointIdx: ch.type === 'naobito' ? 0 : null,        // 當前目標中繼點索引
-      naoDashing: ch.type === 'naobito' ? false : null,        // 是否正在衝刺路徑中
-      naoKyouseiTimer: ch.type === 'naobito' ? 0 : null,       // 凶星軌跡CD
-      naoKyouseiFiring: ch.type === 'naobito' ? false : null,  // 凶星軌跡發動中
-      naoKyouseiTimer2: ch.type === 'naobito' ? 0 : null,      // 凶星軌跡動畫計時
-      // 宇治波鼬專屬狀態
-      itachiAmaterasuTimer: ch.type === 'itachi' ? ITACHI_AMATERASU_INTERVAL * 0.5 : null, // 天照CD
-      itachiTsukuyomiTimer: ch.type === 'itachi' ? ITACHI_TSUKUYOMI_INTERVAL * 0.6 : null, // 月讀CD
-      itachiCrowUsed: ch.type === 'itachi' ? false : null,        // 烏鴉替身是否已用
-      itachiSusanooUsed: ch.type === 'itachi' ? false : null,     // 須佐能乎是否已用
-      itachiSusanooActive: ch.type === 'itachi' ? false : null,   // 須佐能乎是否啟動中
-      itachiSusanooTimer: ch.type === 'itachi' ? 0 : null,        // 須佐能乎剩餘時間
-      // 須佐能乎近戰連擊狀態
-      itachiBiting: ch.type === 'itachi' ? false : null,
-      itachiBiteStep: ch.type === 'itachi' ? 0 : null,
-      itachiBiteTimer: ch.type === 'itachi' ? 0 : null,
-      itachiBiteCooldown: ch.type === 'itachi' ? 0 : null,
-      // 被天照標記 / 被月讀定身（任何角色都可能）
-      itachiMarked: false,
-      itachiPinnedTimer: 0,
-      // 乙骨憂太專屬狀態
-      yutaCurseWordTimer: ch.type === 'yuta' ? YUTA_CURSEWORD_INTERVAL : null, // 咒言發射CD
-      yutaBindCooldown: ch.type === 'yuta' ? 0 : null,                        // 禁錮效果CD（避免連續禁錮）
-      yutaSlashTimer: ch.type === 'yuta' ? 0 : null,                          // 咒力斬CD倒數
-      yutaSlashSwinging: ch.type === 'yuta' ? false : null,                   // 揮砍動畫中
-      yutaSlashSwingTimer: ch.type === 'yuta' ? 0 : null,                     // 揮砍動畫計時
-      yutaSlashHits: ch.type === 'yuta' ? 0 : null,                           // 咒力斬累積命中次數
-      yutaRikaActive: ch.type === 'yuta' ? false : null,                      // 里香是否已永久顯形
-      yutaRikaAngle: ch.type === 'yuta' ? 0 : null,                           // 里香繞乙骨的角度（跟隨用）
-      yutaRikaClawTimer: ch.type === 'yuta' ? YUTA_RIKA_CLAW_INTERVAL : null, // 里香揮爪CD
-      yutaRikaClawWarning: ch.type === 'yuta' ? false : null,                // 揮爪是否在預警中
-      yutaRikaClawWarnTimer: ch.type === 'yuta' ? 0 : null,                  // 揮爪預警倒數
-      yutaRikaClawWarnX: ch.type === 'yuta' ? 0 : null,                      // 預警鎖定的圓心X（避免里香旋轉導致範圍偏移）
-      yutaRikaClawWarnY: ch.type === 'yuta' ? 0 : null,                      // 預警鎖定的圓心Y
-      yutaRikaCannonTimer: ch.type === 'yuta' ? YUTA_RIKA_CANNON_INTERVAL : null, // 純愛大砲CD
-      yutaRikaCannonWarning: ch.type === 'yuta' ? false : null,              // 大砲是否在預警中
-      yutaRikaCannonWarnTimer: ch.type === 'yuta' ? 0 : null,                // 大砲預警倒數
-      yutaRikaCannonFiring: ch.type === 'yuta' ? false : null,                // 純愛大砲是否發射中
-      yutaRikaCannonElapsed: ch.type === 'yuta' ? 0 : null,                   // 大砲已持續時間
-      yutaRikaCannonAngle: ch.type === 'yuta' ? 0 : null,                     // 大砲發射瞬間鎖定的方向（固定不轉向）
-      // 註：咒言禁錮直接重用 itachiPinnedTimer（通用定身欄位），不另開欄位
-      // 工程師專屬狀態
-      engTurretTimer: ch.type === 'engineer' ? ENGINEER_TURRET_INTERVAL : null, // 召喚炮台CD
-      engTurretTotalSummoned: ch.type === 'engineer' ? 0 : null,               // 累積召喚總數（觸發機甲用）
-      engMechActive: ch.type === 'engineer' ? false : null,                    // 機甲模式是否啟動中
-      engMechTimer: ch.type === 'engineer' ? 0 : null,                        // 機甲模式剩餘時間
-      engLaserTimer: ch.type === 'engineer' ? ENGINEER_LASER_INTERVAL : null,  // 雷射發射CD
-      engGridTimer: ch.type === 'engineer' ? ENGINEER_GRID_INTERVAL : null,    // 電網部署CD
-      // 砲爹專屬狀態
-      cannonSkillTimer: ch.type === 'cannondad' ? 0 : null,                    // 技能CD計時
-      cannonSkillCooldown: ch.type === 'cannondad' ? CANNON_BEAM_COOLDOWN : null, // 當前CD長度（依上次技能決定）
-      cannonMeleeCooldown: ch.type === 'cannondad' ? 0 : null,                 // 近戰拳頭CD
-      cannonBalls: ch.type === 'cannondad' ? [] : null,                       // 追蹤光球列表
-      cannonBlastShotsLeft: ch.type === 'cannondad' ? 0 : null,                // 光砲剩餘連射次數
-      cannonBlastTimer: ch.type === 'cannondad' ? 0 : null,                    // 光砲單次發射計時
-      cannonBlastAngle: ch.type === 'cannondad' ? 0 : null,                    // 光砲鎖定角度
-      cannonBlastFiring: ch.type === 'cannondad' ? false : null,               // 光砲是否發射中
-      cannonBlastHitThisShot: ch.type === 'cannondad' ? false : null,          // 本次發射是否已命中
-      // DIO 專屬狀態
-      dioStandAngle: ch.type === 'dio' ? Math.random() * Math.PI * 2 : null,  // 替身環繞角度
-      dioStandX: ch.type === 'dio' ? x : null,
-      dioStandY: ch.type === 'dio' ? y : null,
-      dioStandPunchTimer: ch.type === 'dio' ? 0 : null,        // 替身連打CD
-      dioWorldActive: ch.type === 'dio' ? false : null,        // 世界是否啟動中
-      dioWorldTimer: ch.type === 'dio' ? 0 : null,             // 時停剩餘時間
-      dioWorldCooldownTimer: ch.type === 'dio' ? 3 : null,     // 世界CD倒數
-      dioWorldKnifeTimer: ch.type === 'dio' ? 0 : null,         // 時停中持續布刀的間隔計時
-      dioBreadSpawnTimer: ch.type === 'dio' ? randBetween(DIO_BREAD_SPAWN_MIN, DIO_BREAD_SPAWN_MAX) : null, // 麵包生成倒數
-      dioBreadEaten: ch.type === 'dio' ? 0 : null,             // 已吃麵包數
-      dioHighActive: ch.type === 'dio' ? false : null,         // 是否在HIGH觸發的世界中
-      dioSteamrollerPending: ch.type === 'dio' ? false : null, // 壓路機是否待生成
-      dioSteamrollerThrown: ch.type === 'dio' ? false : null,  // 壓路機是否已使用過（僅一次）
-      dioRushing: ch.type === 'dio' ? false : null,            // 是否在HIGH結束衝刺連打中
-      dioRushTimer: ch.type === 'dio' ? 0 : null,              // 衝刺連打剩餘時間
-      dioRushPunchTimer: ch.type === 'dio' ? 0 : null,         // 衝刺連打CD
-      // 虎天帝專屬狀態
-      tigerPunchTimer: ch.type === 'tiger' ? TIGER_PUNCH_INTERVAL * 0.5 : null, // 徑庭拳CD
-      tigerCharging: ch.type === 'tiger' ? false : null,        // 是否蓄力中
-      tigerChargeTimer: ch.type === 'tiger' ? 0 : null,         // 蓄力計時
-      tigerBlackFlash: ch.type === 'tiger' ? false : null,      // 本次是否黑閃
-      tigerPendingSecond: ch.type === 'tiger' ? false : null,   // 是否有二段傷害待觸發
-      tigerPendingTimer: ch.type === 'tiger' ? 0 : null,        // 二段傷害倒數
-      tigerPendingDmg: ch.type === 'tiger' ? 0 : null,          // 二段傷害量
-      tigerPendingTarget: ch.type === 'tiger' ? null : null,    // 二段傷害目標
-      tigerBloodCooldown: ch.type === 'tiger' ? 0 : null,       // 穿血CD
-      tigerNovaActive: ch.type === 'tiger' ? false : null,      // 超新星是否發動中
-      tigerNovaCooldown: ch.type === 'tiger' ? 0 : null,        // 超新星最少CD倒數
-      tigerNovaCharging: ch.type === 'tiger' ? false : null,    // 是否在原地蓄力準備引爆超新星
-      tigerNovaChargeTimer: ch.type === 'tiger' ? 0 : null,     // 超新星蓄力計時
-      tigerBleedPool: 0,   // 流血池（任何角色都可能被流血，虎天帝也有自己的）
-      // 星星女孩專屬狀態
-      starBigTimer: ch.type === 'stargirl' ? 0 : null,               // 大星星CD倒數
-      starMeteorActive: ch.type === 'stargirl' ? false : null,        // 星隕是否啟動中
-      starMeteorTimer: ch.type === 'stargirl' ? 0 : null,             // 星隕剩餘時間
-      starMeteorSpawnTimer: ch.type === 'stargirl' ? 0 : null,        // 下次生成流星倒數
-      starMeteorCooldown: ch.type === 'stargirl' ? 0 : null,          // 星隕CD（0=可發動）
-      // 宇智波帶土專屬狀態
-      obitoFireballTimer: ch.type === 'obito' ? 0 : null,          // 火球CD倒數
-      obitoFireballDashing: ch.type === 'obito' ? false : null,     // 火球後衝刺中
-      obitoFireballDashDelay: ch.type === 'obito' ? 0 : null,       // 火球後延遲衝刺倒數
-      obitoFireballDashTimer: ch.type === 'obito' ? 0 : null,       // 衝刺計時
-      obitoFireballDashAngle: ch.type === 'obito' ? 0 : null,       // 衝刺方向
-      obitoKamuiPhase: ch.type === 'obito' ? 'idle' : null,         // 'idle'|'ghost'|'teleporting'|'in_space'|'grabbing'|'returning'
-      obitoKamuiCooldown: ch.type === 'obito' ? 0 : null,           // 神威CD倒數
-      obitoGhostTimer: ch.type === 'obito' ? 0 : null,              // 虛影存在倒數
-      obitoGhostX: ch.type === 'obito' ? 0 : null,                  // 虛影位置X（神威空間座標）
-      obitoGhostY: ch.type === 'obito' ? 0 : null,                  // 虛影位置Y（神威空間座標）
-      obitoGhostHit: ch.type === 'obito' ? false : null,            // 虛影是否被打到
-      obitoTeleportTimer: ch.type === 'obito' ? 0 : null,           // 轉移計時
-      obitoSpaceX: ch.type === 'obito' ? 0 : null,                  // 在神威空間中的位置X
-      obitoSpaceY: ch.type === 'obito' ? 0 : null,                  // 在神威空間中的位置Y
-      obitoSpaceVx: ch.type === 'obito' ? 0 : null,                 // 空間中速度X
-      obitoSpaceVy: ch.type === 'obito' ? 0 : null,                 // 空間中速度Y
-      obitoGrabTarget: ch.type === 'obito' ? false : null,          // 是否抓住敵人
-      obitoGrabTimer: ch.type === 'obito' ? 0 : null,               // 空間衝刺計時
-      obitoChainTimer: ch.type === 'obito' ? 0 : null,              // 鐵鏈揮舞計時
-      obitoChainPhase: ch.type === 'obito' ? false : null,          // 是否在鐵鏈/爆炸階段
-      obitoEnemyCaptured: ch.type === 'obito' ? false : null,       // 是否在神威空間抓住了敵人
-      obitoPhaseTimer: ch.type === 'obito' ? OBITO_PHASE_INTERVAL : null,  // 下次虛化倒數
-      obitoPhasing: ch.type === 'obito' ? false : null,             // 是否正在虛化態
-      obitoAbsorbStored: ch.type === 'obito' ? [] : null,           // 儲存的投射物（虛化態吸收，神威時釋放）
-      // 釣魚佬專屬狀態
-      fisherTimer:        ch.type === 'fisherman' ? 0 : null,          // 釣魚CD計時（累加至 FISHER_CAST_COOLDOWN）
-      fisherPhase:         ch.type === 'fisherman' ? 'idle' : null,     // 'idle'|'casting'|'waiting'|'reeling'
-      fisherPhaseTimer:    ch.type === 'fisherman' ? 0 : null,          // 當前階段剩餘時間
-      fisherHookX:         ch.type === 'fisherman' ? 0 : null,          // 魚鉤目前位置X
-      fisherHookY:         ch.type === 'fisherman' ? 0 : null,          // 魚鉤目前位置Y
-      fisherHookFromX:     ch.type === 'fisherman' ? 0 : null,
-      fisherHookFromY:     ch.type === 'fisherman' ? 0 : null,
-      fisherHookToX:       ch.type === 'fisherman' ? 0 : null,
-      fisherHookToY:       ch.type === 'fisherman' ? 0 : null,
-      fisherResult:        ch.type === 'fisherman' ? null : null,       // 本次釣魚結果
-      fisherRedTimer:      0,   // 「魚」紅溫延遲爆炸倒數（任何角色都可能被此狀態影響）
-      fisherRedOwnerPlayer: null, // 紅溫爆炸施放者玩家編號（多人混戰傷害歸屬用）
-      // 大海專屬（海浪 + 坐船勾甩）
-      fisherOceanPhase:    ch.type === 'fisherman' ? null : null,       // null|'waves'|'dashwait'|'dash'|'grab'|'slam'
-      fisherOceanTimer:    ch.type === 'fisherman' ? 0 : null,
-      fisherOceanWaveIdx:  ch.type === 'fisherman' ? 0 : null,
-      fisherOceanDashAngle:ch.type === 'fisherman' ? 0 : null,
-      fisherOceanTargetX:  ch.type === 'fisherman' ? 0 : null,
-      fisherOceanTargetY:  ch.type === 'fisherman' ? 0 : null,
-      fisherGrabbedBy:     null,   // 被大海勾住時鎖定，暫停自身行動（任何角色都可能被抓）
-      // 夏油條專屬狀態
-      getoStock:            ch.type === 'geto' ? GETO_MAX_STOCK : null,        // 咒靈庫存
-      getoSpawnTimer:       ch.type === 'geto' ? GETO_SPAWN_INTERVAL : null,   // 召喚小型咒靈倒數
-      getoSpecialActive:    ch.type === 'geto' ? false : null,                 // 特級咒靈是否存活中
-      getoSpecialSpawned:   ch.type === 'geto' ? false : null,                 // 是否已觸發過召喚（一次性）
-      getoSpecialHp:        ch.type === 'geto' ? 0 : null,                     // 特級咒靈血量
-      getoSpecialAngle:     ch.type === 'geto' ? 0 : null,                     // 特級咒靈跟隨繞行角度
-      getoSpecialSkill:     ch.type === 'geto' ? null : null,                  // 'entangle' | 'bind' | 'surge'
-      getoEntangleTimer:    ch.type === 'geto' ? GETO_ENTANGLE_INTERVAL * 0.4 : null,
-      getoBindTimer:        ch.type === 'geto' ? GETO_BIND_COOLDOWN * 0.4 : null,   // 定身CD倒數（僅在雙方解除硬直後才遞減）
-      getoBoundTimer:       0,    // 被定身硬直剩餘時間（任何角色都可能被定身）
-      getoSpecialBoundTimer: ch.type === 'geto' ? 0 : null,                    // 特級咒靈自己的定身剩餘時間（純跟隨動畫暫停，不影響夏油條本體）
-      getoSurgeTimer:       ch.type === 'geto' ? GETO_SURGE_COOLDOWN * 0.5 : null,
-      getoSurgeCharging:    ch.type === 'geto' ? false : null,
-      getoSurgeChargeTimer: ch.type === 'geto' ? 0 : null,
-      getoDotTimer:         0,    // 糾纏持續傷害：剩餘跳動次數計時（任何角色都可能中招）
-      getoDotTickTimer:     0,    // 糾纏：下一跳倒數
-      getoDotDmg:           0,    // 糾纏：每跳傷害
-      getoDotOwnerPlayer:   null, // 糾纏：施放者玩家編號（用於回血）
-      getoBranches:         [],  // 糾纏：長在身上的枝條列表（任何角色都可能中招）
-      getoCaneCooldown:     ch.type === 'geto' ? 0 : null,                     // 游雲被動CD
-      getoUltimateTriggered:ch.type === 'geto' ? false : null,                 // 極之番•漩渦是否已觸發（一次性）
-      getoUltimateCharging: ch.type === 'geto' ? false : null,
-      getoUltimateChargeTimer: ch.type === 'geto' ? 0 : null,
-      getoUltimateAngle:    ch.type === 'geto' ? 0 : null,
-      // Oblivionis（豐川祥子）專屬狀態
-      sakikoMode:           ch.type === 'sakiko' ? 'piano' : null,          // 'piano'🎹 | 'organ'🎺
-      sakikoPianoTimer:     ch.type === 'sakiko' ? 0 : null,                 // 鋼琴音色發射計時
-      sakikoOrganTimer:     ch.type === 'sakiko' ? 0 : null,                 // 管風琴音色發射計時
-      sakikoNotes:          ch.type === 'sakiko' ? [] : null,                // 場上所有音符（含新月甦醒音符）
-      sakikoFever:          ch.type === 'sakiko' ? 0 : null,                 // Fever值
-      sakikoNovaTimer:      ch.type === 'sakiko' ? SAKIKO_NOVA_COOLDOWN * 0.4 : null, // 新月甦醒CD倒數
-      sakikoNovaFiring:     ch.type === 'sakiko' ? false : null,             // 新月甦醒是否正在連發
-      sakikoNovaShotsLeft:  ch.type === 'sakiko' ? 0 : null,                 // 新月甦醒剩餘發數
-      sakikoNovaShotTimer:  ch.type === 'sakiko' ? 0 : null,                 // 新月甦醒單發間隔計時
-      sakikoDualActive:     ch.type === 'sakiko' ? false : null,             // 殘月的餘韻是否啟動中
-      sakikoDualTimer:      ch.type === 'sakiko' ? 0 : null,                 // 殘月的餘韻剩餘時間
-      sakikoShadowHp:       ch.type === 'sakiko' ? null : null,              // 殘月的餘韻期間的真實血量（可低於0）
-      // 妲己（九尾妖狐）專屬狀態
-      dajiTails:            ch.type === 'daji' ? 0 : null,                   // 目前尾巴數（0~9）
-      dajiEnhanceReady:     ch.type === 'daji' ? false : null,               // 尾巴集滿：下次技能強化
-      dajiAtkTimer:         ch.type === 'daji' ? 0 : null,                   // 鬼火發射計時
-      dajiSkill1Cd:         ch.type === 'daji' ? 0 : null,                   // 技能一（魅惑）CD
-      dajiSkill2Cd:         ch.type === 'daji' ? 0 : null,                   // 技能二（狐火彈）CD
-      dajiCharmTimer:       ch.type === 'daji' ? 0 : null,                   // 魅惑剩餘時間
-      dajiCharmTarget:      ch.type === 'daji' ? null : null,                // 被魅惑的目標
-      dajiCharmDmg:         ch.type === 'daji' ? 0 : null,                   // 魅惑結束後的強化普攻傷害
-      dajiCharmStun:        ch.type === 'daji' ? 0 : null,                   // 魅惑結束後的暈眩時間
-      dajiFireballs:        ch.type === 'daji' ? [] : null,                  // 場上鬼火列表
-      dajiBalls:            ch.type === 'daji' ? [] : null,                  // 場上狐火彈列表
-      dajiSkill2Channel:    ch.type === 'daji' ? 0 : null,                   // 強化技二蓄力剩餘時間
-      dajiTailSwing:        ch.type === 'daji' ? null : null,                // 近戰揮尾巴特效 {t, dur, ang}
-      // 妲己灼燒（任何角色都可能被灼燒）
-      dajiBurnTimer:        0,
-      dajiBurnTick:         0,
-      dajiBurnOwnerPlayer:  null,     // 灼燒的施加者玩家（供傷害走dealDamage時歸屬統計）
-      // 大喬（波紋使者）專屬狀態
-      josephState:          ch.type === 'joseph' ? 'charging' : null,       // 'charging' | 'waiting' | 'breathing' | 'failed'
-      josephChargeTimer:    ch.type === 'joseph' ? 0 : null,                // 蓄力計時
-      josephRetryTimer:     ch.type === 'joseph' ? 0 : null,                // 中斷後的重試倒數
-      josephAttemptClock:   ch.type === 'joseph' ? 0 : null,                // 開局至今經過秒數（判斷60秒時限）
-      josephBreathingTimer: ch.type === 'joseph' ? 0 : null,                // 進入波紋呼吸法後經過秒數
-      josephRegenTimer:     ch.type === 'joseph' ? 0 : null,                // 定時回血倒數
-      josephDashTimer:      ch.type === 'joseph' ? JOSEPH_DASH_COOLDOWN * 0.5 : null,   // 波紋疾走CD
-      josephSpringTimer:    ch.type === 'joseph' ? JOSEPH_SPRING_COOLDOWN * 0.5 : null, // 彈簧拳CD
-      josephUltimateReady:  ch.type === 'joseph' ? false : null,            // SYO 是否已解鎖可用
-      josephUltimateCooldown: ch.type === 'joseph' ? 0 : null,              // SYO CD倒數
-      josephUltimateActive: ch.type === 'joseph' ? false : null,            // SYO 是否進行中
-      josephUltimateStep:   ch.type === 'joseph' ? 0 : null,                // SYO 連續痛擊已打第幾下
-      josephUltimateTimer:  ch.type === 'joseph' ? 0 : null,                // SYO 下一下倒數
-      josephUltimateTarget: ch.type === 'joseph' ? null : null,             // SYO 鎖定目標參考
-      josephContactCd:      ch.type === 'joseph' ? 0 : null,                // 碰觸傷害CD
-      josephDioHpCostDone:  ch.type === 'joseph' ? false : null,            // 對上DIO的開局扣血是否已執行
-      // 波紋層數（任何角色都可能被大喬施加）
-      rippleStacks: 0,
-      rippleOwnerPlayer: null, // 波紋層數施加者玩家編號（多人混戰傷害歸屬用）
-      rippleTickTimer: 0,
-      // 被大喬SYO定身（任何角色都可能）
-      frozenByJoseph: false,
-      frozenByJosephTimer: 0,
-      // 史蒂夫專屬狀態
-      stevePhase:            ch.type === 'steve' ? 0 : null,           // 目前裝備階段 0~4
-      steveGathering:        ch.type === 'steve' ? false : null,       // 是否正在資源收集
-      steveGatherTimer:      ch.type === 'steve' ? 0 : null,           // 收集剩餘時間
-      steveGatherCooldown:   ch.type === 'steve' ? 0 : null,           // 升級後的CD倒數
-      steveAxeCharging:      ch.type === 'steve' ? false : null,       // 斧是否蓄力中
-      steveAxeChargeTimer:   ch.type === 'steve' ? 0 : null,
-      steveAxeTimer:         ch.type === 'steve' ? 0 : null,           // 斧CD倒數
-      steveBowTimer:         ch.type === 'steve' ? STEVE_BOW_COOLDOWN : null, // 弓/弩CD倒數
-      steveBowAiming:        ch.type === 'steve' ? false : null,       // 弓/弩蓄力(瞄準)中
-      steveBowAimTimer:      ch.type === 'steve' ? 0 : null,
-      steveHammerUnlocked:   ch.type === 'steve' ? false : null,       // 重錘是否已解鎖
-      steveHammerTimer:      ch.type === 'steve' ? 0 : null,           // 重錘CD倒數
-      steveHammerCooldownLen:ch.type === 'steve' ? STEVE_HAMMER_COOLDOWN_BASE : null, // 目前一輪的CD長度(15或23)
-      steveHammerDashing:    ch.type === 'steve' ? false : null,       // 重錘衝刺中
-      steveHammerDashTimer:  ch.type === 'steve' ? 0 : null,
-      steveHammerDashHit:    ch.type === 'steve' ? false : null,
-      steveElytraActive:     ch.type === 'steve' ? false : null,       // 鞘翅三連擊進行中
-      steveElytraStep:       ch.type === 'steve' ? 0 : null,           // 1=第一次衝刺 2=第二次 3=茅穿刺
-      steveElytraPhaseIn:    ch.type === 'steve' ? true : null,        // 目前是衝刺(true)還是後退(false)
-      steveElytraTimer:      ch.type === 'steve' ? 0 : null,
-      steveElytraHit:        ch.type === 'steve' ? false : null,
-      steveContactCooldown:  ch.type === 'steve' ? 0 : null,           // 劍碰撞傷害的內置CD
-      // 九十九由基專屬狀態
-      yukiCollisionCd:       ch.type === 'yuki' ? 0 : null,            // 碰撞觸發鳳輪的內置CD
-      yukiPhoenixTimer:      ch.type === 'yuki' ? 0 : null,            // 碰撞後延遲觸發鳳輪倒數（>0 表示等待中）
-      yukiGravityStacks:     ch.type === 'yuki' ? 0 : null,            // 重力層數（0~5）
-      yukiPlasmaActive:      ch.type === 'yuki' ? false : null,        // 是否處於「星漿體」狀態
-      yukiPlasmaTimer:       ch.type === 'yuki' ? 0 : null,            // 星漿體剩餘時間
-      yukiStarWrathTimer:    ch.type === 'yuki' ? 0 : null,            // 星之怒下次觸發倒數
-      yukiBlackHoleActive:   ch.type === 'yuki' ? false : null,        // 假想黑洞是否啟動中
-      yukiBlackHoleTimer:    ch.type === 'yuki' ? 0 : null,            // 假想黑洞剩餘時間
-      yukiBlackHoleUsedThisPlasma: ch.type === 'yuki' ? false : null,  // 本次星漿體是否已使用過假想黑洞
-      // 無形專屬狀態
-      wuxingBaseChar: ch.type === 'wuxing' ? ch : null,   // 保留「這是無形」的標記（角色定義本身）
-      wuxingTimer:    ch.type === 'wuxing' ? 0 : null,     // 距離下次變身倒數（0 = 開局立刻變身一次）
-      wuxingFlash:    ch.type === 'wuxing' ? 0 : null,     // 變身瞬間的短暫特效倒數
-      // 組裝模式（自組機器人）專屬狀態
-      customParts:        ch.type === 'custom' ? ch.parts : null,
-      customDrunkTimer:   ch.type === 'custom' && ch.parts.passive === 'p_drunk'   ? randBetween(DRUNK_DIR_CHANGE_MIN, DRUNK_DIR_CHANGE_MAX) : null,
-      customTrapTimer:    ch.type === 'custom' && ch.parts.passive === 'p_trapper' ? CUSTOM_TRAP_PASSIVE_INTERVAL : null,
-      customChargeTimer:  ch.type === 'custom' && ch.parts.passive === 'p_gunner'  ? CUSTOM_CHARGE_INTERVAL : null,
-      customChargeStacks: ch.type === 'custom' && ch.parts.passive === 'p_gunner'  ? 0 : null,
-      customSkill1Timer:  ch.type === 'custom' ? (ch.parts.skill1 === 's1_vampire' ? CUSTOM_SKILL1_VAMPIRE_INTERVAL : ch.parts.skill1 === 's1_trapper' ? CUSTOM_SKILL1_TRAPPER_INTERVAL : GUNNER_FLASH_INTERVAL) : null,
-      customDashing:      ch.type === 'custom' && ch.parts.skill1 === 's1_vampire' ? false : null,
-      customDashElapsed:  ch.type === 'custom' && ch.parts.skill1 === 's1_vampire' ? 0 : null,
-      customChainPulling: ch.type === 'custom' && ch.parts.skill1 === 's1_trapper' ? false : null,
-      customChainElapsed: ch.type === 'custom' && ch.parts.skill1 === 's1_trapper' ? 0 : null,
-      customChainTarget:  ch.type === 'custom' && ch.parts.skill1 === 's1_trapper' ? null : null,
-      customSkill2Timer:  ch.type === 'custom' ? (ch.parts.skill2 === 's2_gunner' ? CUSTOM_SKILL2_GUNNER_INTERVAL : 0) : null,
-      customBiting:       ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? false : null,
-      customBiteStep:     ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? 0 : null,
-      customBiteTimer:    ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? 0 : null,
-      customBiteCooldown: ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? 0 : null,
-      customGunnerBurstActive: ch.type === 'custom' && ch.parts.skill2 === 's2_gunner' ? false : null,
-      customGunnerBurstCount:  ch.type === 'custom' && ch.parts.skill2 === 's2_gunner' ? 0 : null,
-      customGunnerBurstTimer:  ch.type === 'custom' && ch.parts.skill2 === 's2_gunner' ? 0 : null,
-      customExtra: ch.type === 'custom' ? {} : null, // 全角色零件庫：泛用零件的計時器/狀態統一放這裡
+    frozenByVampire: false,     
+    frozenTimer: 0,
+    dajiCharmedTimer: 0,      // 被妲己魅惑拉近時，暫停自身移動的剩餘時間（任何角色都可能被魅惑）
+    boostTimer: randBetween(BOOST_INTERVAL_MIN, BOOST_INTERVAL_MAX),
+    trail: [],
+    // 陷阱大師專屬狀態
+    trapChainTimer: ch.type === 'trapper' ? TRAP_CHAIN_INTERVAL : null,  // 鎖鏈CD
+    trapChainActive: ch.type === 'trapper' ? false : null,               // 鎖鏈是否正在拉扯
+    trapChainTimer2: ch.type === 'trapper' ? 0 : null,                   // 拉扯已持續時間
+    trapChainTargetTrap: ch.type === 'trapper' ? null : null,            // 觸發的尖刺物件參考
+    // 被尖刺 dot（任何角色）
+    trapDotTimer: 0,
+    trapDotDps: 0,
+    trapDotOwnerPlayer: null, // 尖刺dot施放者玩家編號（多人混戰傷害歸屬用）
+    // 奕專屬狀態
+    yiBlackTimer: ch.type === 'yi' ? YI_BLACK_INTERVAL : null,  // 落黑棋CD
+    yiBlackCount: ch.type === 'yi' ? 0 : null,                   // 當前黑棋計數（累積到4觸發白旗）
+    yiArenaUsed: ch.type === 'yi' ? false : null,                 // 小競技場是否已使用
+    yiArenaActive: ch.type === 'yi' ? false : null,               // 小競技場是否生效中
+    yiArenaTimer: ch.type === 'yi' ? 0 : null,                    // 小競技場剩餘時間
+    yiArenaCx: ch.type === 'yi' ? 0 : null,                       // 小競技場中心 x
+    yiArenaCy: ch.type === 'yi' ? 0 : null,                       // 小競技場中心 y
+    // 無名槍手專屬狀態
+    gunnerAmmo: ch.type === 'gunner' ? 0 : null,           // 當前彈藥數
+    gunnerFiring: ch.type === 'gunner' ? false : null,      // 是否正在連射
+    gunnerFireTimer: ch.type === 'gunner' ? 0 : null,       // 連射間隔計時
+    gunnerAmmoFired: ch.type === 'gunner' ? 0 : null,       // 本輪已射出幾發
+    gunnerFlashTimer: ch.type === 'gunner' ? GUNNER_FLASH_INTERVAL : null, // 閃光彈CD
+    // 組裝模式「連射」零件專屬狀態（比照無名槍手撞牆裝彈→連射）
+    customGunnerAmmo:      ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? 0 : null,
+    customGunnerFiring:    ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? false : null,
+    customGunnerAmmoFired: ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? 0 : null,
+    customGunnerFireTimer: ch.type === 'custom' && ch.parts.basic === 'a_gunner' ? 0 : null,
+    // 被閃光彈命中的狀態（任何角色）
+    gunnerStunTimer: 0,
+    // 魔術師專屬狀態
+    mageDoveTimer:   ch.type === 'mage' ? MAGE_DOVE_INTERVAL : null,
+    mageTeleportTimer: ch.type === 'mage' ? -1 : null,  // >0 時倒數瞬移
+    mageHitCount:    ch.type === 'mage' ? 0 : null,     // 累積命中次數
+    mageTrickReady:  ch.type === 'mage' ? false : null, // 下一顆鴿子附帶技巧
+    mageTrickType:   ch.type === 'mage' ? null : null,  // 技巧類型 1-4
+    // 被魔術師技巧影響（任何角色）
+    mageFreezeTimer: 0,   // 定身剩餘時間
+    // 末代武士專屬狀態
+    samuraiParryTimer: ch.type === 'samurai' ? SAMURAI_PARRY_INTERVAL : null,  // 招架CD
+    samuraiParrying: ch.type === 'samurai' ? false : null,                      // 是否招架中
+    samuraiParryElapsed: ch.type === 'samurai' ? 0 : null,                     // 招架已持續
+    samuraiParryHit: ch.type === 'samurai' ? false : null,                     // 招架期間有效（反彈或碰撞）
+    samuraiIaidoCount: ch.type === 'samurai' ? 0 : null,                       // 累積居合次數
+    samuraiIaidoing: ch.type === 'samurai' ? false : null,                     // 是否居合衝刺中
+    samuraiIaidoTimer: ch.type === 'samurai' ? 0 : null,                       // 居合衝刺計時
+    samuraiIaidoAngle: ch.type === 'samurai' ? 0 : null,                       // 居合方向
+    samuraiShimetsuing: ch.type === 'samurai' ? false : null,                  // 識滅斬是否在進行
+    samuraiShimetsuSlashes: ch.type === 'samurai' ? [] : null,                 // 識滅斬斬擊列表
+    samuraiNextIsShimetsu: ch.type === 'samurai' ? false : null,               // 下次招架改為識滅斬
+    // 被招架反彈不記 owner（靠投射物 owner 判斷）
+    // 雷電法王專屬狀態
+    thunderStrikeTimer: ch.type === 'thunder' ? THUNDER_STRIKE_INTERVAL : null, // 閃電發射CD
+    thunderParalyzed: 0,           // 麻痺剩餘時間（秒），>0 表示麻痺中
+    thunderStunTimer: 0,           // 打斷定身剩餘時間（秒）
+    thunderParalyzeWasHit: false, // 上次是否已被麻痺（防連續）
+    // 鍛造師專屬狀態
+    smithForgeTimer: ch.type === 'blacksmith' ? SMITH_FORGE_INTERVAL_BASE : null, // 下次鍛造倒數
+    smithForgeInterval: ch.type === 'blacksmith' ? SMITH_FORGE_INTERVAL_BASE : null, // 當前鍛造間隔
+    smithForgeStacks: ch.type === 'blacksmith' ? 0 : null,  // 累積鍛造層數
+    smithSwordTimer: ch.type === 'blacksmith' ? 0 : null,   // 劍擊CD倒數
+    smithSwordSwinging: ch.type === 'blacksmith' ? false : null, // 是否正在揮劍
+    smithSwordSwingTimer: ch.type === 'blacksmith' ? 0 : null,   // 揮劍動畫計時
+    // 禪院直哉專屬狀態
+    naoPathTimer: ch.type === 'naobito' ? 0 : null,          // 下次規劃路徑倒數（0=立即規劃）
+    naoWaypoints: ch.type === 'naobito' ? [] : null,         // 當前路徑中繼點列表
+    naoWaypointIdx: ch.type === 'naobito' ? 0 : null,        // 當前目標中繼點索引
+    naoDashing: ch.type === 'naobito' ? false : null,        // 是否正在衝刺路徑中
+    naoKyouseiTimer: ch.type === 'naobito' ? 0 : null,       // 凶星軌跡CD
+    naoKyouseiFiring: ch.type === 'naobito' ? false : null,  // 凶星軌跡發動中
+    naoKyouseiTimer2: ch.type === 'naobito' ? 0 : null,      // 凶星軌跡動畫計時
+    // 宇治波鼬專屬狀態
+    itachiAmaterasuTimer: ch.type === 'itachi' ? ITACHI_AMATERASU_INTERVAL * 0.5 : null, // 天照CD
+    itachiTsukuyomiTimer: ch.type === 'itachi' ? ITACHI_TSUKUYOMI_INTERVAL * 0.6 : null, // 月讀CD
+    itachiCrowUsed: ch.type === 'itachi' ? false : null,        // 烏鴉替身是否已用
+    itachiSusanooUsed: ch.type === 'itachi' ? false : null,     // 須佐能乎是否已用
+    itachiSusanooActive: ch.type === 'itachi' ? false : null,   // 須佐能乎是否啟動中
+    itachiSusanooTimer: ch.type === 'itachi' ? 0 : null,        // 須佐能乎剩餘時間
+    // 須佐能乎近戰連擊狀態
+    itachiBiting: ch.type === 'itachi' ? false : null,
+    itachiBiteStep: ch.type === 'itachi' ? 0 : null,
+    itachiBiteTimer: ch.type === 'itachi' ? 0 : null,
+    itachiBiteCooldown: ch.type === 'itachi' ? 0 : null,
+    // 被天照標記 / 被月讀定身（任何角色都可能）
+    itachiMarked: false,
+    itachiPinnedTimer: 0,
+    // 乙骨憂太專屬狀態
+    yutaCurseWordTimer: ch.type === 'yuta' ? YUTA_CURSEWORD_INTERVAL : null, // 咒言發射CD
+    yutaBindCooldown: ch.type === 'yuta' ? 0 : null,                        // 禁錮效果CD（避免連續禁錮）
+    yutaSlashTimer: ch.type === 'yuta' ? 0 : null,                          // 咒力斬CD倒數
+    yutaSlashSwinging: ch.type === 'yuta' ? false : null,                   // 揮砍動畫中
+    yutaSlashSwingTimer: ch.type === 'yuta' ? 0 : null,                     // 揮砍動畫計時
+    yutaSlashHits: ch.type === 'yuta' ? 0 : null,                           // 咒力斬累積命中次數
+    yutaRikaActive: ch.type === 'yuta' ? false : null,                      // 里香是否已永久顯形
+    yutaRikaAngle: ch.type === 'yuta' ? 0 : null,                           // 里香繞乙骨的角度（跟隨用）
+    yutaRikaClawTimer: ch.type === 'yuta' ? YUTA_RIKA_CLAW_INTERVAL : null, // 里香揮爪CD
+    yutaRikaClawWarning: ch.type === 'yuta' ? false : null,                // 揮爪是否在預警中
+    yutaRikaClawWarnTimer: ch.type === 'yuta' ? 0 : null,                  // 揮爪預警倒數
+    yutaRikaClawWarnX: ch.type === 'yuta' ? 0 : null,                      // 預警鎖定的圓心X（避免里香旋轉導致範圍偏移）
+    yutaRikaClawWarnY: ch.type === 'yuta' ? 0 : null,                      // 預警鎖定的圓心Y
+    yutaRikaCannonTimer: ch.type === 'yuta' ? YUTA_RIKA_CANNON_INTERVAL : null, // 純愛大砲CD
+    yutaRikaCannonWarning: ch.type === 'yuta' ? false : null,              // 大砲是否在預警中
+    yutaRikaCannonWarnTimer: ch.type === 'yuta' ? 0 : null,                // 大砲預警倒數
+    yutaRikaCannonFiring: ch.type === 'yuta' ? false : null,                // 純愛大砲是否發射中
+    yutaRikaCannonElapsed: ch.type === 'yuta' ? 0 : null,                   // 大砲已持續時間
+    yutaRikaCannonAngle: ch.type === 'yuta' ? 0 : null,                     // 大砲發射瞬間鎖定的方向（固定不轉向）
+    // 註：咒言禁錮直接重用 itachiPinnedTimer（通用定身欄位），不另開欄位
+    // 工程師專屬狀態
+    engTurretTimer: ch.type === 'engineer' ? ENGINEER_TURRET_INTERVAL : null, // 召喚炮台CD
+    engTurretTotalSummoned: ch.type === 'engineer' ? 0 : null,               // 累積召喚總數（觸發機甲用）
+    engMechActive: ch.type === 'engineer' ? false : null,                    // 機甲模式是否啟動中
+    engMechTimer: ch.type === 'engineer' ? 0 : null,                        // 機甲模式剩餘時間
+    engLaserTimer: ch.type === 'engineer' ? ENGINEER_LASER_INTERVAL : null,  // 雷射發射CD
+    engGridTimer: ch.type === 'engineer' ? ENGINEER_GRID_INTERVAL : null,    // 電網部署CD
+    // 砲爹專屬狀態
+    cannonSkillTimer: ch.type === 'cannondad' ? 0 : null,                    // 技能CD計時
+    cannonSkillCooldown: ch.type === 'cannondad' ? CANNON_BEAM_COOLDOWN : null, // 當前CD長度（依上次技能決定）
+    cannonMeleeCooldown: ch.type === 'cannondad' ? 0 : null,                 // 近戰拳頭CD
+    cannonBalls: ch.type === 'cannondad' ? [] : null,                       // 追蹤光球列表
+    cannonBlastShotsLeft: ch.type === 'cannondad' ? 0 : null,                // 光砲剩餘連射次數
+    cannonBlastTimer: ch.type === 'cannondad' ? 0 : null,                    // 光砲單次發射計時
+    cannonBlastAngle: ch.type === 'cannondad' ? 0 : null,                    // 光砲鎖定角度
+    cannonBlastFiring: ch.type === 'cannondad' ? false : null,               // 光砲是否發射中
+    cannonBlastHitThisShot: ch.type === 'cannondad' ? false : null,          // 本次發射是否已命中
+    // DIO 專屬狀態
+    dioStandAngle: ch.type === 'dio' ? Math.random() * Math.PI * 2 : null,  // 替身環繞角度
+    dioStandX: ch.type === 'dio' ? x : null,
+    dioStandY: ch.type === 'dio' ? y : null,
+    dioStandPunchTimer: ch.type === 'dio' ? 0 : null,        // 替身連打CD
+    dioWorldActive: ch.type === 'dio' ? false : null,        // 世界是否啟動中
+    dioWorldTimer: ch.type === 'dio' ? 0 : null,             // 時停剩餘時間
+    dioWorldCooldownTimer: ch.type === 'dio' ? 3 : null,     // 世界CD倒數
+    dioWorldKnifeTimer: ch.type === 'dio' ? 0 : null,         // 時停中持續布刀的間隔計時
+    dioBreadEaten: ch.type === 'dio' ? 0 : null,             // 已吃麵包數
+    dioHighActive: ch.type === 'dio' ? false : null,         // 是否在HIGH觸發的世界中
+    dioSteamrollerPending: ch.type === 'dio' ? false : null, // 壓路機是否待生成
+    dioSteamrollerThrown: ch.type === 'dio' ? false : null,  // 壓路機是否已使用過（僅一次）
+    dioRushing: ch.type === 'dio' ? false : null,            // 是否在HIGH結束衝刺連打中
+    dioRushTimer: ch.type === 'dio' ? 0 : null,              // 衝刺連打剩餘時間
+    dioRushPunchTimer: ch.type === 'dio' ? 0 : null,         // 衝刺連打CD
+    // 虎天帝專屬狀態
+    tigerPunchTimer: ch.type === 'tiger' ? TIGER_PUNCH_INTERVAL * 0.5 : null, // 徑庭拳CD
+    tigerCharging: ch.type === 'tiger' ? false : null,        // 是否蓄力中
+    tigerChargeTimer: ch.type === 'tiger' ? 0 : null,         // 蓄力計時
+    tigerBlackFlash: ch.type === 'tiger' ? false : null,      // 本次是否黑閃
+    tigerPendingSecond: ch.type === 'tiger' ? false : null,   // 是否有二段傷害待觸發
+    tigerPendingTimer: ch.type === 'tiger' ? 0 : null,        // 二段傷害倒數
+    tigerPendingDmg: ch.type === 'tiger' ? 0 : null,          // 二段傷害量
+    tigerPendingTarget: ch.type === 'tiger' ? null : null,    // 二段傷害目標
+    tigerBloodCooldown: ch.type === 'tiger' ? 0 : null,       // 穿血CD
+    tigerNovaActive: ch.type === 'tiger' ? false : null,      // 超新星是否發動中
+    tigerNovaCooldown: ch.type === 'tiger' ? 0 : null,        // 超新星最少CD倒數
+    tigerNovaCharging: ch.type === 'tiger' ? false : null,    // 是否在原地蓄力準備引爆超新星
+    tigerNovaChargeTimer: ch.type === 'tiger' ? 0 : null,     // 超新星蓄力計時
+    tigerBleedPool: 0,   // 流血池（任何角色都可能被流血，虎天帝也有自己的）
+    // 星星女孩專屬狀態
+    starBigTimer: ch.type === 'stargirl' ? 0 : null,               // 大星星CD倒數
+    starMeteorActive: ch.type === 'stargirl' ? false : null,        // 星隕是否啟動中
+    starMeteorTimer: ch.type === 'stargirl' ? 0 : null,             // 星隕剩餘時間
+    starMeteorSpawnTimer: ch.type === 'stargirl' ? 0 : null,        // 下次生成流星倒數
+    starMeteorCooldown: ch.type === 'stargirl' ? 0 : null,          // 星隕CD（0=可發動）
+    // 宇智波帶土專屬狀態
+    obitoFireballTimer: ch.type === 'obito' ? 0 : null,          // 火球CD倒數
+    obitoFireballDashing: ch.type === 'obito' ? false : null,     // 火球後衝刺中
+    obitoFireballDashDelay: ch.type === 'obito' ? 0 : null,       // 火球後延遲衝刺倒數
+    obitoFireballDashTimer: ch.type === 'obito' ? 0 : null,       // 衝刺計時
+    obitoFireballDashAngle: ch.type === 'obito' ? 0 : null,       // 衝刺方向
+    obitoKamuiPhase: ch.type === 'obito' ? 'idle' : null,         // 'idle'|'ghost'|'teleporting'|'in_space'|'grabbing'|'returning'
+    obitoKamuiCooldown: ch.type === 'obito' ? 0 : null,           // 神威CD倒數
+    obitoGhostTimer: ch.type === 'obito' ? 0 : null,              // 虛影存在倒數
+    obitoGhostX: ch.type === 'obito' ? 0 : null,                  // 虛影位置X（神威空間座標）
+    obitoGhostY: ch.type === 'obito' ? 0 : null,                  // 虛影位置Y（神威空間座標）
+    obitoGhostHit: ch.type === 'obito' ? false : null,            // 虛影是否被打到
+    obitoTeleportTimer: ch.type === 'obito' ? 0 : null,           // 轉移計時
+    obitoSpaceX: ch.type === 'obito' ? 0 : null,                  // 在神威空間中的位置X
+    obitoSpaceY: ch.type === 'obito' ? 0 : null,                  // 在神威空間中的位置Y
+    obitoSpaceVx: ch.type === 'obito' ? 0 : null,                 // 空間中速度X
+    obitoSpaceVy: ch.type === 'obito' ? 0 : null,                 // 空間中速度Y
+    obitoGrabTarget: ch.type === 'obito' ? false : null,          // 是否抓住敵人
+    obitoGrabTimer: ch.type === 'obito' ? 0 : null,               // 空間衝刺計時
+    obitoChainTimer: ch.type === 'obito' ? 0 : null,              // 鐵鏈揮舞計時
+    obitoChainPhase: ch.type === 'obito' ? false : null,          // 是否在鐵鏈/爆炸階段
+    obitoEnemyCaptured: ch.type === 'obito' ? false : null,       // 是否在神威空間抓住了敵人
+    obitoPhaseTimer: ch.type === 'obito' ? OBITO_PHASE_INTERVAL : null,  // 下次虛化倒數
+    obitoPhasing: ch.type === 'obito' ? false : null,             // 是否正在虛化態
+    obitoAbsorbStored: ch.type === 'obito' ? [] : null,           // 儲存的投射物（虛化態吸收，神威時釋放）
+    // 釣魚佬專屬狀態
+    fisherTimer:        ch.type === 'fisherman' ? 0 : null,          // 釣魚CD計時（累加至 FISHER_CAST_COOLDOWN）
+    fisherPhase:         ch.type === 'fisherman' ? 'idle' : null,     // 'idle'|'casting'|'waiting'|'reeling'
+    fisherPhaseTimer:    ch.type === 'fisherman' ? 0 : null,          // 當前階段剩餘時間
+    fisherHookX:         ch.type === 'fisherman' ? 0 : null,          // 魚鉤目前位置X
+    fisherHookY:         ch.type === 'fisherman' ? 0 : null,          // 魚鉤目前位置Y
+    fisherHookFromX:     ch.type === 'fisherman' ? 0 : null,
+    fisherHookFromY:     ch.type === 'fisherman' ? 0 : null,
+    fisherHookToX:       ch.type === 'fisherman' ? 0 : null,
+    fisherHookToY:       ch.type === 'fisherman' ? 0 : null,
+    fisherResult:        ch.type === 'fisherman' ? null : null,       // 本次釣魚結果
+    fisherRedTimer:      0,   // 「魚」紅溫延遲爆炸倒數（任何角色都可能被此狀態影響）
+    fisherRedOwnerPlayer: null, // 紅溫爆炸施放者玩家編號（多人混戰傷害歸屬用）
+    // 大海專屬（海浪 + 坐船勾甩）
+    fisherOceanPhase:    ch.type === 'fisherman' ? null : null,       // null|'waves'|'dashwait'|'dash'|'grab'|'slam'
+    fisherOceanTimer:    ch.type === 'fisherman' ? 0 : null,
+    fisherOceanWaveIdx:  ch.type === 'fisherman' ? 0 : null,
+    fisherOceanDashAngle:ch.type === 'fisherman' ? 0 : null,
+    fisherOceanTargetX:  ch.type === 'fisherman' ? 0 : null,
+    fisherOceanTargetY:  ch.type === 'fisherman' ? 0 : null,
+    fisherGrabbedBy:     null,   // 被大海勾住時鎖定，暫停自身行動（任何角色都可能被抓）
+    // 夏油條專屬狀態
+    getoStock:            ch.type === 'geto' ? GETO_MAX_STOCK : null,        // 咒靈庫存
+    getoSpawnTimer:       ch.type === 'geto' ? GETO_SPAWN_INTERVAL : null,   // 召喚小型咒靈倒數
+    getoSpecialActive:    ch.type === 'geto' ? false : null,                 // 特級咒靈是否存活中
+    getoSpecialSpawned:   ch.type === 'geto' ? false : null,                 // 是否已觸發過召喚（一次性）
+    getoSpecialHp:        ch.type === 'geto' ? 0 : null,                     // 特級咒靈血量
+    getoSpecialAngle:     ch.type === 'geto' ? 0 : null,                     // 特級咒靈跟隨繞行角度
+    getoSpecialSkill:     ch.type === 'geto' ? null : null,                  // 'entangle' | 'bind' | 'surge'
+    getoEntangleTimer:    ch.type === 'geto' ? GETO_ENTANGLE_INTERVAL * 0.4 : null,
+    getoBindTimer:        ch.type === 'geto' ? GETO_BIND_COOLDOWN * 0.4 : null,   // 定身CD倒數（僅在雙方解除硬直後才遞減）
+    getoBoundTimer:       0,    // 被定身硬直剩餘時間（任何角色都可能被定身）
+    getoSpecialBoundTimer: ch.type === 'geto' ? 0 : null,                    // 特級咒靈自己的定身剩餘時間（純跟隨動畫暫停，不影響夏油條本體）
+    getoSurgeTimer:       ch.type === 'geto' ? GETO_SURGE_COOLDOWN * 0.5 : null,
+    getoSurgeCharging:    ch.type === 'geto' ? false : null,
+    getoSurgeChargeTimer: ch.type === 'geto' ? 0 : null,
+    getoDotTimer:         0,    // 糾纏持續傷害：剩餘跳動次數計時（任何角色都可能中招）
+    getoDotTickTimer:     0,    // 糾纏：下一跳倒數
+    getoDotDmg:           0,    // 糾纏：每跳傷害
+    getoDotOwnerPlayer:   null, // 糾纏：施放者玩家編號（用於回血）
+    getoBranches:         [],  // 糾纏：長在身上的枝條列表（任何角色都可能中招）
+    getoCaneCooldown:     ch.type === 'geto' ? 0 : null,                     // 游雲被動CD
+    getoUltimateTriggered:ch.type === 'geto' ? false : null,                 // 極之番•漩渦是否已觸發（一次性）
+    getoUltimateCharging: ch.type === 'geto' ? false : null,
+    getoUltimateChargeTimer: ch.type === 'geto' ? 0 : null,
+    getoUltimateAngle:    ch.type === 'geto' ? 0 : null,
+    // Oblivionis（豐川祥子）專屬狀態
+    sakikoMode:           ch.type === 'sakiko' ? 'piano' : null,          // 'piano'🎹 | 'organ'🎺
+    sakikoPianoTimer:     ch.type === 'sakiko' ? 0 : null,                 // 鋼琴音色發射計時
+    sakikoOrganTimer:     ch.type === 'sakiko' ? 0 : null,                 // 管風琴音色發射計時
+    sakikoNotes:          ch.type === 'sakiko' ? [] : null,                // 場上所有音符（含新月甦醒音符）
+    sakikoFever:          ch.type === 'sakiko' ? 0 : null,                 // Fever值
+    sakikoNovaTimer:      ch.type === 'sakiko' ? SAKIKO_NOVA_COOLDOWN * 0.4 : null, // 新月甦醒CD倒數
+    sakikoNovaFiring:     ch.type === 'sakiko' ? false : null,             // 新月甦醒是否正在連發
+    sakikoNovaShotsLeft:  ch.type === 'sakiko' ? 0 : null,                 // 新月甦醒剩餘發數
+    sakikoNovaShotTimer:  ch.type === 'sakiko' ? 0 : null,                 // 新月甦醒單發間隔計時
+    sakikoDualActive:     ch.type === 'sakiko' ? false : null,             // 殘月的餘韻是否啟動中
+    sakikoDualTimer:      ch.type === 'sakiko' ? 0 : null,                 // 殘月的餘韻剩餘時間
+    sakikoShadowHp:       ch.type === 'sakiko' ? null : null,              // 殘月的餘韻期間的真實血量（可低於0）
+    // 妲己（九尾妖狐）專屬狀態
+    dajiTails:            ch.type === 'daji' ? 0 : null,                   // 目前尾巴數（0~9）
+    dajiEnhanceReady:     ch.type === 'daji' ? false : null,               // 尾巴集滿：下次技能強化
+    dajiAtkTimer:         ch.type === 'daji' ? 0 : null,                   // 鬼火發射計時
+    dajiSkill1Cd:         ch.type === 'daji' ? 0 : null,                   // 技能一（魅惑）CD
+    dajiSkill2Cd:         ch.type === 'daji' ? 0 : null,                   // 技能二（狐火彈）CD
+    dajiCharmTimer:       ch.type === 'daji' ? 0 : null,                   // 魅惑剩餘時間
+    dajiCharmTarget:      ch.type === 'daji' ? null : null,                // 被魅惑的目標
+    dajiCharmDmg:         ch.type === 'daji' ? 0 : null,                   // 魅惑結束後的強化普攻傷害
+    dajiCharmStun:        ch.type === 'daji' ? 0 : null,                   // 魅惑結束後的暈眩時間
+    dajiFireballs:        ch.type === 'daji' ? [] : null,                  // 場上鬼火列表
+    dajiBalls:            ch.type === 'daji' ? [] : null,                  // 場上狐火彈列表
+    dajiSkill2Channel:    ch.type === 'daji' ? 0 : null,                   // 強化技二蓄力剩餘時間
+    dajiTailSwing:        ch.type === 'daji' ? null : null,                // 近戰揮尾巴特效 {t, dur, ang}
+    // 妲己灼燒（任何角色都可能被灼燒）
+    dajiBurnTimer:        0,
+    dajiBurnTick:         0,
+    dajiBurnOwnerPlayer:  null,     // 灼燒的施加者玩家（供傷害走dealDamage時歸屬統計）
+    // 大喬（波紋使者）專屬狀態
+    josephState:          ch.type === 'joseph' ? 'charging' : null,       // 'charging' | 'waiting' | 'breathing' | 'failed'
+    josephChargeTimer:    ch.type === 'joseph' ? 0 : null,                // 蓄力計時
+    josephRetryTimer:     ch.type === 'joseph' ? 0 : null,                // 中斷後的重試倒數
+    josephAttemptClock:   ch.type === 'joseph' ? 0 : null,                // 開局至今經過秒數（判斷60秒時限）
+    josephBreathingTimer: ch.type === 'joseph' ? 0 : null,                // 進入波紋呼吸法後經過秒數
+    josephRegenTimer:     ch.type === 'joseph' ? 0 : null,                // 定時回血倒數
+    josephDashTimer:      ch.type === 'joseph' ? JOSEPH_DASH_COOLDOWN * 0.5 : null,   // 波紋疾走CD
+    josephSpringTimer:    ch.type === 'joseph' ? JOSEPH_SPRING_COOLDOWN * 0.5 : null, // 彈簧拳CD
+    josephUltimateReady:  ch.type === 'joseph' ? false : null,            // SYO 是否已解鎖可用
+    josephUltimateCooldown: ch.type === 'joseph' ? 0 : null,              // SYO CD倒數
+    josephUltimateActive: ch.type === 'joseph' ? false : null,            // SYO 是否進行中
+    josephUltimateStep:   ch.type === 'joseph' ? 0 : null,                // SYO 連續痛擊已打第幾下
+    josephUltimateTimer:  ch.type === 'joseph' ? 0 : null,                // SYO 下一下倒數
+    josephUltimateTarget: ch.type === 'joseph' ? null : null,             // SYO 鎖定目標參考
+    josephContactCd:      ch.type === 'joseph' ? 0 : null,                // 碰觸傷害CD
+    josephDioHpCostDone:  ch.type === 'joseph' ? false : null,            // 對上DIO的開局扣血是否已執行
+    // 波紋層數（任何角色都可能被大喬施加）
+    rippleStacks: 0,
+    rippleOwnerPlayer: null, // 波紋層數施加者玩家編號（多人混戰傷害歸屬用）
+    rippleTickTimer: 0,
+    // 被大喬SYO定身（任何角色都可能）
+    frozenByJoseph: false,
+    frozenByJosephTimer: 0,
+    // 史蒂夫專屬狀態
+    stevePhase:            ch.type === 'steve' ? 0 : null,           // 目前裝備階段 0~4
+    steveGathering:        ch.type === 'steve' ? false : null,       // 是否正在資源收集
+    steveGatherTimer:      ch.type === 'steve' ? 0 : null,           // 收集剩餘時間
+    steveGatherCooldown:   ch.type === 'steve' ? 0 : null,           // 升級後的CD倒數
+    steveAxeCharging:      ch.type === 'steve' ? false : null,       // 斧是否蓄力中
+    steveAxeChargeTimer:   ch.type === 'steve' ? 0 : null,
+    steveAxeTimer:         ch.type === 'steve' ? 0 : null,           // 斧CD倒數
+    steveBowTimer:         ch.type === 'steve' ? STEVE_BOW_COOLDOWN : null, // 弓/弩CD倒數
+    steveBowAiming:        ch.type === 'steve' ? false : null,       // 弓/弩蓄力(瞄準)中
+    steveBowAimTimer:      ch.type === 'steve' ? 0 : null,
+    steveHammerUnlocked:   ch.type === 'steve' ? false : null,       // 重錘是否已解鎖
+    steveHammerTimer:      ch.type === 'steve' ? 0 : null,           // 重錘CD倒數
+    steveHammerCooldownLen:ch.type === 'steve' ? STEVE_HAMMER_COOLDOWN_BASE : null, // 目前一輪的CD長度(15或23)
+    steveHammerDashing:    ch.type === 'steve' ? false : null,       // 重錘衝刺中
+    steveHammerDashTimer:  ch.type === 'steve' ? 0 : null,
+    steveHammerDashHit:    ch.type === 'steve' ? false : null,
+    steveElytraActive:     ch.type === 'steve' ? false : null,       // 鞘翅三連擊進行中
+    steveElytraStep:       ch.type === 'steve' ? 0 : null,           // 1=第一次衝刺 2=第二次 3=茅穿刺
+    steveElytraPhaseIn:    ch.type === 'steve' ? true : null,        // 目前是衝刺(true)還是後退(false)
+    steveElytraTimer:      ch.type === 'steve' ? 0 : null,
+    steveElytraHit:        ch.type === 'steve' ? false : null,
+    steveContactCooldown:  ch.type === 'steve' ? 0 : null,           // 劍碰撞傷害的內置CD
+    // 九十九由基專屬狀態
+    yukiCollisionCd:       ch.type === 'yuki' ? 0 : null,            // 碰撞觸發鳳輪的內置CD
+    yukiPhoenixTimer:      ch.type === 'yuki' ? 0 : null,            // 碰撞後延遲觸發鳳輪倒數（>0 表示等待中）
+    yukiGravityStacks:     ch.type === 'yuki' ? 0 : null,            // 重力層數（0~5）
+    yukiPlasmaActive:      ch.type === 'yuki' ? false : null,        // 是否處於「星漿體」狀態
+    yukiPlasmaTimer:       ch.type === 'yuki' ? 0 : null,            // 星漿體剩餘時間
+    yukiStarWrathTimer:    ch.type === 'yuki' ? 0 : null,            // 星之怒下次觸發倒數
+    yukiBlackHoleActive:   ch.type === 'yuki' ? false : null,        // 假想黑洞是否啟動中
+    yukiBlackHoleTimer:    ch.type === 'yuki' ? 0 : null,            // 假想黑洞剩餘時間
+    yukiBlackHoleUsedThisPlasma: ch.type === 'yuki' ? false : null,  // 本次星漿體是否已使用過假想黑洞
+    // 無形專屬狀態
+    wuxingBaseChar: ch.type === 'wuxing' ? ch : null,   // 保留「這是無形」的標記（角色定義本身）
+    wuxingTimer:    ch.type === 'wuxing' ? 0 : null,     // 距離下次變身倒數（0 = 開局立刻變身一次）
+    wuxingFlash:    ch.type === 'wuxing' ? 0 : null,     // 變身瞬間的短暫特效倒數
+    // 組裝模式（自組機器人）專屬狀態
+    customParts:        ch.type === 'custom' ? ch.parts : null,
+    customDrunkTimer:   ch.type === 'custom' && ch.parts.passive === 'p_drunk'   ? randBetween(DRUNK_DIR_CHANGE_MIN, DRUNK_DIR_CHANGE_MAX) : null,
+    customTrapTimer:    ch.type === 'custom' && ch.parts.passive === 'p_trapper' ? CUSTOM_TRAP_PASSIVE_INTERVAL : null,
+    customChargeTimer:  ch.type === 'custom' && ch.parts.passive === 'p_gunner'  ? CUSTOM_CHARGE_INTERVAL : null,
+    customChargeStacks: ch.type === 'custom' && ch.parts.passive === 'p_gunner'  ? 0 : null,
+    customSkill1Timer:  ch.type === 'custom' ? (ch.parts.skill1 === 's1_vampire' ? CUSTOM_SKILL1_VAMPIRE_INTERVAL : ch.parts.skill1 === 's1_trapper' ? CUSTOM_SKILL1_TRAPPER_INTERVAL : GUNNER_FLASH_INTERVAL) : null,
+    customDashing:      ch.type === 'custom' && ch.parts.skill1 === 's1_vampire' ? false : null,
+    customDashElapsed:  ch.type === 'custom' && ch.parts.skill1 === 's1_vampire' ? 0 : null,
+    customChainPulling: ch.type === 'custom' && ch.parts.skill1 === 's1_trapper' ? false : null,
+    customChainElapsed: ch.type === 'custom' && ch.parts.skill1 === 's1_trapper' ? 0 : null,
+    customChainTarget:  ch.type === 'custom' && ch.parts.skill1 === 's1_trapper' ? null : null,
+    customSkill2Timer:  ch.type === 'custom' ? (ch.parts.skill2 === 's2_gunner' ? CUSTOM_SKILL2_GUNNER_INTERVAL : 0) : null,
+    customBiting:       ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? false : null,
+    customBiteStep:     ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? 0 : null,
+    customBiteTimer:    ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? 0 : null,
+    customBiteCooldown: ch.type === 'custom' && ch.parts.skill2 === 's2_vampire' ? 0 : null,
+    customGunnerBurstActive: ch.type === 'custom' && ch.parts.skill2 === 's2_gunner' ? false : null,
+    customGunnerBurstCount:  ch.type === 'custom' && ch.parts.skill2 === 's2_gunner' ? 0 : null,
+    customGunnerBurstTimer:  ch.type === 'custom' && ch.parts.skill2 === 's2_gunner' ? 0 : null,
+    customExtra: ch.type === 'custom' ? {} : null, // 全角色零件庫：泛用零件的計時器/狀態統一放這裡
 
-      // ── Sans 專屬欄位 ──
-      sansBoneTimer:   ch.type === 'sans' ? 0 : null,               // 骨頭普攻CD
-      sansBones:       ch.type === 'sans' ? [] : null,               // 飛行中的骨頭列表
-      sansWallTimer:   ch.type === 'sans' ? SANS_WALL_INTERVAL : null, // 骨牆CD
-      sansWallUses:    ch.type === 'sans' ? 0 : null,                 // 骨牆已使用次數（偶數次觸發重力）
-      sansLaserTimer:  ch.type === 'sans' ? SANS_LASER_INTERVAL : null, // 龍骨砲CD
-      sansUltUsed:     ch.type === 'sans' ? false : null,             // 大風車是否已觸發過
-      sansUltActive:   ch.type === 'sans' ? false : null,             // 大風車進行中
-      sansUltStep:     ch.type === 'sans' ? 0 : null,                 // 大風車目前第幾次攻擊
-      sansUltTimer:    ch.type === 'sans' ? 0 : null,                 // 大風車攻擊間隔倒數
-      sansHitIframeTimer: ch.type === 'sans' ? 0 : null,              // 受傷後短暫無敵倒數（避免同時被多重攻擊瞬間扣光格數）
-      sansContinuousTickTimer: ch.type === 'sans' ? 0 : null,         // 持續傷害限頻倒數（電網/毒圈/捌等DOT技能專用）
-      sansUltPending:  false,        // 任何球都可能被dealDamage標記：血量歸零前先攔截，交給更新迴圈觸發大招
-      // 重力機制（任何角色都可能被Sans的骨牆重力強制拖走去撞牆）
-      sansGravityTimer:      0,
-      sansGravityElapsed:    0,
-      sansGravityDirX:       0,
-      sansGravityDirY:       0,
-      sansGravityStartX:     0,
-      sansGravityStartY:     0,
-      sansGravityOwnerPlayer: null,
+    // ── Sans 專屬欄位 ──
+    sansBoneTimer:   ch.type === 'sans' ? 0 : null,               // 骨頭普攻CD
+    sansBones:       ch.type === 'sans' ? [] : null,               // 飛行中的骨頭列表
+    sansWallTimer:   ch.type === 'sans' ? SANS_WALL_INTERVAL : null, // 骨牆CD
+    sansWallUses:    ch.type === 'sans' ? 0 : null,                 // 骨牆已使用次數（偶數次觸發重力）
+    sansLaserTimer:  ch.type === 'sans' ? SANS_LASER_INTERVAL : null, // 龍骨砲CD
+    sansUltUsed:     ch.type === 'sans' ? false : null,             // 大風車是否已觸發過
+    sansUltActive:   ch.type === 'sans' ? false : null,             // 大風車進行中
+    sansUltStep:     ch.type === 'sans' ? 0 : null,                 // 大風車目前第幾次攻擊
+    sansUltTimer:    ch.type === 'sans' ? 0 : null,                 // 大風車攻擊間隔倒數
+    sansHitIframeTimer: ch.type === 'sans' ? 0 : null,              // 受傷後短暫無敵倒數（避免同時被多重攻擊瞬間扣光格數）
+    sansContinuousTickTimer: ch.type === 'sans' ? 0 : null,         // 持續傷害限頻倒數（電網/毒圈/捌等DOT技能專用）
+    sansUltPending:  false,        // 任何球都可能被dealDamage標記：血量歸零前先攔截，交給更新迴圈觸發大招
+    // 重力機制（任何角色都可能被Sans的骨牆重力強制拖走去撞牆）
+    sansGravityTimer:      0,
+    sansGravityElapsed:    0,
+    sansGravityDirX:       0,
+    sansGravityDirY:       0,
+    sansGravityStartX:     0,
+    sansGravityStartY:     0,
+    sansGravityOwnerPlayer: null,
 
-      // ── 普奇神父 專屬欄位 ──
-      pucciPhase:            ch.type === 'pucci' ? 'snake' : null,   // 'snake' | 'moon' | 'heaven'
-      pucciSnakeState:       ch.type === 'pucci' ? 'orbit' : null,   // 'orbit' | 'dashing' | 'returning'
-      pucciSnakeAngle:       ch.type === 'pucci' ? Math.random() * Math.PI * 2 : null,
-      pucciSnakeX:           ch.type === 'pucci' ? x : null,
-      pucciSnakeY:           ch.type === 'pucci' ? y : null,
-      pucciSnakeTargetRef:   null,          // 白蛇目前鎖定衝刺的目標球
-      pucciSnakeAttackCd:    ch.type === 'pucci' ? PUCCI_SNAKE_ATTACK_CD * 0.4 : null, // 白蛇出擊冷卻
-      pucciSnakeIdleTimer:   ch.type === 'pucci' ? 0 : null,          // 距離上次出擊經過秒數（用來觸發密語）
-      pucciChantActive:      ch.type === 'pucci' ? false : null,      // 是否正在唸密語
-      pucciChantIndex:       ch.type === 'pucci' ? 0 : null,          // 已唸出第幾句（進度不因中斷歸零）
-      pucciChantLineTimer:   ch.type === 'pucci' ? 0 : null,          // 目前這句已蓄唸秒數
-      pucciChantDone:        ch.type === 'pucci' ? false : null,      // 十四句是否已唸畢
-      pucciBabySpawned:      ch.type === 'pucci' ? false : null,      // 綠色嬰兒是否已生成
-      pucciBabyX:            ch.type === 'pucci' ? 0 : null,
-      pucciBabyY:            ch.type === 'pucci' ? 0 : null,
-      pucciMoonGravityCd:    ch.type === 'pucci' ? 0 : null,          // 新月重力甩動冷卻
-      pucciMoonTimer:        ch.type === 'pucci' ? 0 : null,          // 新月降臨經過秒數（用來判斷🚀生成時機）
-      pucciRocketSpawned:    ch.type === 'pucci' ? false : null,      // 🚀是否已生成
-      pucciHeavenCharging:   ch.type === 'pucci' ? false : null,      // 是否正在觸碰🚀後蓄力進化
-      pucciHeavenChargeTimer: ch.type === 'pucci' ? 0 : null,
-      pucciHeavenActive:     ch.type === 'pucci' ? false : null,      // 天堂製造是否已啟動
-      pucciHeavenIframeTimer: ch.type === 'pucci' ? 0 : null,         // 天堂製造：蓄力中／剛變身後的無敵倒數
-      pucciSpeedMult:        ch.type === 'pucci' ? 1 : null,          // 天堂製造：目前速度倍率
-      pucciSpeedMultTimer:   ch.type === 'pucci' ? 0 : null,          // 天堂製造：距離下次翻倍經過秒數
-      pucciContactCd:        ch.type === 'pucci' ? 0 : null,          // 天堂製造：碰撞傷害觸發CD
-      baieKindling:          ch.type === 'baie' ? 0 : null,           // 火種計數器
-      baieSlashTimer:        ch.type === 'baie' ? 0 : null,           // 逐火救世冷卻
-      baieSlashSwinging:     ch.type === 'baie' ? false : null,       // 揮砍動畫中
-      baieSlashSwingTimer:   ch.type === 'baie' ? 0 : null,           // 揮砍動畫計時
-      baieDashing:           ch.type === 'baie' ? false : null,       // 是否正朝敵人衝刺中
-      baieCollideCd:         ch.type === 'baie' ? 0 : null,           // 碰撞觸發火種的CD
-      baieLoveActive:        ch.type === 'baie' ? false : null,       // 「愛上雷神」狀態是否啟動中
-      baieLoveTimer:         ch.type === 'baie' ? 0 : null,           // 「愛上雷神」剩餘持續秒數
-      baieLoveCooldownTimer: ch.type === 'baie' ? 0 : null,           // 距離下次可再次觸發的最短間隔
-      baieZaiePending:       ch.type === 'baie' ? false : null,       // 下次攻擊是否改為「灾厄•弑魂焚诏」
-      baieZaieActive:        ch.type === 'baie' ? false : null,       // 「灾厄•弑魂焚诏」執行中
-      baieZaieTimer:         ch.type === 'baie' ? 0 : null,           // 「灾厄•弑魂焚诏」原地不動剩餘秒數
-      baieReviveUsed:        ch.type === 'baie' ? false : null,       // 「不滅的英雄」本場是否已觸發過
-      pucciLastHp:           ch.type === 'pucci' ? MAX_HP : null,      // 上一幀血量（偵測受傷以中斷密語）
-      // 任何角色都可能被普奇的白蛇咬中：CD光碟凍結（技能冷卻停止流動，直到踩到光碟）
-      pucciDiscFrozen:       false,
-      pucciWallClingTimer:   0,      // 被新月重力甩飛落地後，短暫只能貼牆移動
-      // 新月重力機制（獨立於Sans骨牆重力，任何角色都可能被普奇的新月甩向牆壁）
-      pucciGravityTimer:      0,
-      pucciGravityElapsed:    0,
-      pucciGravityDirX:       0,
-      pucciGravityDirY:       0,
-      pucciGravityStartX:     0,
-      pucciGravityStartY:     0,
-      pucciGravityOwnerPlayer: null,
+    // ── 普奇神父 專屬欄位 ──
+    pucciPhase:            ch.type === 'pucci' ? 'snake' : null,   // 'snake' | 'moon' | 'heaven'
+    pucciSnakeState:       ch.type === 'pucci' ? 'orbit' : null,   // 'orbit' | 'dashing' | 'returning'
+    pucciSnakeAngle:       ch.type === 'pucci' ? Math.random() * Math.PI * 2 : null,
+    pucciSnakeX:           ch.type === 'pucci' ? x : null,
+    pucciSnakeY:           ch.type === 'pucci' ? y : null,
+    pucciSnakeTargetRef:   null,          // 白蛇目前鎖定衝刺的目標球
+    pucciSnakeAttackCd:    ch.type === 'pucci' ? PUCCI_SNAKE_ATTACK_CD * 0.4 : null, // 白蛇出擊冷卻
+    pucciSnakeIdleTimer:   ch.type === 'pucci' ? 0 : null,          // 距離上次出擊經過秒數（用來觸發密語）
+    pucciChantActive:      ch.type === 'pucci' ? false : null,      // 是否正在唸密語
+    pucciChantIndex:       ch.type === 'pucci' ? 0 : null,          // 已唸出第幾句（進度不因中斷歸零）
+    pucciChantLineTimer:   ch.type === 'pucci' ? 0 : null,          // 目前這句已蓄唸秒數
+    pucciChantDone:        ch.type === 'pucci' ? false : null,      // 十四句是否已唸畢
+    pucciBabySpawned:      ch.type === 'pucci' ? false : null,      // 綠色嬰兒是否已生成
+    pucciBabyX:            ch.type === 'pucci' ? 0 : null,
+    pucciBabyY:            ch.type === 'pucci' ? 0 : null,
+    pucciMoonGravityCd:    ch.type === 'pucci' ? 0 : null,          // 新月重力甩動冷卻
+    pucciMoonTimer:        ch.type === 'pucci' ? 0 : null,          // 新月降臨經過秒數（用來判斷🚀生成時機）
+    pucciRocketSpawned:    ch.type === 'pucci' ? false : null,      // 🚀是否已生成
+    pucciHeavenCharging:   ch.type === 'pucci' ? false : null,      // 是否正在觸碰🚀後蓄力進化
+    pucciHeavenChargeTimer: ch.type === 'pucci' ? 0 : null,
+    pucciHeavenActive:     ch.type === 'pucci' ? false : null,      // 天堂製造是否已啟動
+    pucciHeavenIframeTimer: ch.type === 'pucci' ? 0 : null,         // 天堂製造：蓄力中／剛變身後的無敵倒數
+    pucciSpeedMult:        ch.type === 'pucci' ? 1 : null,          // 天堂製造：目前速度倍率
+    pucciSpeedMultTimer:   ch.type === 'pucci' ? 0 : null,          // 天堂製造：距離下次翻倍經過秒數
+    pucciContactCd:        ch.type === 'pucci' ? 0 : null,          // 天堂製造：碰撞傷害觸發CD
+    baieKindling:          ch.type === 'baie' ? 0 : null,           // 火種計數器
+    baieSlashTimer:        ch.type === 'baie' ? 0 : null,           // 逐火救世冷卻
+    baieSlashSwinging:     ch.type === 'baie' ? false : null,       // 揮砍動畫中
+    baieSlashSwingTimer:   ch.type === 'baie' ? 0 : null,           // 揮砍動畫計時
+    baieDashing:           ch.type === 'baie' ? false : null,       // 是否正朝敵人衝刺中
+    baieCollideCd:         ch.type === 'baie' ? 0 : null,           // 碰撞觸發火種的CD
+    baieLoveActive:        ch.type === 'baie' ? false : null,       // 「愛上雷神」狀態是否啟動中
+    baieLoveTimer:         ch.type === 'baie' ? 0 : null,           // 「愛上雷神」剩餘持續秒數
+    baieLoveCooldownTimer: ch.type === 'baie' ? 0 : null,           // 距離下次可再次觸發的最短間隔
+    baieZaiePending:       ch.type === 'baie' ? false : null,       // 下次攻擊是否改為「灾厄•弑魂焚诏」
+    baieZaieActive:        ch.type === 'baie' ? false : null,       // 「灾厄•弑魂焚诏」執行中
+    baieZaieTimer:         ch.type === 'baie' ? 0 : null,           // 「灾厄•弑魂焚诏」原地不動剩餘秒數
+    baieReviveUsed:        ch.type === 'baie' ? false : null,       // 「不滅的英雄」本場是否已觸發過
+    pucciLastHp:           ch.type === 'pucci' ? MAX_HP : null,      // 上一幀血量（偵測受傷以中斷密語）
+    // 任何角色都可能被普奇的白蛇咬中：CD光碟凍結（技能冷卻停止流動，直到踩到光碟）
+    pucciDiscFrozen:       false,
+    pucciWallClingTimer:   0,      // 被新月重力甩飛落地後，短暫只能貼牆移動
+    // 新月重力機制（獨立於Sans骨牆重力，任何角色都可能被普奇的新月甩向牆壁）
+    pucciGravityTimer:      0,
+    pucciGravityElapsed:    0,
+    pucciGravityDirX:       0,
+    pucciGravityDirY:       0,
+    pucciGravityStartX:     0,
+    pucciGravityStartY:     0,
+    pucciGravityOwnerPlayer: null,
 
-      // ══════ 紅石青金石（rsqjs）專屬狀態 ══════
-      // 🛑 紅石（stop）
-      rsqjsBombTimer:     ch.type === 'rsqjs' ? RSQJS_BOMB_CD : null,        // 炸藥冷卻
-      rsqjsAppleTimer:    ch.type === 'rsqjs' ? 0 : null,                    // 附魔金蘋果冷卻
-      rsqjsAppleBuffTimer: ch.type === 'rsqjs' ? 0 : null,                   // 附魔金蘋果效果剩餘時間
-      // 🔷 青金石（diamond）
-      rsqjsBookTimer:     ch.type === 'rsqjs' ? RSQJS_BOOK_CD : null,        // 附魔書丟出冷卻
-      rsqjsWaterTimer:    ch.type === 'rsqjs' ? RSQJS_WATER_INTERVAL * 0.5 : null, // 水攻冷卻
-      rsqjsStealthTimer:  ch.type === 'rsqjs' ? 0 : null,                    // 迅捷潛行冷卻（復仇後才會用到）
-      rsqjsStealthActive: ch.type === 'rsqjs' ? false : null,                // 迅捷潛行無敵中
-      rsqjsStealthElapsed: ch.type === 'rsqjs' ? 0 : null,
-      // 通用：附魔等級（分裂/保護/傷害），復仇後可能轉移到另一顆球身上
-      rsqjsEnchant: ch.type === 'rsqjs' ? { split: 0, protect: 0, damage: 0 } : null,
-      rsqjsHasBombSkill:  ch.type === 'rsqjs' ? (twinRole === 'stop') : null, // 是否擁有炸藥能力（復仇後可能轉移給🔷）
-      rsqjsHasWaterSkill: ch.type === 'rsqjs' ? (twinRole === 'diamond') : null, // 是否擁有水攻能力（復仇後可能轉移給🛑）
-      rsqjsRevengeUsed:   ch.type === 'rsqjs' ? false : null,                // 復仇是否已觸發過（避免重複）
-    };
-  }
+    // ══════ 紅石青金石（rsqjs）專屬狀態 ══════
+    // 🛑 紅石（stop）
+    rsqjsBombTimer:     ch.type === 'rsqjs' ? RSQJS_BOMB_CD : null,        // 炸藥冷卻
+    rsqjsAppleTimer:    ch.type === 'rsqjs' ? 0 : null,                    // 附魔金蘋果冷卻
+    rsqjsAppleBuffTimer: ch.type === 'rsqjs' ? 0 : null,                   // 附魔金蘋果效果剩餘時間
+    // 🔷 青金石（diamond）
+    rsqjsBookTimer:     ch.type === 'rsqjs' ? RSQJS_BOOK_CD : null,        // 附魔書丟出冷卻
+    rsqjsWaterTimer:    ch.type === 'rsqjs' ? RSQJS_WATER_INTERVAL * 0.5 : null, // 水攻冷卻
+    rsqjsStealthTimer:  ch.type === 'rsqjs' ? 0 : null,                    // 迅捷潛行冷卻（復仇後才會用到）
+    rsqjsStealthActive: ch.type === 'rsqjs' ? false : null,                // 迅捷潛行無敵中
+    rsqjsStealthElapsed: ch.type === 'rsqjs' ? 0 : null,
+    // 通用：附魔等級（分裂/保護/傷害），復仇後可能轉移到另一顆球身上
+    rsqjsEnchant: ch.type === 'rsqjs' ? { split: 0, protect: 0, damage: 0 } : null,
+    rsqjsHasBombSkill:  ch.type === 'rsqjs' ? (twinRole === 'stop') : null, // 是否擁有炸藥能力（復仇後可能轉移給🔷）
+    rsqjsHasWaterSkill: ch.type === 'rsqjs' ? (twinRole === 'diamond') : null, // 是否擁有水攻能力（復仇後可能轉移給🛑）
+    rsqjsRevengeUsed:   ch.type === 'rsqjs' ? false : null,                // 復仇是否已觸發過（避免重複）
+  };
+}
 
 function startGame() {
+  sandboxMode = false; // 一般開局一律視為離開沙盒模式，還原成標準1v1~4人HUD
+  const sbHudEl = document.getElementById('sandbox-hud');
+  if (sbHudEl) sbHudEl.style.display = 'none';
+  document.getElementById('hud').style.display = '';
+  document.getElementById('bottom-bar').style.display = '';
+  document.getElementById('bottom-bar').classList.remove('sandbox-solo');
+  ['p1-status', 'p2-status'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
   wheelState = null; // 一般開局視為離開車輪戰；車輪戰換人流程會在呼叫後自行還原此變數
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('select-screen').style.display = 'none';
@@ -4617,8 +4761,8 @@ function startGame() {
     // 無形變身抽到等於瞬間獲得一擊必殺技，直接停用這兩種形態。
     // Sans（固定23點的次數血條，跟一般MAX_HP血量制不相容）同樣排除。
     // 普奇神父（跨多階段、場上全域道具如CD光碟／🚀的複雜狀態機）同樣排除，避免變身時狀態不完整。
-    const pool = CHARACTERS.filter(c => c.id !== 'wuxing' && c.id !== 'dio' && c.id !== 'opm' && c.id !== 'sans' && c.id !== 'pucci' && c.id !== 'rsqjs' && c.id !== ball.char.id);
-    if (pool.length === 0) return CHARACTERS.find(c => c.id !== 'wuxing' && c.id !== 'dio' && c.id !== 'opm' && c.id !== 'sans' && c.id !== 'pucci' && c.id !== 'rsqjs') || ball.char;
+    const pool = CHARACTERS.filter(c => c.id !== 'wuxing' && c.id !== 'dio' && c.id !== 'opm' && c.id !== 'sans' && c.id !== 'pucci' && c.id !== 'rsqjs' && c.id !== 'dragon4' && c.id !== ball.char.id);
+    if (pool.length === 0) return CHARACTERS.find(c => c.id !== 'wuxing' && c.id !== 'dio' && c.id !== 'opm' && c.id !== 'sans' && c.id !== 'pucci' && c.id !== 'rsqjs' && c.id !== 'dragon4') || ball.char;
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
@@ -4664,7 +4808,7 @@ function startGame() {
     ball.wuxingFlash = 0.5;
 
     // 清掉舊形態留下的場上造物（砲台、棋、飛行中的子彈、陷阱等），避免變身後還留著上一個角色的東西
-    purgeDeadPlayerEntities(ball.player);
+    purgeDeadPlayerEntities(ball.player, ball);
 
     if (state.hitFlashes) {
       state.hitFlashes.push({ x: ball.x, y: ball.y, r: 40, alpha: 1, color: newCh.color, t: 0.4 });
@@ -4709,6 +4853,20 @@ function startGame() {
       diamondBall.twinPartner = stopBall;
       return [stopBall, diamondBall];
     }
+    if (ch.isQuad && ch.type === 'dragon4') {
+      // 四天之龍：四顆球各自套用不同配色/emoji的角色副本（type仍是'dragon4'，其餘邏輯不受影響）
+      const offsets = [[-14, -14], [14, -14], [-14, 14], [14, 14]];
+      const quadBalls = DRAGON4_ROLES.map((info, ri) => {
+        const subCh = Object.assign({}, ch, {
+          emoji: info.emoji, color: info.color, glowColor: info.glowColor,
+          quadRole: info.role, quadDisplayName: info.name
+        });
+        const [ox, oy] = offsets[ri];
+        return makeBall(px + ox, py + oy, vx, vy, subCh, i + 1);
+      });
+      quadBalls.forEach(b => { b.quadSiblings = quadBalls.filter(o => o !== b); });
+      return quadBalls;
+    }
     return [makeBall(px, py, vx, vy, ch, i + 1)];
   });
 
@@ -4750,6 +4908,7 @@ function startGame() {
     cannonDuelFX: null,      // 砲爹 vs 乙骨：決鬥終結特效
     cannonDuelTriggered: false, // 是否已觸發過決鬥終結（避免重複觸發）
     dioBreads: [],           // DIO：場上麵包列表
+    dioBreadSpawnTimer: randBetween(DIO_BREAD_SPAWN_MIN, DIO_BREAD_SPAWN_MAX), // 麵包生成計時器（全域共用一份，避免多個DIO疊加生成）
     dioSteamroller: null,    // DIO：壓路機物件
     dioWorldGlobalActive: false, // DIO：世界時停是否全域生效中（凍結敵方與投射物）
     dioWorldCaster: null,     // DIO：施放世界的球參考
@@ -4776,6 +4935,10 @@ function startGame() {
     getoUltimateProjectiles: [], // 夏油條：漩渦光球列表
     getoDeathFX: [],          // 夏油條：咒靈/特級咒靈消散特效列表
     getoCaneFX: [],           // 夏油條：游雲甩棍揮擊動畫列表
+    dragon4SpiralPhase: 0,     // 擺弧噴射：螺旋波旋轉相位
+    dragon4WingBurstFX: [],    // 淨翼白光：自身擴散白光環
+    dragon4BiteFX: [],         // 猛毒控制：咬擊特效
+    dragon4LightningFX: [],    // 叛逆吸取：黑色閃電
     josephChargeFX: [],       // 大喬：蓄力波紋呼吸法特效列表
     josephPunchFX: [],        // 大喬：波紋疾走/彈簧拳/SYO 出拳特效列表
     rippleStackFX: [],        // 波紋層數：爆裂特效列表
@@ -5068,6 +5231,11 @@ function updateBeachArena(dt) {
 }
 
 function dealDamage(target, dmg, options = {}) {
+  // 通用「攻擊方輸出降低」debuff（例如四天之龍的叛逆吸取）：在其餘減傷公式套用前，先降低原始傷害
+  if (!options.bypassParry && options.attackerPlayer != null && state) {
+    const atkBallForWeaken = state.balls.find(x => x.player === options.attackerPlayer && x.weakenTimer > 0);
+    if (atkBallForWeaken) dmg *= atkBallForWeaken.weakenMult;
+  }
   // 無敵狀態（擊殺動畫播放中）不受傷
   if (target.invincible) return;
   // Sans 受傷無敵：剛挨過一下之後短暫無敵，避免同一瞬間被多重「單次攻擊」疊加扣光「次數血條」
@@ -5097,6 +5265,8 @@ function dealDamage(target, dmg, options = {}) {
   // 一拳超人：全局減傷（一拳超人自身的必殺拳不受此減免影響）
   const isOpmReduced = target.char && target.char.type === 'opm' && !options.bypassParry;
   if (isOpmReduced) mul *= (1 - OPM_DMG_REDUCE);
+  // 四天之龍「次元融合」：被動減傷25%
+  if (target.char && target.char.type === 'dragon4' && !options.bypassParry) mul *= (1 - DRAGON4_DMG_REDUCE);
   // 工程師：機甲模式減傷
   if (target.char && target.char.type === 'engineer' && target.engMechActive && !options.bypassParry) mul *= (1 - ENGINEER_MECH_DMG_REDUCE);
   // 組裝機器人（超人體魄零件）：全局減傷
@@ -5204,6 +5374,20 @@ function dealDamage(target, dmg, options = {}) {
       playHitSound('opm');
     }
   }
+  // 一拳超人必殺拳（bypassParry）：真正的系統絕殺，無視一切生存機制——
+  // 紅石青金石的雙生殘存（一顆球死了但搭檔還活著就不算淘汰）也一併打穿，一拳兩顆球全滅
+  if (options.bypassParry && target.twinPartner && target.twinPartner.hp > 0) {
+    target.twinPartner.hp = 0;
+    target.twinPartner.opmExecuted = true;
+    if (state) {
+      state.hitFlashes.push({ x: target.twinPartner.x, y: target.twinPartner.y, r: 60, alpha: 1, color: '#ffffff', t: 0.5 });
+      state.hitFlashes.push({ x: target.twinPartner.x, y: target.twinPartner.y, r: 40, alpha: 1, color: '#ffcc00', t: 0.3 });
+    }
+  }
+  // 四天之龍「次元融合」：四球共享同一份血量，任何一顆受傷/回血後同步給其餘三顆
+  if (target.char && target.char.type === 'dragon4' && target.quadSiblings) {
+    target.quadSiblings.forEach(sib => { sib.hp = target.hp; });
+  }
   // 白厄「火種」累積：造成傷害的攻擊者＋1，愛上雷神狀態下不累積，光碟凍結中也不累積
   if (state && options.attackerPlayer != null && actual > 0 && !options.continuousDamage) {
     const atkBall = state.balls.find(x => x.player === options.attackerPlayer);
@@ -5229,7 +5413,7 @@ function dealDamage(target, dmg, options = {}) {
   // 避免「人死了，招式還在場上」的情況
   if (prevHp > 0 && target.hp <= 0 && target.player) {
     const stillHasLivingTwin = target.twinPartner && target.twinPartner.hp > 0;
-    if (!stillHasLivingTwin) purgeDeadPlayerEntities(target.player);
+    if (!stillHasLivingTwin) purgeDeadPlayerEntities(target.player, target);
   }
   // 記錄傷害到攻擊者的 stats
   // 注意：攻擊者一律由呼叫端透過 options.attackerPlayer 明確指定，
@@ -5245,7 +5429,7 @@ function dealDamage(target, dmg, options = {}) {
 // 角色死亡時，清掉屬於這個玩家、原本會持續存在或還在飛行中的技能物件
 // （炮台、尖刺、閃電柱、電網、還沒命中的箭矢/子彈/光球…），
 // 否則會出現「角色死掉了，招式卻還留在場上」的情況
-function purgeDeadPlayerEntities(player) {
+function purgeDeadPlayerEntities(player, deadBall) {
   if (!state) return;
   // 飛行中、尚未命中的投射物（箭矢/子彈/刀/鴿子/魚/血流針…全部共用這個陣列）
   if (state.projectiles) state.projectiles = state.projectiles.filter(p => p.owner !== player);
@@ -5254,7 +5438,8 @@ function purgeDeadPlayerEntities(player) {
   if (state.thunderPillars) state.thunderPillars = state.thunderPillars.filter(t => t.owner !== player);
   if (state.turrets) state.turrets = state.turrets.filter(t => t.owner !== player);
   if (state.engGrids) state.engGrids = state.engGrids.filter(t => t.owner !== player);
-  if (state.wallKnives) state.wallKnives = state.wallKnives.filter(k => k.owner !== player);
+  // 插在牆上的刀：同隊若有其他還活著的廚師，只清掉這顆球自己插的刀，不動到隊友的
+  if (state.wallKnives) state.wallKnives = state.wallKnives.filter(k => (k.ownerBall && deadBall) ? k.ownerBall !== deadBall : k.owner !== player);
   // 還在飛行／擴散中的招式型物件
   if (state.cannonBeamFX) state.cannonBeamFX = state.cannonBeamFX.filter(x => x.owner !== player);
   if (state.engLaserFX) state.engLaserFX = state.engLaserFX.filter(x => x.owner !== player);
@@ -5856,7 +6041,8 @@ function update(dt) {
   if (state.matchEnded) return;
   {
     const aliveNow = state.balls.filter(b => b.hp > 0);
-    if (aliveNow.length <= 1) {
+    const aliveTeams = new Set(aliveNow.map(b => b.player)).size; // 用隊伍（player編號）算存活數，而非球數，避免沙盒模式一隊多顆球時提早誤判結束
+    if (aliveTeams <= 1) {
       state.matchEnded = true;
       for (const b of state.balls) { b.vx = 0; b.vy = 0; }
       return;
@@ -5865,8 +6051,8 @@ function update(dt) {
     for (const b of state.balls) { if (b.hp <= 0) { b.vx = 0; b.vy = 0; } }
   }
 
-  // 砲爹 vs 乙骨：雙方血量同時低於門檻時，觸發決鬥終結
-  if (!state.cannonDuelTriggered) {
+  // 砲爹 vs 乙骨：雙方血量同時低於門檻時，觸發決鬥終結（沙盒模式停用：混戰中途凍結全場播這段不合理）
+  if (!state.cannonDuelTriggered && !sandboxMode) {
     const cd = state.balls.find(b => b.char.type === 'cannondad');
     const yt = state.balls.find(b => b.char.type === 'yuta');
     if (cd && yt && cd.hp <= CANNON_DUEL_HP_THRESHOLD && yt.hp <= CANNON_DUEL_HP_THRESHOLD) {
@@ -6082,8 +6268,8 @@ function update(dt) {
     if (b.char.type === 'vampire' && b.vampireBiting && !b.pucciDiscFrozen) {
       b.vampireBiteTimer -= dt;
       if (b.vampireBiteTimer <= 0 && b.vampireBiteStep < VAMPIRE_BITE_COUNT) {
-        // 執行本次咬擊
-        const enemy = getNearestEnemyTo(b.x, b.y, b.player);
+        // 執行本次咬擊（鎖定觸發當下抓住的敵人，而不是每次都重新找場上最近的敵人）
+        const enemy = (b.vampireBiteTarget && b.vampireBiteTarget.hp > 0) ? b.vampireBiteTarget : null;
         if (enemy) {
           dealDamage(enemy, VAMPIRE_BITE_DAMAGE, { attackerPlayer: b.player });
           b.hp = Math.min(MAX_HP, b.hp + VAMPIRE_BITE_HEAL);
@@ -6097,8 +6283,8 @@ function update(dt) {
         b.vampireBiteStep++;
         b.vampireBiteTimer = VAMPIRE_BITE_INTERVAL;
 
-        // 三次咬擊完成
-        if (b.vampireBiteStep >= VAMPIRE_BITE_COUNT) {
+        // 三次咬擊完成，或目標中途死亡／消失，都結束咬擊
+        if (b.vampireBiteStep >= VAMPIRE_BITE_COUNT || !enemy) {
           b.vampireBiting = false;
           b.vampireBiteStep = 0;
           b.vampireBiteTimer = 0;
@@ -6119,6 +6305,7 @@ function update(dt) {
             b.vx = Math.cos(ang) * BASE_SPEED;
             b.vy = Math.sin(ang) * BASE_SPEED;
           }
+          b.vampireBiteTarget = null;
         }
       }
     }
@@ -6267,7 +6454,7 @@ function update(dt) {
         if (b.customBiting) {
           b.customBiteTimer -= dt;
           if (b.customBiteTimer <= 0 && b.customBiteStep < VAMPIRE_BITE_COUNT) {
-            const enemy = getNearestEnemyTo(b.x, b.y, b.player);
+            const enemy = (b.customBiteTarget && b.customBiteTarget.hp > 0) ? b.customBiteTarget : null;
             if (enemy) {
               dealDamage(enemy, VAMPIRE_BITE_DAMAGE, { attackerPlayer: b.player });
               b.hp = Math.min(MAX_HP, b.hp + VAMPIRE_BITE_HEAL);
@@ -6278,11 +6465,12 @@ function update(dt) {
             }
             b.customBiteStep++;
             b.customBiteTimer = VAMPIRE_BITE_INTERVAL;
-            if (b.customBiteStep >= VAMPIRE_BITE_COUNT) {
+            if (b.customBiteStep >= VAMPIRE_BITE_COUNT || !enemy) {
               b.customBiting = false;
               b.customBiteStep = 0;
               b.customBiteTimer = 0;
               b.customBiteCooldown = CUSTOM_SKILL2_VAMPIRE_COOLDOWN;
+              b.customBiteTarget = null;
               if (enemy) {
                 enemy.frozenByVampire = false;
                 enemy.frozenTimer = 0;
@@ -6665,13 +6853,52 @@ function update(dt) {
     }
   }
 
+  // 四天之龍：四顆龍球之間也做「純物理彈開」，理由同上——同玩家球在主碰撞迴圈會被跳過，
+  // 這裡另外處理讓四龍不會互相穿透疊在一起（六組配對都要檢查）
+  for (let _di = 0; _di < state.balls.length; _di++) {
+    for (let _dj = _di + 1; _dj < state.balls.length; _dj++) {
+      const d0 = state.balls[_di], d1 = state.balls[_dj];
+      if (d0.char.type !== 'dragon4' || d1.char.type !== 'dragon4') continue;
+      if (d0.player !== d1.player) continue;
+      if (d0.hp <= 0 || d1.hp <= 0) continue;
+      if (state.dioWorldGlobalActive) continue;
+      const tdx = d1.x - d0.x, tdy = d1.y - d0.y;
+      const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
+      if (tdist < RADIUS * 2 && tdist > 0) {
+        const nx = tdx / tdist, ny = tdy / tdist;
+        const overlap = RADIUS * 2 - tdist;
+        d0.x -= nx * overlap / 2; d0.y -= ny * overlap / 2;
+        d1.x += nx * overlap / 2; d1.y += ny * overlap / 2;
+        const dvx = d0.vx - d1.vx, dvy = d0.vy - d1.vy;
+        const dot = dvx * nx + dvy * ny;
+        d0.vx -= dot * nx; d0.vy -= dot * ny;
+        d1.vx += dot * nx; d1.vy += dot * ny;
+      }
+    }
+  }
+
   // 球碰球（遍歷所有跨玩家配對）
   for (let _ci = 0; _ci < state.balls.length; _ci++) {
   for (let _cj = _ci+1; _cj < state.balls.length; _cj++) {
   if (state.dioWorldGlobalActive) continue; // 時停中：碰球傷害不觸發
   const b0 = state.balls[_ci], b1 = state.balls[_cj];
-  if (b0.player === b1.player) continue;
   if (b0.hp <= 0 || b1.hp <= 0) continue; // 已死亡的球不參與物理碰撞，避免卡位
+  if (b0.player === b1.player) {
+    // 同玩家多球角色（紅石青金石／四天之龍）：彼此之間只做純物理分離，避免疊在一起，不觸發任何攻擊/技能判定
+    const sdx = b1.x - b0.x, sdy = b1.y - b0.y;
+    const sdist = Math.sqrt(sdx*sdx + sdy*sdy);
+    if (sdist < RADIUS*2 && sdist > 0) {
+      const snx = sdx/sdist, sny = sdy/sdist;
+      const soverlap = RADIUS*2 - sdist;
+      b0.x -= snx*soverlap/2; b0.y -= sny*soverlap/2;
+      b1.x += snx*soverlap/2; b1.y += sny*soverlap/2;
+      const sdvx = b0.vx-b1.vx, sdvy = b0.vy-b1.vy;
+      const sdot = sdvx*snx + sdvy*sny;
+      b0.vx -= sdot*snx; b0.vy -= sdot*sny;
+      b1.vx += sdot*snx; b1.vy += sdot*sny;
+    }
+    continue;
+  }
   // 帶土虛影/轉移/空間/虛化階段：不觸發球球碰撞；被抓入空間的敵人也不參與；火球衝刺中也排除（避免抓人前被物理碰撞彈開）
   if ((b0.char.type === 'obito' && (['ghost','teleporting','in_space','grabbing','returning'].includes(b0.obitoKamuiPhase) || b0.obitoFireballDashing || b0.obitoPhasing)) ||
       (b1.char.type === 'obito' && (['ghost','teleporting','in_space','grabbing','returning'].includes(b1.obitoKamuiPhase) || b1.obitoFireballDashing || b1.obitoPhasing)) ||
@@ -6690,12 +6917,9 @@ function update(dt) {
       b1.baieKindling = (b1.baieKindling || 0) + BAIE_KINDLING_ON_COLLIDE;
     }
     // 暗夜領主：觸發咬擊
-    for (let bi = 0; bi < state.balls.length; bi++) {
-      const vamp = state.balls[bi];
-      const vamp_me = state.balls[bi];
-      if (vamp.hp <= 0) continue;
-      const target = getNearestEnemyTo(vamp_me.x, vamp_me.y, vamp_me.player);
-      if (!target) continue;
+    for (const [vamp, target] of [[b0, b1], [b1, b0]]) {
+      if (vamp.hp <= 0 || target.hp <= 0) continue;
+      if (vamp.player === target.player) continue; // 同隊不觸發攻擊向技能
       if (vamp.char.type === 'vampire' && !vamp.vampireBiting && !target.frozenByVampire && vamp.vampireBiteCooldown <= 0 && !vamp.pucciDiscFrozen) {
         // 停止衝刺並開始咬擊
         vamp.vampireDashing = false;
@@ -6703,6 +6927,7 @@ function update(dt) {
         vamp.vampireBiting = true;
         vamp.vampireBiteStep = 0;
         vamp.vampireBiteTimer = 0.05; // 幾乎立即第一擊
+        vamp.vampireBiteTarget = target; // 鎖定這次咬擊的對象，避免場上有多個對手時中途咬到別人
         // 凍結敵人
         target.frozenByVampire = true;
         target.frozenTimer = VAMPIRE_BITE_COUNT * VAMPIRE_BITE_INTERVAL + 0.5;
@@ -6717,6 +6942,7 @@ function update(dt) {
         vamp.customBiting = true;
         vamp.customBiteStep = 0;
         vamp.customBiteTimer = 0.05;
+        vamp.customBiteTarget = target; // 鎖定這次咬擊的對象
         target.frozenByVampire = true;
         target.frozenTimer = VAMPIRE_BITE_COUNT * VAMPIRE_BITE_INTERVAL + 0.5;
         vamp.vx = 0; vamp.vy = 0;
@@ -6934,7 +7160,7 @@ function update(dt) {
     if (!b.knifeRecalling) continue; // 沒在回收中就跳過
     for (let i = state.wallKnives.length-1; i >= 0; i--) {
       const k = state.wallKnives[i];
-      if (k.owner !== b.player) continue;
+      if (k.ownerBall ? k.ownerBall !== b : k.owner !== b.player) continue;
       // 飛向廚師
       const ddx = b.x - k.x, ddy = b.y - k.y;
       const dd = Math.sqrt(ddx*ddx + ddy*ddy) || 1;
@@ -6946,7 +7172,7 @@ function update(dt) {
         b.knives = Math.min(b.knives+1, KNIFE_MAX_COUNT);
         state.wallKnives.splice(i, 1);
         // 全部回來 → 解除回收狀態
-        const left = state.wallKnives.filter(k2 => k2.owner === b.player).length;
+        const left = state.wallKnives.filter(k2 => k2.ownerBall ? k2.ownerBall === b : k2.owner === b.player).length;
         if (left === 0) {
           b.knifeRecalling = false;
           b.attackTimer = b.attackInterval; // 立即可攻擊
@@ -9509,7 +9735,7 @@ waypoints.push({
           if (stillAlive) {
             b.hp = 0;
             state.hitFlashes.push({ x: b.x, y: b.y, r: 60, alpha: 1, color: '#888888', t: 0.6 });
-            purgeDeadPlayerEntities(b.player);
+            purgeDeadPlayerEntities(b.player, b);
           }
         }
       }
@@ -9837,9 +10063,15 @@ waypoints.push({
   {
     const samurai = state.balls.find(b => b.char.type === 'samurai' && b.samuraiParrying);
     if (samurai) {
-      const enemy = state.balls.find(b => b !== samurai);
+      // 找場上實際貼身接觸到的敵方球，而非陣列中隨便一顆（多球混戰下不能只抓「不是自己的那顆」）
+      let enemy = null, bestDist = Infinity;
+      for (const other of state.balls) {
+        if (other === samurai || other.hp <= 0 || other.player === samurai.player) continue;
+        const sd = Math.hypot(other.x - samurai.x, other.y - samurai.y);
+        if (sd < bestDist) { bestDist = sd; enemy = other; }
+      }
       if (enemy) {
-        const sd = Math.hypot(enemy.x - samurai.x, enemy.y - samurai.y);
+        const sd = bestDist;
         if (sd < RADIUS * 2 + 2) {
           // 碰到敵人 → 造成反彈傷害後立刻結束招架，觸發居合
           dealDamage(enemy, SAMURAI_PARRY_BUMP_DMG, { attackerPlayer: samurai.player });
@@ -9916,13 +10148,13 @@ waypoints.push({
         // 廚師的刀撞到巨石不應該直接消失憑空蒸發：比照撞牆的處理，插在石頭表面等待回收，
         // 否則刀會被巨石「吃掉」，刀數再也拿不回來。
         if (p.type === 'knife') {
-          const knifeOwnerBall = state.balls.find(b => b.player === p.owner);
-          if (knifeOwnerBall && knifeOwnerBall.char.type === 'chef') {
+          const knifeOwnerBall = p.ownerBall;
+          if (knifeOwnerBall && knifeOwnerBall.hp > 0 && knifeOwnerBall.char.type === 'chef') {
             const pushOutR = OBSTACLE_ARENA_RADIUS + (p.r || 8);
             const nx = odist > 0 ? odx / odist : 1, ny = odist > 0 ? ody / odist : 0;
             state.wallKnives.push({
               x: W / 2 + nx * pushOutR, y: H / 2 + ny * pushOutR,
-              angle: p.angle, owner: p.owner, color: p.color
+              angle: p.angle, owner: p.owner, ownerBall: knifeOwnerBall, color: p.color
             });
           }
         }
@@ -9955,10 +10187,10 @@ waypoints.push({
           }
           // 若被吸收的是刀，歸還廚師的刀數
           if (p.type === 'knife') {
-            const chefBall = state.balls.find(x => x.player === p.owner && x.char.type === 'chef');
+            const chefBall = (p.ownerBall && p.ownerBall.char.type === 'chef') ? p.ownerBall : null;
             if (chefBall) {
               chefBall.knives = Math.min(chefBall.knives + 1, KNIFE_MAX_COUNT);
-              const wallLeft = state.wallKnives.filter(k => k.owner === chefBall.player).length;
+              const wallLeft = state.wallKnives.filter(k => k.ownerBall ? k.ownerBall === chefBall : k.owner === chefBall.player).length;
               if (chefBall.knives >= KNIFE_MAX_COUNT && wallLeft === 0) {
                 chefBall.knifeRecalling = false;
                 chefBall.attackTimer = chefBall.attackInterval;
@@ -10188,9 +10420,9 @@ waypoints.push({
         p.x = Math.max(WALL, Math.min(W-WALL, p.x));
         p.y = Math.max(WALL, Math.min(H-WALL, p.y));
         // 只有廚師的刀才插牆等待回收，其他飛刀（如DIO）碰牆直接消失
-        const knifeOwnerBall = state.balls.find(b => b.player === p.owner);
-        if (knifeOwnerBall && knifeOwnerBall.char.type === 'chef') {
-          state.wallKnives.push({ x:p.x, y:p.y, angle:p.angle, owner:p.owner, color:p.color });
+        const knifeOwnerBall = p.ownerBall;
+        if (knifeOwnerBall && knifeOwnerBall.hp > 0 && knifeOwnerBall.char.type === 'chef') {
+          state.wallKnives.push({ x:p.x, y:p.y, angle:p.angle, owner:p.owner, ownerBall: knifeOwnerBall, color:p.color });
         }
         state.projectiles.splice(i, 1);
       } else if ((p.type === 'dove' && Number(p.mageTrick) === 2) || p.doveWallBounce) {
@@ -10205,13 +10437,9 @@ waypoints.push({
 
   // ── 宇治波鼬邏輯 ──
   for (const b of state.balls) {
-    if (b.hp <= 0) continue; // 已死亡不再有任何行為
     if (b.char.type !== 'itachi') continue;
-    const enemy = getNearestEnemyTo(b.x, b.y, b.player);
-    if (!enemy) continue;
-    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace || b.pucciDiscFrozen) continue;
 
-    // 烏鴉替身：瀕死觸發（每場一次），優先判定
+    // 烏鴉替身：瀕死觸發（每場一次），優先判定——不需要存活敵人也該觸發
     if (!b.itachiCrowUsed && !b.opmExecuted && b.hp <= 0) {
       b.itachiCrowUsed = true;
       b.hp = ITACHI_CROW_HEAL;
@@ -10230,6 +10458,12 @@ waypoints.push({
       playHitSound('vampire_dash');
       continue; // 本幀跳過其他邏輯
     }
+
+    if (b.hp <= 0) continue; // 已死亡（無法或已用過復活）不再有任何行為
+
+    const enemy = getNearestEnemyTo(b.x, b.y, b.player);
+    if (!enemy) continue;
+    if ((state.dioWorldGlobalActive && b !== state.dioWorldCaster) || b.obitoInSpace || b.pucciDiscFrozen) continue;
 
     // 須佐能乎：血量低於門檻時自動觸發（每場一次）
     if (!b.itachiSusanooUsed && !b.itachiSusanooActive && b.hp > 0 && b.hp <= ITACHI_SUSANOO_HP_THRESHOLD) {
@@ -10855,6 +11089,18 @@ waypoints.push({
   }
 
   // ── DIO 邏輯 ──
+
+  // 麵包：定時生成（全域共用一份計時器，不論場上有幾個DIO都只生成一次，避免疊加生成）
+  if (state.balls.some(b => b.char.type === 'dio' && b.hp > 0)) {
+    state.dioBreadSpawnTimer -= dt;
+    if (state.dioBreadSpawnTimer <= 0) {
+      state.dioBreadSpawnTimer = randBetween(DIO_BREAD_SPAWN_MIN, DIO_BREAD_SPAWN_MAX);
+      const bx = RADIUS * 2 + Math.random() * (W - RADIUS * 4);
+      const by = RADIUS * 2 + Math.random() * (H - RADIUS * 4);
+      state.dioBreads.push({ x: bx, y: by, r: DIO_BREAD_RADIUS });
+    }
+  }
+
   for (const b of state.balls) {
     if (b.hp <= 0) continue; // 已死亡不再有任何行為
     if (b.char.type !== 'dio') continue;
@@ -10906,14 +11152,7 @@ waypoints.push({
       b.dioWorldCooldownTimer -= dt;
     }
 
-    // 麵包：定時生成（場上共用）
-    b.dioBreadSpawnTimer -= dt;
-    if (b.dioBreadSpawnTimer <= 0) {
-      b.dioBreadSpawnTimer = randBetween(DIO_BREAD_SPAWN_MIN, DIO_BREAD_SPAWN_MAX);
-      const bx = RADIUS * 2 + Math.random() * (W - RADIUS * 4);
-      const by = RADIUS * 2 + Math.random() * (H - RADIUS * 4);
-      state.dioBreads.push({ x: bx, y: by, r: DIO_BREAD_RADIUS });
-    }
+    // 麵包碰撞判定移到下方獨立處理，這裡不再逐球生成
 
     // 麵包：碰撞判定（回血＋丟刀＋累積HIGH計數；光碟凍結中仍可回血，但丟刀與觸發HIGH暫停）
     for (let i = state.dioBreads.length - 1; i >= 0; i--) {
@@ -11078,6 +11317,139 @@ waypoints.push({
     for (let i = state.yutaSlashFX.length - 1; i >= 0; i--) {
       state.yutaSlashFX[i].life -= dt;
       if (state.yutaSlashFX[i].life <= 0) state.yutaSlashFX.splice(i, 1);
+    }
+  }
+
+  // ── 四天之龍邏輯 ──
+  state.dragon4SpiralPhase = (state.dragon4SpiralPhase || 0) + dt * 6; // 螺旋波旋轉相位
+  for (const b of state.balls) {
+    if (b.hp <= 0) continue;
+    if (b.char.type !== 'dragon4') continue;
+
+    // 攻擊力加成buff倒數（淨翼白光提供，四龍共享）
+    if (b.dragon4AtkBuffTimer > 0) {
+      b.dragon4AtkBuffTimer -= dt;
+      if (b.dragon4AtkBuffTimer < 0) b.dragon4AtkBuffTimer = 0;
+    }
+
+    // 擺弧噴射頻道中：原地不動，持續對鎖定敵人造成傷害
+    if (b.dragon4PendulumChannelTimer > 0) {
+      b.vx = 0; b.vy = 0;
+      b.dragon4PendulumChannelTimer -= dt;
+      const foe = state.balls.find(x => x === b.dragon4PendulumTarget);
+      if (foe && foe.hp > 0) {
+        const dmgMul = b.dragon4AtkBuffTimer > 0 ? (1 + DRAGON4_WING_BUFF_MULT) : 1;
+        dealDamage(foe, DRAGON4_PENDULUM_DPS * dt * dmgMul, { attackerPlayer: b.player, continuousDamage: true });
+      }
+      if (b.dragon4PendulumChannelTimer <= 0) {
+        b.dragon4PendulumChannelTimer = 0;
+        b.dragon4PendulumTarget = null;
+      }
+      continue; // 頻道中跳過其他技能判定
+    }
+
+    // 猛毒控制衝刺中：檢查是否已貼近敵人以結算命中
+    if (b.dragon4VenomLungeTimer > 0) {
+      b.dragon4VenomLungeTimer -= dt;
+      const foe = getNearestEnemyTo(b.x, b.y, b.player);
+      if (foe && foe.hp > 0 && !b.dragon4VenomHasHit) {
+        const d = Math.hypot(b.x - foe.x, b.y - foe.y);
+        if (d < RADIUS * 2.4) {
+          b.dragon4VenomHasHit = true;
+          const dmgMul = b.dragon4AtkBuffTimer > 0 ? (1 + DRAGON4_WING_BUFF_MULT) : 1;
+          dealDamage(foe, DRAGON4_VENOM_DAMAGE * dmgMul, { attackerPlayer: b.player });
+          foe.itachiPinnedTimer = Math.max(foe.itachiPinnedTimer || 0, DRAGON4_VENOM_STUN);
+          foe.curseDotTimer = DRAGON4_VENOM_POISON_DUR;
+          foe.curseDotOwnerPlayer = b.player;
+          foe.curseDotDmg = DRAGON4_VENOM_POISON_DPS;
+          // 咬擊特效：張合的毒牙咬痕
+          state.dragon4BiteFX.push({ x: foe.x, y: foe.y, angle: Math.atan2(foe.y - b.y, foe.x - b.x), life: 0.4, maxLife: 0.4 });
+          state.hitFlashes.push({ x: foe.x, y: foe.y, r: 24, alpha: 0.9, color: '#c39bd3', t: 0.25 });
+          playHitSound('vampire_bite');
+        }
+      }
+      if (b.dragon4VenomLungeTimer <= 0) { b.dragon4VenomLungeTimer = 0; b.dragon4VenomHasHit = false; }
+    }
+
+    const enemy = getNearestEnemyTo(b.x, b.y, b.player);
+    if (!enemy) continue;
+
+    // 強化狀態：血量低於門檻，四項技能冷卻全部減半（用共享血量，讀任一顆龍球的hp即可）
+    const enraged = b.hp <= DRAGON4_ENRAGE_HP;
+    const cdMul = enraged ? DRAGON4_ENRAGE_CD_MUL : 1;
+
+    b.dragon4SkillTimer -= dt;
+    if (b.dragon4SkillTimer > 0) continue;
+
+    if (b.char.quadRole === 'pendulum') {
+      b.dragon4SkillTimer = DRAGON4_PENDULUM_CD * cdMul;
+      b.dragon4PendulumChannelTimer = DRAGON4_PENDULUM_DURATION;
+      b.dragon4PendulumTarget = enemy;
+      b.vx = 0; b.vy = 0;
+      if (state.stats) state.stats[b.player].skillUses++;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 40, alpha: 1.0, color: '#e8c93d', t: 0.4 });
+      playHitSound('opm');
+    } else if (b.char.quadRole === 'venom') {
+      b.dragon4SkillTimer = DRAGON4_VENOM_CD * cdMul;
+      b.dragon4VenomLungeTimer = 0.6;
+      b.dragon4VenomHasHit = false;
+      const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+      b.vx = Math.cos(ang) * DRAGON4_VENOM_DASH_SPEED;
+      b.vy = Math.sin(ang) * DRAGON4_VENOM_DASH_SPEED;
+      if (state.stats) state.stats[b.player].skillUses++;
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 26, alpha: 0.9, color: '#8e44ad', t: 0.3 });
+      playHitSound('vampire_dash');
+    } else if (b.char.quadRole === 'wing') {
+      b.dragon4SkillTimer = DRAGON4_WING_CD * cdMul;
+      b.dragon4AtkBuffTimer = DRAGON4_WING_BUFF_DURATION;
+      if (b.quadSiblings) b.quadSiblings.forEach(sib => { sib.dragon4AtkBuffTimer = DRAGON4_WING_BUFF_DURATION; });
+      dealDamage(enemy, DRAGON4_WING_DAMAGE, { attackerPlayer: b.player });
+      enemy.thunderParalyzed = Math.max(enemy.thunderParalyzed || 0, DRAGON4_WING_PARALYZE_DUR);
+      if (state.stats) state.stats[b.player].skillUses++;
+      // 自身向外擴散的白光環
+      state.dragon4WingBurstFX.push({ x: b.x, y: b.y, life: 0.7, maxLife: 0.7 });
+      state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 34, alpha: 1.0, color: '#f4f4f4', t: 0.35 });
+      playHitSound('knife');
+    } else if (b.char.quadRole === 'rebel') {
+      b.dragon4SkillTimer = DRAGON4_REBEL_CD * cdMul;
+      const dmgMul = b.dragon4AtkBuffTimer > 0 ? (1 + DRAGON4_WING_BUFF_MULT) : 1;
+      dealDamage(enemy, DRAGON4_REBEL_DAMAGE * dmgMul, { attackerPlayer: b.player });
+      enemy.weakenTimer = DRAGON4_REBEL_WEAKEN_DUR;
+      enemy.weakenMult = DRAGON4_REBEL_WEAKEN_MULT;
+      // 黑色閃電：從叛逆龍射向敵人
+      state.dragon4LightningFX.push({ x0: b.x, y0: b.y, x1: enemy.x, y1: enemy.y, life: 0.3, maxLife: 0.3 });
+      if (state.stats) state.stats[b.player].skillUses++;
+      state.hitFlashes.push({ x: enemy.x, y: enemy.y, r: 36, alpha: 1.0, color: '#2a2a2a', t: 0.4 });
+      state.hitFlashes.push({ x: b.x, y: b.y, r: 26, alpha: 0.9, color: '#555555', t: 0.3 });
+      playHitSound('opm');
+    }
+  }
+
+  // 四天之龍：weaken debuff（叛逆吸取）倒數
+  for (const b of state.balls) {
+    if (b.weakenTimer > 0) {
+      b.weakenTimer -= dt;
+      if (b.weakenTimer <= 0) { b.weakenTimer = 0; b.weakenMult = 1; }
+    }
+  }
+
+  // 四天之龍：特效壽命遞減
+  if (state.dragon4WingBurstFX) {
+    for (let i = state.dragon4WingBurstFX.length - 1; i >= 0; i--) {
+      state.dragon4WingBurstFX[i].life -= dt;
+      if (state.dragon4WingBurstFX[i].life <= 0) state.dragon4WingBurstFX.splice(i, 1);
+    }
+  }
+  if (state.dragon4BiteFX) {
+    for (let i = state.dragon4BiteFX.length - 1; i >= 0; i--) {
+      state.dragon4BiteFX[i].life -= dt;
+      if (state.dragon4BiteFX[i].life <= 0) state.dragon4BiteFX.splice(i, 1);
+    }
+  }
+  if (state.dragon4LightningFX) {
+    for (let i = state.dragon4LightningFX.length - 1; i >= 0; i--) {
+      state.dragon4LightningFX[i].life -= dt;
+      if (state.dragon4LightningFX[i].life <= 0) state.dragon4LightningFX.splice(i, 1);
     }
   }
 
@@ -11999,7 +12371,7 @@ waypoints.push({
       const bleedTick = Math.min(b.tigerBleedPool, TIGER_BLEED_DPS * dt);
       const bleedPrevHp = b.hp;
       b.hp = Math.max(0, b.hp - bleedTick);
-      if (bleedPrevHp > 0 && b.hp <= 0 && !(b.twinPartner && b.twinPartner.hp > 0)) purgeDeadPlayerEntities(b.player);
+      if (bleedPrevHp > 0 && b.hp <= 0 && !(b.twinPartner && b.twinPartner.hp > 0)) purgeDeadPlayerEntities(b.player, b);
       b.tigerBleedPool -= bleedTick;
       if (b.tigerBleedPool < 0) b.tigerBleedPool = 0;
       // 流血特效：紅色粒子
@@ -12918,7 +13290,7 @@ waypoints.push({
         b.sakikoDualActive = false;
         b.hp = Math.max(0, Math.round(b.sakikoShadowHp));
         b.sakikoShadowHp = null;
-        if (b.hp <= 0) purgeDeadPlayerEntities(b.player);
+        if (b.hp <= 0) purgeDeadPlayerEntities(b.player, b);
         state.hitFlashes.push({ x: b.x, y: b.y, r: 30, alpha: 0.8, color: '#8e6fd9', t: 0.4 });
       }
     }
@@ -13257,7 +13629,7 @@ if (!b.sakikoDualActive) {
     if (b.yukiPlasmaActive) {
       const prevHp = b.hp;
       b.hp = Math.max(0, b.hp - YUKI_PLASMA_HP_DPS * dt);
-      if (prevHp > 0 && b.hp <= 0) purgeDeadPlayerEntities(b.player);
+      if (prevHp > 0 && b.hp <= 0) purgeDeadPlayerEntities(b.player, b);
 
       b.yukiStarWrathTimer -= dt;
       if (b.yukiStarWrathTimer <= 0 && b.hp > 0) {
@@ -13307,7 +13679,7 @@ if (!b.sakikoDualActive) {
         b.yukiBlackHoleActive = false;
         const prevHp2 = b.hp;
         b.hp = Math.max(0, b.hp - YUKI_BLACKHOLE_SELF_COST);
-        if (prevHp2 > 0 && b.hp <= 0) purgeDeadPlayerEntities(b.player);
+        if (prevHp2 > 0 && b.hp <= 0) purgeDeadPlayerEntities(b.player, b);
         state.hitFlashes.push({ x: b.x, y: b.y, r: 55, alpha: 0.9, color: '#4b0082', t: 0.5 });
         if (b.yukiPlasmaTimer <= 0) b.yukiPlasmaActive = false;
       }
@@ -13376,7 +13748,7 @@ function fireProjectile(ball, enemy, type, dmgOverride, spdOverride) {
   state.projectiles.push({
     x: ball.x + nx*(RADIUS+5), y: ball.y + ny*(RADIUS+5),
     vx: nx*spd, vy: ny*spd,
-    owner: ball.player, type,
+    owner: ball.player, ownerBall: ball, type,
     angle: Math.atan2(ny, nx), damage: dmg,
     color: ball.char.color   // 繼承發射者顏色
   });
@@ -15085,6 +15457,25 @@ function render() {
     ctx.restore();
   }
 
+  // ── 四天之龍⬜淨翼白光：白龍在場時，白光照亮整個競技場，不只是自己身邊那圈 ──
+  for (const b of state.balls) {
+    if (b.hp <= 0 || b.char.type !== 'dragon4' || b.char.quadRole !== 'wing') continue;
+    const basePulse = 0.5 + 0.5 * Math.sin(elapsed * 3);
+    const buffActive = (b.dragon4AtkBuffTimer || 0) > 0;
+    ctx.save();
+    // 平時：微弱脈動的全場白光；技能生效期間：更亮一階，讓場地明顯變亮
+    ctx.globalAlpha = (buffActive ? 0.16 : 0.07) + 0.05 * basePulse;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // 以白龍為中心疊加一層放射狀光暈，讓光源感更明顯（越靠近白龍越亮，往外漸淡至全場）
+    const arenaGlow = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, Math.max(canvas.width, canvas.height) * 0.75);
+    arenaGlow.addColorStop(0, `rgba(255,255,255,${0.35 + 0.15 * basePulse})`);
+    arenaGlow.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = arenaGlow;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
   // 釣魚佬：海浪
   for (const wv of state.fisherOceanWaves) {
     ctx.save();
@@ -15559,6 +15950,139 @@ function render() {
     ctx.arc(0, 0, RADIUS + 26, -0.5, 0, false);
     ctx.stroke();
     ctx.restore();
+  }
+
+  // 四天之龍🟨擺弧噴射：頻道中的旋轉螺旋波（從施法龍球射向鎖定目標）
+  for (const b of state.balls) {
+    if (b.char.type !== 'dragon4' || b.char.quadRole !== 'pendulum') continue;
+    if (!(b.dragon4PendulumChannelTimer > 0) || !b.dragon4PendulumTarget) continue;
+    const t = b.dragon4PendulumTarget;
+    const dx = t.x - b.x, dy = t.y - b.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const angle = Math.atan2(dy, dx);
+    const perp = angle + Math.PI / 2;
+    const segs = 28;
+    const spiralFreq = 2.4;
+    const spiralAmp = 16;
+    const phase = state.dragon4SpiralPhase || 0;
+    ctx.save();
+    ctx.shadowColor = '#e8c93d';
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = '#e8c93d';
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    for (let s = 0; s <= segs; s++) {
+      const frac = s / segs;
+      const taper = Math.sin(Math.min(1, frac * 1.15) * Math.PI); // 頭尾收窄
+      const wave = Math.sin(frac * Math.PI * 2 * spiralFreq + phase) * spiralAmp * taper;
+      const px = b.x + dx * frac + Math.cos(perp) * wave;
+      const py = b.y + dy * frac + Math.sin(perp) * wave;
+      if (s === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    // 內層亮白細線增加能量感
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = '#fff6cc';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 四天之龍🟪猛毒控制：咬擊特效（開合的毒牙）
+  if (state.dragon4BiteFX) {
+    for (const fx of state.dragon4BiteFX) {
+      const prog = 1 - Math.max(0, fx.life) / fx.maxLife; // 0→1
+      const bite = 1 - Math.abs(prog - 0.35) / 0.65; // 中段咬合最緊
+      const gap = Math.max(2, 16 * (1 - Math.min(1, bite * 1.3)));
+      ctx.save();
+      ctx.translate(fx.x, fx.y);
+      ctx.rotate(fx.angle);
+      ctx.globalAlpha = Math.max(0, 1 - prog);
+      ctx.strokeStyle = '#e6d3ff';
+      ctx.fillStyle = '#8e44ad';
+      ctx.lineWidth = 2;
+      // 上顎毒牙
+      ctx.beginPath();
+      ctx.moveTo(-14, -gap - 4);
+      ctx.lineTo(0, -gap - 16);
+      ctx.lineTo(14, -gap - 4);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // 下顎毒牙
+      ctx.beginPath();
+      ctx.moveTo(-14, gap + 4);
+      ctx.lineTo(0, gap + 16);
+      ctx.lineTo(14, gap + 4);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // 中毒噴濺粒子
+      ctx.fillStyle = '#c39bd3';
+      for (let p = 0; p < 3; p++) {
+        const pa = (p / 3) * Math.PI * 2 + prog * 4;
+        ctx.beginPath();
+        ctx.arc(Math.cos(pa) * (10 + prog * 18), Math.sin(pa) * (10 + prog * 18), 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  // 四天之龍⬜淨翼白光：自身向外擴散的白光環
+  if (state.dragon4WingBurstFX) {
+    for (const fx of state.dragon4WingBurstFX) {
+      const prog = 1 - Math.max(0, fx.life) / fx.maxLife; // 0→1
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, (1 - prog) * 0.9);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 5 * (1 - prog) + 1;
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 24;
+      ctx.beginPath();
+      ctx.arc(fx.x, fx.y, prog * 130, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = Math.max(0, (1 - prog) * 0.5);
+      ctx.beginPath();
+      ctx.arc(fx.x, fx.y, prog * 80, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // 四天之龍⬛叛逆吸取：黑色閃電
+  if (state.dragon4LightningFX) {
+    for (const fx of state.dragon4LightningFX) {
+      const prog = 1 - Math.max(0, fx.life) / fx.maxLife;
+      const dx = fx.x1 - fx.x0, dy = fx.y1 - fx.y0;
+      const dist = Math.hypot(dx, dy) || 1;
+      const angle = Math.atan2(dy, dx);
+      const perp = angle + Math.PI / 2;
+      const segs = 9;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, 1 - prog);
+      ctx.strokeStyle = '#111111';
+      ctx.shadowColor = '#8b5cf6';
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 4;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      let px = fx.x0, py = fx.y0;
+      ctx.moveTo(px, py);
+      const seed = fx.x0 + fx.y0; // 每道閃電固定鋸齒形狀，不隨機亂跳
+      for (let s = 1; s <= segs; s++) {
+        const frac = s / segs;
+        const jag = (Math.sin(seed + s * 12.9) * 0.5) * (frac < 1 ? 18 : 0);
+        const nx = fx.x0 + dx * frac + Math.cos(perp) * jag;
+        const ny = fx.y0 + dy * frac + Math.sin(perp) * jag;
+        ctx.lineTo(nx, ny);
+      }
+      ctx.stroke();
+      // 內層紫白核心線
+      ctx.strokeStyle = '#c9a6ff';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   // 大喬：波紋疾走/彈簧拳/SYO 出拳特效
@@ -17707,10 +18231,19 @@ function render() {
       ctx.globalAlpha = 0.35 + 0.1 * Math.sin(elapsed * 10);
     }
 
-    // 一般光暈
-    const glow = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,RADIUS*2.5);
-    glow.addColorStop(0, b.char.color+'40'); glow.addColorStop(1,'transparent');
-    ctx.beginPath(); ctx.arc(b.x,b.y,RADIUS*2.5,0,Math.PI*2);
+    // 一般光暈（淨翼龍的白色在深色背景下較不明顯，加大亮度與範圍；平時也持續脈動發光，不是只有施放技能瞬間才亮）
+    const isWingDragon = b.char.type === 'dragon4' && b.char.quadRole === 'wing';
+    const wingPulse = isWingDragon ? 0.75 + 0.25 * Math.sin(elapsed * 3) : 1;
+    const glowR = isWingDragon ? RADIUS * (2.9 + 0.5 * wingPulse) : RADIUS * 2.5;
+    const glow = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,glowR);
+    if (isWingDragon) {
+      glow.addColorStop(0, `rgba(255,255,255,${0.75 + 0.2 * wingPulse})`);
+      glow.addColorStop(0.4, `rgba(220,240,255,${0.35 + 0.2 * wingPulse})`);
+      glow.addColorStop(1, 'transparent');
+    } else {
+      glow.addColorStop(0, b.char.color+'40'); glow.addColorStop(1,'transparent');
+    }
+    ctx.beginPath(); ctx.arc(b.x,b.y,glowR,0,Math.PI*2);
     ctx.fillStyle = glow; ctx.fill();
 
     // 球體本體
@@ -18736,6 +19269,7 @@ function ensureTwinBarEl(n) {
 
 function updateHUD() {
   if (!state.balls) return;
+  if (sandboxMode) { updateSandboxHUD(); return; }
   const playerCount = state.playerCount || Math.min(4, state.balls.length);
   for (let n = 1; n <= Math.min(4, playerCount); n++) {
     const ownBalls = state.balls.filter(b => b.player === n);
@@ -18796,6 +19330,14 @@ function updateHUD() {
       return `🔷📖${Math.max(0, b.rsqjsBookTimer).toFixed(1)}s 💧${Math.max(0, b.rsqjsWaterTimer).toFixed(1)}s`.trim();
     }
     return '';
+  }
+
+  function buildCdBarsHTML(items) {
+    return `<span class="cd-bars">` + items.map(it => {
+      const pct = Math.max(0, Math.min(1, it.pct));
+      const ready = pct >= 0.999;
+      return `<span class="cd-bar-wrap" title="${it.label}"><span class="cd-bar-fill" style="width:${(pct*100).toFixed(0)}%;background:${ready ? '#3fb950' : it.color}"></span></span>`;
+    }).join('') + `</span>`;
   }
 
   function statusText(b) {
@@ -19005,11 +19547,45 @@ function updateHUD() {
     if (b.char.type === 'rsqjs') {
       // 雙生角色：兩顆球共用一個狀態欄，🛑/🔷各自顯示，主球(stop)先寫入，副球(diamond)接著附加
       const txt = rsqjsStatusText(b);
+      const barItem = (() => {
+        if (b.twinRole === 'stop' || (b.rsqjsHasBombSkill && b.twinRole !== 'diamond')) {
+          if (b.rsqjsHasBombSkill) return { label: '🛑💣炸藥', pct: 1 - Math.max(0, b.rsqjsBombTimer) / RSQJS_BOMB_CD, color: '#e74c3c' };
+          return null;
+        }
+        if (b.twinRole === 'diamond') {
+          if (b.rsqjsHasBombSkill) return { label: '🔷💣炸藥', pct: 1 - Math.max(0, b.rsqjsBombTimer) / RSQJS_BOMB_CD, color: '#e74c3c' };
+          return { label: '🔷📖附魔', pct: 1 - Math.max(0, b.rsqjsBookTimer) / RSQJS_BOOK_CD, color: '#3498db' };
+        }
+        return null;
+      })();
+      const barHTML = barItem ? buildCdBarsHTML([barItem]) : '';
       if (b.twinRole === 'diamond') {
-        statusEl.textContent = (statusEl.textContent ? statusEl.textContent + '　' : '') + txt;
+        statusEl.innerHTML = (statusEl.dataset.rsqjsPart || '') + barHTML + ' ' + txt;
+        statusEl.dataset.rsqjsPart = '';
       } else {
-        statusEl.textContent = txt;
+        statusEl.innerHTML = barHTML + ' ' + txt + '　';
+        statusEl.dataset.rsqjsPart = statusEl.innerHTML;
       }
+    } else if (b.char.type === 'dragon4') {
+      // 四天之龍：四顆球的技能冷卻條合併顯示在同一個狀態欄，任一顆算出來的結果都相同
+      const group = [b, ...(b.quadSiblings || [])];
+      const enraged = b.hp <= DRAGON4_ENRAGE_HP;
+      const cdMul = enraged ? DRAGON4_ENRAGE_CD_MUL : 1;
+      const roleCfg = {
+        pendulum: { cd: DRAGON4_PENDULUM_CD, color: '#e8c93d', label: '🟨擺弧噴射' },
+        venom:    { cd: DRAGON4_VENOM_CD,    color: '#8e44ad', label: '🟪猛毒控制' },
+        wing:     { cd: DRAGON4_WING_CD,     color: '#dddddd', label: '⬜淨翼白光' },
+        rebel:    { cd: DRAGON4_REBEL_CD,    color: '#777777', label: '⬛叛逆吸取' },
+      };
+      const items = ['pendulum', 'venom', 'wing', 'rebel'].map(role => {
+        const gb = group.find(x => x.char.quadRole === role);
+        const cfg = roleCfg[role];
+        if (!gb) return { label: cfg.label, pct: 1, color: cfg.color };
+        const maxCd = cfg.cd * cdMul;
+        const pct = maxCd > 0 ? 1 - Math.max(0, gb.dragon4SkillTimer || 0) / maxCd : 1;
+        return { label: cfg.label, pct, color: cfg.color };
+      });
+      statusEl.innerHTML = buildCdBarsHTML(items) + (enraged ? ' 🔥強化中' : '');
     } else {
       statusEl.textContent = statusText(b);
     }
@@ -19031,7 +19607,13 @@ function showResult(deadBalls) {
     const loser  = deadBalls[deadBalls.length - 1] || deadBalls[0];
     const isWheelFinale = wheelState && !wheelState.active;
     const winnerTeamLetter = isWheelFinale ? (winner.player === 1 ? 'A' : 'B') : null;
-    titleEl.textContent = isWheelFinale ? `${winner.char.emoji} 隊伍${winnerTeamLetter} 車輪戰全勝！` : `${winner.char.emoji} 勝利！`;
+    if (sandboxMode) {
+      const survivors = state.balls.filter(b => b.hp > 0 && b.player === winner.player);
+      const teamName = (sandboxActiveTeamNames && sandboxActiveTeamNames[winner.player]) || `隊伍${winner.player}`;
+      titleEl.textContent = `${winner.char.emoji} ${teamName} 獲勝！（存活 ${survivors.length} 位）`;
+    } else {
+      titleEl.textContent = isWheelFinale ? `${winner.char.emoji} 隊伍${winnerTeamLetter} 車輪戰全勝！` : `${winner.char.emoji} 勝利！`;
+    }
     titleEl.style.color = winner.char.color;
     // 特定對手專屬勝利台詞：若 winner.char.vsQuotes[loser角色id] 有設定，優先使用；否則用一般 winQuote
    function pickQuote(q) {
@@ -19056,14 +19638,34 @@ const loseQuote = loser.char && loser.char.loseQuote ? pickQuote(loser.char.lose
     const dur = state.stats.duration;
     const mm = Math.floor(dur / 60).toString().padStart(2,'0');
     const ss = Math.floor(dur % 60).toString().padStart(2,'0');
-    const cardStyle = `background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 16px;min-width:130px;text-align:center;font-size:0.82rem;color:#ccc;line-height:1.8`;
-    const rows = state.balls.map(b => {
-      const s = state.stats[b.player];
-      return `<div style="${cardStyle}">
-        <div style="font-size:1.1rem;margin-bottom:4px">${b.char.emoji} <span style="color:${b.char.color};font-weight:700">${b.char.displayName}</span></div>
-        <div>💥 總傷害　<b style="color:#fff">${Math.round(s.totalDmg)}</b></div>
-              </div>`;
-    });
+    const cardStyle = `background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:8px 14px;min-width:110px;text-align:center;font-size:0.78rem;color:#ccc;line-height:1.7`;
+    let rows;
+    if (sandboxMode) {
+      // 沙盒模式：只顯示獲勝隊伍那一張卡，其餘隊伍不列出，確保手機一定塞得下
+      const winnerBall2 = state.balls.find(b => b.hp > 0);
+      if (winnerBall2) {
+        const pid = winnerBall2.player;
+        const members = state.balls.filter(b => b.player === pid);
+        const totalDmg = (state.stats[pid] && state.stats[pid].totalDmg) || 0;
+        const alive = members.filter(b => b.hp > 0).length;
+        const teamName = sandboxActiveTeamNames[pid] || `隊伍${pid}`;
+        const color = members[0] ? members[0].char.color : '#fff';
+        rows = [`<div style="${cardStyle}">
+          <div style="font-size:1rem;margin-bottom:3px">🏆 <span style="color:${color};font-weight:700">${teamName}</span></div>
+          <div>存活 ${alive}/${members.length}　💥 <b style="color:#fff">${Math.round(totalDmg)}</b></div>
+        </div>`];
+      } else {
+        rows = []; // 平局：所有隊伍同歸於盡，不特別列卡片
+      }
+    } else {
+      rows = state.balls.map(b => {
+        const s = state.stats[b.player];
+        return `<div style="${cardStyle}">
+          <div style="font-size:1.1rem;margin-bottom:4px">${b.char.emoji} <span style="color:${b.char.color};font-weight:700">${b.char.displayName}</span></div>
+          <div>💥 總傷害　<b style="color:#fff">${Math.round(s.totalDmg)}</b></div>
+                </div>`;
+      });
+    }
     statsEl.innerHTML = `
       <div style="width:100%;text-align:center;font-size:0.75rem;color:#888;margin-bottom:6px;letter-spacing:.1em">⚔️ 戰鬥紀錄　${mm}:${ss}</div>
       ${rows.join('')}
@@ -19116,15 +19718,16 @@ function showEndlessPick() {
   document.getElementById('ep-stage').textContent = `第 ${endlessStage} 關`;
   document.getElementById('ep-best').textContent = endlessBest > 0 ? `🏆 最高紀錄：第 ${endlessBest} 關` : '';
 
-  // 隨機選一個對手（跟上次不同）
+  // 隨機選一個對手（跟上次不同；排除紅石青金石雙生角色）
+  const endlessPool = CHARACTERS.filter(c => c.id !== 'rsqjs' && c.id !== 'dragon4');
   let enemyChar;
-  do { enemyChar = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)]; }
-  while (enemyChar.id === endlessEnemyId && CHARACTERS.length > 1);
+  do { enemyChar = endlessPool[Math.floor(Math.random() * endlessPool.length)]; }
+  while (enemyChar.id === endlessEnemyId && endlessPool.length > 1);
   endlessEnemyId = enemyChar.id;
   document.getElementById('ep-next-enemy').textContent = `${enemyChar.emoji} ${enemyChar.name}`;
 
-  // 三個隨機玩家角色選項（不重複）
-  const pool = [...CHARACTERS].sort(() => Math.random() - 0.5).slice(0, 3);
+  // 三個隨機玩家角色選項（不重複；排除紅石青金石雙生角色）
+  const pool = [...endlessPool].sort(() => Math.random() - 0.5).slice(0, 3);
   const cardsEl = document.getElementById('ep-cards');
   cardsEl.innerHTML = '';
 
@@ -19483,7 +20086,7 @@ function confirmAssemble() {
 }
 
 function pickAssembleEnemy() {
-  const pool = CHARACTERS.filter(c => c.id !== 'custom_assembled');
+  const pool = CHARACTERS.filter(c => c.id !== 'custom_assembled' && c.id !== 'rsqjs' && c.id !== 'dragon4');
   let enemyChar;
   do { enemyChar = pool[Math.floor(Math.random() * pool.length)]; }
   while (enemyChar.id === assembleEnemyId && pool.length > 1);
@@ -19591,6 +20194,411 @@ function backToSelectFromAssemble() {
 }
 
 document.getElementById('assemble-btn')?.addEventListener('click', startAssembleMode);
+
+// ══════════════════════════════════════════════════════════════════
+// 🧪 沙盒模式：自由組隊（不限隊伍數/不限每隊人數）、自訂場地大小、自選地圖
+// 設計說明：整段程式碼獨立附加在檔案最後，不修改既有 startGame() 的核心邏輯，
+// 只在少數地方（updateHUD／replay按鈕／showResult標題）加了 sandboxMode 判斷分流，
+// 目的是盡量降低對原本1v1~4人混戰邏輯造成的風險。
+// ══════════════════════════════════════════════════════════════════
+
+let sandboxMode = false;
+let sandboxTeams = [];
+let sandboxNextTeamId = 1;
+let sandboxPickerTargetTeamId = null;
+let sandboxActiveTeamNames = {};
+
+function sandboxColorForIndex(i) {
+  const palette = ['#e84545', '#3fa9e8', '#3ecf8e', '#e8c93d', '#c060e8', '#e87a3d', '#5bd6d6', '#d65b8a', '#8ecb4a', '#c9a4d1'];
+  return palette[i % palette.length];
+}
+
+function sandboxCreateTeam(name) {
+  const id = sandboxNextTeamId++;
+  sandboxTeams.push({ id, name: name || `隊伍${sandboxTeams.length + 1}`, members: [] });
+  return id;
+}
+
+function sandboxInitUI() {
+  const style = document.createElement('style');
+  style.textContent = `
+    #sandbox-screen{display:none;flex-direction:column;align-items:center;gap:14px;padding:20px 12px 90px;max-width:720px;width:100%;margin:0 auto;color:#eee;font-family:sans-serif;height:100vh;overflow-y:auto;box-sizing:border-box}
+    #sandbox-screen h2{margin:6px 0 0;font-size:1.3rem}
+    .sb-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+    .sb-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;width:100%;box-sizing:border-box}
+    .sb-team{background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.1)}
+    .sb-team-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+    .sb-team-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+    .sb-team-name{flex:1;min-width:80px;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:700;font-size:1rem;outline:none}
+    .sb-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.08);border-radius:16px;padding:3px 8px 3px 10px;margin:3px;font-size:0.85rem}
+    .sb-chip button{background:none;border:none;color:#ff8080;cursor:pointer;font-size:0.9rem;padding:0 2px}
+    .sb-btn{background:rgba(255,160,60,0.15);border:1px solid rgba(255,160,60,0.5);color:#ffcf8f;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:0.85rem}
+    .sb-btn.danger{background:rgba(255,60,60,0.12);border-color:rgba(255,80,80,0.4);color:#ff8f8f}
+    .sb-btn.primary{background:rgba(80,200,120,0.18);border-color:rgba(80,200,120,0.5);color:#8fe8a8;font-weight:700}
+    #sandbox-char-modal{display:none;position:fixed;inset:0;background:rgba(5,3,2,0.96);z-index:400;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow-y:auto;padding:16px 0;box-sizing:border-box}
+    #sandbox-char-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:720px;max-height:60vh;overflow-y:auto;padding:10px}
+    .sb-char-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 6px;width:80px;cursor:pointer;color:#eee;text-align:center;font-size:0.68rem;line-height:1.3}
+    .sb-char-btn:active{background:rgba(255,160,60,0.3)}
+    .sb-num{width:78px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;padding:4px 6px;font-size:0.9rem}
+    #sandbox-hud{display:none;width:min(700px,96vw);flex-wrap:wrap;gap:6px;justify-content:center;padding:6px 0;box-sizing:border-box}
+    .sb-hud-team{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.35);border-radius:10px;padding:4px 10px;font-size:0.7rem;min-width:110px;color:#eee}
+    .sb-hud-bar-wrap{width:56px;height:6px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;flex-shrink:0}
+    .sb-hud-bar{height:100%;border-radius:3px}
+  `;
+  document.head.appendChild(style);
+
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div id="sandbox-screen">
+      <h2>🧪 沙盒模式</h2>
+      <p style="opacity:0.6;font-size:0.8rem;margin:0;text-align:center">自訂場地大小與地圖，隊伍數與每隊人數不限</p>
+
+      <div class="sb-card">
+        <div style="font-weight:700;margin-bottom:8px">🗺️ 場地設定</div>
+        <div class="sb-row">
+          <label style="font-size:0.8rem;text-align:center">寬度<br><input type="number" id="sandbox-w" class="sb-num" value="350" min="300" max="3000" step="10"></label>
+          <label style="font-size:0.8rem;text-align:center">高度<br><input type="number" id="sandbox-h" class="sb-num" value="350" min="300" max="3000" step="10"></label>
+          <label style="font-size:0.8rem;text-align:center">地圖<br><select id="sandbox-arena-select" class="sb-num" style="width:130px"></select></label>
+        </div>
+      </div>
+
+      <div class="sb-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-weight:700">⚔️ 隊伍</div>
+          <button class="sb-btn" id="sandbox-add-team-btn">+ 新增隊伍</button>
+        </div>
+        <div id="sandbox-teams"></div>
+      </div>
+
+      <div class="sb-row" style="margin-top:6px">
+        <button class="sb-btn" id="sandbox-back-btn">← 返回</button>
+        <button class="sb-btn primary" id="sandbox-start-btn">🚀 開始沙盒對戰</button>
+      </div>
+    </div>
+
+    <div id="sandbox-char-modal">
+      <div style="font-weight:700;font-size:1.1rem;color:#eee">選擇要加入的角色（可重複加入同一角色多次）</div>
+      <div id="sandbox-char-grid"></div>
+      <button class="sb-btn" id="sandbox-char-modal-close">關閉</button>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+
+  const hudEl = document.getElementById('hud');
+  if (hudEl && hudEl.parentNode) {
+    const sbHud = document.createElement('div');
+    sbHud.id = 'sandbox-hud';
+    hudEl.parentNode.insertBefore(sbHud, hudEl.nextSibling);
+  }
+
+  const arenaSel = document.getElementById('sandbox-arena-select');
+  ARENAS.forEach(ar => {
+    const opt = document.createElement('option');
+    opt.value = ar.id;
+    opt.textContent = `${ar.emoji} ${ar.name}`;
+    arenaSel.appendChild(opt);
+  });
+
+  const charGrid = document.getElementById('sandbox-char-grid');
+  const SANDBOX_BANNED = ['opm', 'rsqjs', 'dragon4']; // 跟3人以上混戰／車輪戰一樣停用：一拳超人一擊必殺太破壞平衡；紅石青金石／四天之龍多球共用一個隊伍欄位，混戰邏輯未驗證
+  CHARACTERS.filter(ch => !SANDBOX_BANNED.includes(ch.id)).forEach(ch => {
+    const btn = document.createElement('div');
+    btn.className = 'sb-char-btn';
+    btn.innerHTML = `<div style="font-size:1.6rem">${ch.emoji}</div><div>${ch.name}</div>`;
+    btn.onclick = () => {
+      if (sandboxPickerTargetTeamId == null) return;
+      const team = sandboxTeams.find(t => t.id === sandboxPickerTargetTeamId);
+      if (team) team.members.push(ch.id);
+      sandboxRenderTeams();
+    };
+    charGrid.appendChild(btn);
+  });
+
+  document.getElementById('sandbox-char-modal-close').onclick = () => {
+    document.getElementById('sandbox-char-modal').style.display = 'none';
+  };
+  document.getElementById('sandbox-add-team-btn').onclick = () => {
+    sandboxCreateTeam();
+    sandboxRenderTeams();
+  };
+  document.getElementById('sandbox-back-btn').onclick = () => {
+    document.getElementById('sandbox-screen').style.display = 'none';
+    document.getElementById('select-screen').style.display = '';
+  };
+  document.getElementById('sandbox-start-btn').onclick = () => sandboxStartBattle();
+}
+
+function sandboxOpenSetup() {
+  document.getElementById('select-screen').style.display = 'none';
+  document.getElementById('sandbox-screen').style.display = 'flex';
+  if (sandboxTeams.length === 0) {
+    sandboxCreateTeam('隊伍A');
+    sandboxCreateTeam('隊伍B');
+  }
+  sandboxRenderTeams();
+}
+
+function sandboxRenderTeams() {
+  const container = document.getElementById('sandbox-teams');
+  container.innerHTML = '';
+  sandboxTeams.forEach((team, ti) => {
+    const teamEl = document.createElement('div');
+    teamEl.className = 'sb-team';
+    const color = sandboxColorForIndex(ti);
+    const chipsHTML = team.members.map((cid, mi) => {
+      const ch = CHARACTERS.find(c => c.id === cid);
+      return `<span class="sb-chip">${ch ? ch.emoji + ' ' + ch.name : cid}<button data-ti="${ti}" data-mi="${mi}" class="sb-remove-member">✕</button></span>`;
+    }).join('');
+    teamEl.innerHTML = `
+      <div class="sb-team-head">
+        <div class="sb-team-dot" style="background:${color}"></div>
+        <input class="sb-team-name" value="${team.name}" data-ti="${ti}">
+        <button class="sb-btn" data-ti="${ti}" data-action="add" style="padding:3px 8px">+ 角色</button>
+        ${sandboxTeams.length > 1 ? `<button class="sb-btn danger" data-ti="${ti}" data-action="del" style="padding:3px 8px">刪除隊伍</button>` : ''}
+      </div>
+      <div>${chipsHTML || '<span style="opacity:0.5;font-size:0.8rem">尚未加入角色</span>'}</div>
+    `;
+    container.appendChild(teamEl);
+  });
+
+  container.querySelectorAll('.sb-team-name').forEach(inp => {
+    inp.onchange = (e) => {
+      const ti = +e.target.dataset.ti;
+      sandboxTeams[ti].name = e.target.value || `隊伍${ti + 1}`;
+    };
+  });
+  container.querySelectorAll('[data-action="add"]').forEach(btn => {
+    btn.onclick = (e) => {
+      const ti = +e.currentTarget.dataset.ti;
+      sandboxPickerTargetTeamId = sandboxTeams[ti].id;
+      document.getElementById('sandbox-char-modal').style.display = 'flex';
+    };
+  });
+  container.querySelectorAll('[data-action="del"]').forEach(btn => {
+    btn.onclick = (e) => {
+      const ti = +e.currentTarget.dataset.ti;
+      sandboxTeams.splice(ti, 1);
+      sandboxRenderTeams();
+    };
+  });
+  container.querySelectorAll('.sb-remove-member').forEach(btn => {
+    btn.onclick = (e) => {
+      const ti = +e.currentTarget.dataset.ti, mi = +e.currentTarget.dataset.mi;
+      sandboxTeams[ti].members.splice(mi, 1);
+      sandboxRenderTeams();
+    };
+  });
+}
+
+// 開始（或重新開始）沙盒對戰：讀取目前的隊伍/場地設定並建立戰鬥
+function sandboxStartBattle() {
+  const SANDBOX_BANNED = ['opm', 'rsqjs', 'dragon4'];
+  sandboxTeams.forEach(t => { t.members = t.members.filter(cid => !SANDBOX_BANNED.includes(cid)); });
+  const activeTeams = sandboxTeams.filter(t => t.members.length > 0);
+  if (activeTeams.length < 2) {
+    alert('至少需要 2 支隊伍，且每隊至少要有 1 名角色，才能開始沙盒對戰。');
+    return;
+  }
+
+  const wInput = document.getElementById('sandbox-w');
+  const hInput = document.getElementById('sandbox-h');
+  const w = parseInt(wInput.value, 10) || 350;
+  const h = parseInt(hInput.value, 10) || 350;
+  const arenaId = document.getElementById('sandbox-arena-select').value || 'normal';
+
+  sandboxMode = true;
+  wheelState = null;
+  endlessMode = false;
+  assembleMode = false;
+
+  resizeArena(w, h);
+  selectedArena = arenaId;
+
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('select-screen').style.display = 'none';
+  document.getElementById('sandbox-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('result-stats').innerHTML = '';
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('bottom-bar').classList.add('sandbox-solo');
+  ['p1-status', 'p2-status', 'p3-status', 'p4-status'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const sbHud = document.getElementById('sandbox-hud');
+  if (sbHud) sbHud.style.display = 'flex';
+
+  const cx = W / 2, cy = H / 2;
+  const anchorOffset = Math.min(W, H) * 0.32;
+  const spawnBaseAngle = Math.random() * Math.PI * 2;
+
+  const initialStats = { duration: 0 };
+  const allBalls = [];
+  sandboxActiveTeamNames = {};
+
+  activeTeams.forEach((team, ti) => {
+    const teamPlayer = ti + 1;
+    const teamColor = sandboxColorForIndex(ti);
+    sandboxActiveTeamNames[teamPlayer] = team.name;
+    const angle = spawnBaseAngle + (ti / activeTeams.length) * Math.PI * 2;
+    const anchorX = cx + Math.cos(angle) * anchorOffset;
+    const anchorY = cy + Math.sin(angle) * anchorOffset;
+    const memberCount = team.members.length;
+    // 隊內成員圍成小圓分散出生，人數越多半徑越大，避免整隊疊在同一點上
+    const subR = memberCount > 1 ? Math.min(70, 22 + memberCount * 5) : 0;
+
+    team.members.forEach((cid, mi) => {
+      const base = CHARACTERS.find(c => c.id === cid);
+      if (!base) return;
+      const dupTotal = team.members.filter(x => x === cid).length;
+      const idSeenSoFar = team.members.slice(0, mi + 1).filter(x => x === cid).length;
+      const ch = {
+        ...base,
+        color: teamColor, // 同隊所有角色統一用同一個隊伍色，方便混戰時分辨敵我
+        displayName: dupTotal > 1 ? base.name + ' ' + idSeenSoFar : base.name
+      };
+      const subAngle = (mi / memberCount) * Math.PI * 2;
+      const px = anchorX + Math.cos(subAngle) * subR;
+      const py = anchorY + Math.sin(subAngle) * subR;
+      const moveAngle = Math.random() * Math.PI * 2;
+      const vx = Math.cos(moveAngle) * BASE_SPEED, vy = Math.sin(moveAngle) * BASE_SPEED;
+
+      if (ch.isTwin && ch.type === 'rsqjs') {
+        const stopBall = makeBall(px - 14, py, vx, vy, ch, teamPlayer, 'stop');
+        const diamondBall = makeBall(px + 14, py, -vx, -vy, ch, teamPlayer, 'diamond');
+        stopBall.twinPartner = diamondBall;
+        diamondBall.twinPartner = stopBall;
+        allBalls.push(stopBall, diamondBall);
+      } else if (ch.isQuad && ch.type === 'dragon4') {
+        const offsets = [[-14, -14], [14, -14], [-14, 14], [14, 14]];
+        const quadBalls = DRAGON4_ROLES.map((info, ri) => {
+          const subCh = Object.assign({}, ch, {
+            emoji: info.emoji, color: info.color, glowColor: info.glowColor,
+            quadRole: info.role, quadDisplayName: info.name
+          });
+          const [ox, oy] = offsets[ri];
+          return makeBall(px + ox, py + oy, vx, vy, subCh, teamPlayer);
+        });
+        quadBalls.forEach(b => { b.quadSiblings = quadBalls.filter(o => o !== b); });
+        allBalls.push(...quadBalls);
+      } else {
+        allBalls.push(makeBall(px, py, vx, vy, ch, teamPlayer));
+      }
+      if (!initialStats[teamPlayer]) initialStats[teamPlayer] = { totalDmg: 0, maxHit: 0, skillUses: 0 };
+    });
+  });
+
+  // 與 startGame() 完全相同的 state 欄位組成，確保沙盒模式底下所有角色特效都能正常運作
+  state = {
+    playerCount: activeTeams.length,
+    balls: allBalls,
+    projectiles: [], wallKnives: [], hitFlashes: [], batParticles: [], slashMarks: [], traps: [], yiBlackStones: [], yiStoneBurstFX: [], opmFX: [], gojoKillFX: null, curseSliceKillFX: null, elapsed: 0,
+    arena: selectedArena,
+    bgColor: selectedBgColor,
+    thunderPillars: [],
+    thunderStrikes: [],
+    smithForgeParticles: [],
+    steveMineDebris: [],
+    summons: [],
+    summonDeathFX: [],
+    summonIdCounter: 1,
+    naoShadows: [],
+    naoPathLines: [],
+    stats: initialStats,
+    samuraiParticles: [],
+    itachiCrowFX: null,
+    itachiStabFX: [],
+    smithSlashFX: [],
+    baieSlashFX: [],
+    baieReflectFX: [],
+    steveAxeFX: [],
+    yutaSlashFX: [],
+    turrets: [],
+    engGrids: [],
+    engLaserFX: [],
+    sansWalls: [],
+    sansLaserFX: [],
+    pucciDiscs: [],
+    pucciRocket: null,
+    matchEnded: false,
+    cannonBeamFX: [],
+    cannonBlastFX: [],
+    cannonDuelFX: null,
+    cannonDuelTriggered: false,
+    dioBreads: [],
+    dioBreadSpawnTimer: randBetween(DIO_BREAD_SPAWN_MIN, DIO_BREAD_SPAWN_MAX),
+    dioSteamroller: null,
+    dioWorldGlobalActive: false,
+    dioWorldCaster: null,
+    tigerBloodOrbs: [],
+    tigerNovaNeedles: [],
+    tigerPunchFX: [],
+    tigerBlackFlashFX: [],
+    tigerCurseFX: [],
+    starBigStars: [],
+    starSmallStars: [],
+    starMeteors: [],
+    starMeteorWarnings: [],
+    starMeteorQueue: [],
+    obitoFireballs: [],
+    obitoSpaceCaptures: [],
+    obitoKamuiFX: [],
+    fisherResultFX: [],
+    fisherOceanWaves: [],
+    fisherSchoolQueue: [],
+    getoSpirits: [],
+    getoEntangleFX: [],
+    getoBindFX: [],
+    getoSurgeFX: [],
+    getoUltimateProjectiles: [],
+    getoDeathFX: [],
+    getoCaneFX: [],
+    dragon4SpiralPhase: 0,
+    dragon4WingBurstFX: [],
+    dragon4BiteFX: [],
+    dragon4LightningFX: [],
+    josephChargeFX: [],
+    josephPunchFX: [],
+    rippleStackFX: [],
+    rsqjsBombs: [],
+    rsqjsBooks: [],
+    rsqjsWaterZones: [],
+  };
+
+  updateSandboxHUD();
+
+  if (gameLoop) cancelAnimationFrame(gameLoop);
+  lastTime = performance.now();
+  elapsed = 0;
+  gameLoop = requestAnimationFrame(tick);
+}
+
+function updateSandboxHUD() {
+  const hud = document.getElementById('sandbox-hud');
+  if (!hud || !state.balls) return;
+  const teamIds = [...new Set(state.balls.map(b => b.player))].sort((a, b) => a - b);
+  hud.innerHTML = teamIds.map(pid => {
+    const members = state.balls.filter(b => b.player === pid);
+    const alive = members.filter(b => b.hp > 0);
+    const totalHp = members.reduce((s, b) => s + Math.max(0, b.hp), 0);
+    const totalMax = members.reduce((s, b) => {
+      const scale = b.char.type === 'sans' ? SANS_MAX_HP : b.char.type === 'rsqjs' ? RSQJS_MAX_HP : MAX_HP;
+      return s + scale;
+    }, 0);
+    const pct = totalMax > 0 ? Math.max(0, totalHp / totalMax * 100) : 0;
+    const color = members[0] ? members[0].char.color : '#fff';
+    const name = sandboxActiveTeamNames[pid] || `隊伍${pid}`;
+    const dead = alive.length === 0;
+    return `<div class="sb-hud-team" style="opacity:${dead ? 0.35 : 1}">
+      <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
+      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}（${alive.length}/${members.length}）</span>
+      <span class="sb-hud-bar-wrap"><span class="sb-hud-bar" style="width:${pct}%;background:${color}"></span></span>
+    </div>`;
+  }).join('');
+}
+
+sandboxInitUI();
+
 </script>
 </body>
 </html>
